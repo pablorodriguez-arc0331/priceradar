@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Google Fonts ─── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ─── Design Tokens (Price Radar) ─── */
+@layer base {
+  :root {
+    /* Shadcn/ui token bridge */
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 221 83% 53%;        /* #2563EB */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;  /* #64748B */
+
+    --accent: 221 83% 53%;
+    --accent-foreground: 0 0% 100%;
+    --accent-subtle: 214 100% 97%;    /* #EFF6FF */
+    --accent-hover: 224 76% 48%;      /* #1D4ED8 */
+
+    --destructive: 0 72% 51%;         /* #DC2626 */
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;            /* #E2E8F0 */
+    --input: 214 32% 91%;
+    --ring: 221 83% 53%;
+
+    --radius: 0.5rem;
+
+    /* Signal colors — light mode */
+    --signal-low:            142 71% 45%;   /* #16A34A green */
+    --signal-low-bg:         138 76% 97%;   /* #F0FDF4 */
+    --signal-low-border:     141 79% 85%;   /* #BBF7D0 */
+    --signal-high:           0   72% 51%;   /* #DC2626 red */
+    --signal-high-bg:        0   86% 97%;   /* #FEF2F2 */
+    --signal-high-border:    0   93% 81%;   /* #FECACA */
+    --signal-neutral:        215 16% 47%;   /* #64748B slate */
+    --signal-neutral-bg:     210 40% 96%;   /* #F1F5F9 */
+    --signal-neutral-border: 214 32% 91%;   /* #E2E8F0 */
+
+    /* PWA layout */
+    --nav-height: 4rem;               /* 64px */
+    --header-height: 3.5rem;          /* 56px */
+    --page-bottom-pad: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + 1rem);
+
+    /* Glass tokens — light mode */
+    --glass-bg:     rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.55);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Full-height fix — dvh avoids iOS Safari 100vh bug */
+  .full-height {
+    min-height: 100dvh;
+  }
+
+  /* Tabular numbers — all price values */
+  .price {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* Skip-to-content link */
+  .skip-to-content {
+    @apply absolute left-4 top-4 z-50 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground
+           opacity-0 focus:opacity-100 focus:outline-none;
+    transform: translateY(-100%);
+  }
+  .skip-to-content:focus {
+    transform: translateY(0);
+  }
+
+  /* Focus ring — universal */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* ─── Dark mode — system preference ─── */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background:          222 47% 7%;    /* #070c18 deep navy */
+      --foreground:          210 40% 96%;   /* #EFF3FA near white */
+
+      --card:                222 47% 10%;   /* #0d1526 card surface */
+      --card-foreground:     210 40% 96%;
+
+      --popover:             222 47% 10%;
+      --popover-foreground:  210 40% 96%;
+
+      --primary:             221 83% 60%;   /* slightly brighter blue */
+      --primary-foreground:  0   0%  100%;
+
+      --secondary:           217 33% 17%;   /* dark gray-blue */
+      --secondary-foreground: 210 40% 96%;
+
+      --muted:               217 33% 17%;
+      --muted-foreground:    215 20% 55%;   /* medium slate */
+
+      --accent:              221 83% 60%;
+      --accent-foreground:   0   0%  100%;
+      --accent-subtle:       222 47% 14%;   /* dark blue tint */
+      --accent-hover:        221 83% 65%;
+
+      --destructive:         0   63% 55%;   /* red on dark */
+      --destructive-foreground: 0 0% 100%;
+
+      --border:              217 33% 20%;   /* dark border */
+      --input:               217 33% 20%;
+      --ring:                221 83% 60%;
+
+      /* Glass tokens — dark mode */
+      --glass-bg:     rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+
+      /* Signal colors — dark mode */
+      --signal-low:            142 71% 50%;   /* brighter green on dark */
+      --signal-low-bg:         138 76%  9%;   /* very dark green bg */
+      --signal-low-border:     141 79% 20%;   /* dark green border */
+      --signal-high:           0   72% 58%;   /* brighter red on dark */
+      --signal-high-bg:        0   86%  9%;   /* very dark red bg */
+      --signal-high-border:    0   93% 22%;   /* dark red border */
+      --signal-neutral:        215 16% 58%;   /* lighter slate on dark */
+      --signal-neutral-bg:     217 33% 17%;   /* matches muted */
+      --signal-neutral-border: 217 33% 22%;   /* matches border */
+    }
+  }
+}
+
+/* ─── PWA Safe Area ─── */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pb-nav {
+    padding-bottom: var(--page-bottom-pad);
+  }
+  .h-nav {
+    height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+  }
+  .touch-action-manipulation {
+    touch-action: manipulation;
+  }
+}
+
+/* ─── Skeleton animation ─── */
+@layer components {
+  .skeleton {
+    @apply animate-skeleton-pulse rounded-md bg-muted;
+  }
+
+  /* Glass morphism — apply to any surface */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Glass card — slightly heavier for cards */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+}

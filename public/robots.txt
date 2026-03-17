@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Block auth callback and API routes from indexing
+Disallow: /auth/
+Disallow: /api/
+
+Sitemap: https://price-radar.io/sitemap.xml
