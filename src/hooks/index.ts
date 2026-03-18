@@ -29,19 +29,46 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
           return
         }
 
+        // Build retailer prices from DB rows
+        const availablePrices = (prices ?? []).map((p, i) => ({
+          retailer: p.retailer,
+          price: Number(p.price),
+          product_title: (p.product_title as string | null) ?? undefined,
+          is_available: true,
+          // Use the actual matched product URL when available (Walmart/Best Buy),
+          // otherwise fall back to affiliate URL template or Amazon affiliate URL
+          affiliate_url: p.retailer.slug === 'amazon'
+            ? (product.asin ? buildAmazonAffiliateUrl(product.asin) : appendAffiliateTag(product.source_url))
+            : ((p.product_url as string | null) || (p.retailer.affiliate_url_template ?? '').replace('{{query}}', encodeURIComponent(product.name))),
+          last_updated: p.captured_at,
+          is_best_price: i === 0, // ordered price ASC
+        }))
+
+        // Always show Amazon, Walmart, and Best Buy — inject "Not found" for missing retailers
+        const COMPARISON_RETAILERS: Array<{ slug: string; name: string }> = [
+          { slug: 'amazon', name: 'Amazon' },
+          { slug: 'walmart', name: 'Walmart' },
+          { slug: 'bestbuy', name: 'Best Buy' },
+        ]
+        const foundSlugs = new Set(availablePrices.map(rp => rp.retailer.slug))
+        for (const r of COMPARISON_RETAILERS) {
+          if (!foundSlugs.has(r.slug)) {
+            availablePrices.push({
+              retailer: { id: '', name: r.name, slug: r.slug as 'amazon' | 'walmart' | 'bestbuy' | 'ebay' | 'target', logo_url: '', affiliate_url_template: '' },
+              price: 0,
+              product_title: undefined,
+              is_available: false,
+              affiliate_url: '',
+              last_updated: new Date().toISOString(),
+              is_best_price: false,
+            })
+          }
+        }
+
         const mapped: ProductWithPricing = {
           ...product,
           signal,
-          retailer_prices: (prices ?? []).map((p, i) => ({
-            retailer: p.retailer,
-            price: Number(p.price),
-            is_available: true,
-            affiliate_url: p.retailer.slug === 'amazon'
-              ? (product.asin ? buildAmazonAffiliateUrl(product.asin) : appendAffiliateTag(product.source_url))
-              : (p.retailer.affiliate_url_template ?? '').replace('{{query}}', encodeURIComponent(product.name)),
-            last_updated: p.captured_at,
-            is_best_price: i === 0, // ordered price ASC
-          })),
+          retailer_prices: availablePrices,
           price_history: (history ?? []).map(h => ({
             date: h.captured_at,
             price: Number(h.price),
@@ -152,6 +179,7 @@ export function useRecentProducts(limit = 6) {
         // Enrich with real current prices from price_points
         const ids = (rows ?? []).map((r: any) => r.id) // eslint-disable-line @typescript-eslint/no-explicit-any
         const currentPrices = await getCurrentPricesForProducts(ids).catch(() => [])
+        if (cancelled) return
 
         const priceMap = new Map<string, { price: number; retailer: string }>()
         for (const cp of currentPrices) {

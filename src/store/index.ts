@@ -226,17 +226,19 @@ export const useTrackedStore = create<TrackedStore>((set, get) => ({
         const sig = row.product?.price_signals?.[0]
         const live = priceMap.get(row.product_id)
 
+        const fallbackPrice = live?.price ?? 0
         const fallbackSignal: TrackedProduct['signal'] = {
           product_id: row.product_id,
-          verdict: 'neutral',
+          verdict: 'no_data',
           label: live ? 'Tracked' : 'No data',
           subtext: '',
           percentile: 50,
-          signal_strength: 50,
+          signal_strength: 0,
           reference_range_days: 90,
-          historical_low: 0,
-          historical_high: 0,
-          current_best_price: live?.price ?? 0,
+          // Use actual price so StatsGrid never divides by zero
+          historical_low: fallbackPrice,
+          historical_high: fallbackPrice,
+          current_best_price: fallbackPrice,
           current_best_retailer: live?.retailer ?? '',
           last_checked_at: row.last_checked_at ?? new Date().toISOString(),
         }

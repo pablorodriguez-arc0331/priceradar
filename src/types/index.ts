@@ -64,6 +64,7 @@ export interface RetailerPrice {
   retailer: Retailer
   price: number
   original_price?: number        // if on sale
+  product_title?: string         // retailer-specific product title (from AI matching)
   is_available: boolean
   affiliate_url: string
   last_updated: string

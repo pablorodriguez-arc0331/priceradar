@@ -410,15 +410,22 @@ async function fetchAmazon(url: string, apiKey: string): Promise<NormalizedProdu
 
 // ─── Multi-retailer: search Walmart / Best Buy for the same product ──────────
 
+interface RetailerSearchResult {
+  price: number
+  title: string
+  url: string
+}
+
 // deno-lint-ignore no-explicit-any
 async function searchAndStoreOtherRetailers(
   productName: string,
   productId: string,
   // deno-lint-ignore no-explicit-any
   supabase: any,
-  apiKey: string,
+  rainforestKey: string,
 ): Promise<void> {
   const SEARCH_SLUGS = ['walmart', 'bestbuy']
+  const geminiKey = Deno.env.get('GEMINI_API_KEY')
 
   // Fetch retailer IDs in a single query
   const { data: retailers } = await supabase
@@ -435,7 +442,7 @@ async function searchAndStoreOtherRetailers(
 
   // Search all retailers in parallel — failures are isolated per retailer
   const searches = SEARCH_SLUGS.map(slug =>
-    searchRetailerForProduct(productName, slug, apiKey)
+    searchRetailerForProduct(productName, slug, rainforestKey)
       .then(result => ({ slug, result }))
       .catch((e: Error) => {
         console.warn(`[multi-retailer] ${slug} search failed: ${e.message}`)
@@ -447,6 +454,32 @@ async function searchAndStoreOtherRetailers(
 
   for (const { slug, result } of results) {
     if (!result || !retailerMap[slug]) continue
+
+    // ── Use Gemini to verify match confidence ──────────────────────────────
+    let confidence = 0.5 // fallback when Gemini is unavailable
+
+    if (geminiKey) {
+      try {
+        confidence = await scoreMatchWithGemini(productName, result.title, geminiKey)
+        console.log(`[multi-retailer] Gemini confidence for ${slug}: ${confidence} ("${result.title}")`)
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        console.warn(`[multi-retailer] Gemini scoring failed for ${slug}: ${msg} — falling back to Jaccard`)
+        // Fall back to Jaccard similarity when Gemini is unavailable
+        confidence = titleSimilarity(productName, result.title)
+      }
+    } else {
+      // No Gemini key — use Jaccard similarity as confidence proxy
+      confidence = titleSimilarity(productName, result.title)
+      console.log(`[multi-retailer] Jaccard confidence for ${slug}: ${confidence}`)
+    }
+
+    // Reject low-confidence matches to avoid showing unrelated products
+    if (confidence < 0.6) {
+      console.log(`[multi-retailer] ${slug} rejected: confidence too low (${confidence.toFixed(2)}) for "${result.title}"`)
+      continue
+    }
+
     await supabase
       .from('price_points')
       .insert({
@@ -456,9 +489,13 @@ async function searchAndStoreOtherRetailers(
         currency: 'USD',
         captured_at: new Date().toISOString(),
         is_current: true,
+        product_url: result.url || null,
+        product_title: result.title || null,
+        match_confidence: Math.round(confidence * 100) / 100,
       })
       .catch((e: Error) => console.warn(`[multi-retailer] insert ${slug} failed: ${e.message}`))
-    console.log(`[multi-retailer] Stored ${slug} price: $${result.price} (${result.title})`)
+
+    console.log(`[multi-retailer] Stored ${slug} @ $${result.price} (confidence: ${confidence.toFixed(2)})`)
   }
 }
 
@@ -466,7 +503,7 @@ async function searchRetailerForProduct(
   productName: string,
   retailerSlug: string,
   apiKey: string,
-): Promise<{ price: number; title: string } | null> {
+): Promise<RetailerSearchResult | null> {
   // Clean search term: strip special chars, keep letters/numbers/spaces
   const searchTerm = productName
     .replace(/[^\w\s,\-.]/g, ' ')
@@ -494,7 +531,7 @@ async function searchRetailerForProduct(
 
   if (!Array.isArray(results) || results.length === 0) return null
 
-  // Check top-5 results for a title match above 20% word-overlap threshold
+  // Check top-5 results — require at least 20% word-overlap as a pre-filter before Gemini
   for (const item of results.slice(0, 5)) {
     // deno-lint-ignore no-explicit-any
     const obj = item as Record<string, any>
@@ -508,16 +545,80 @@ async function searchRetailerForProduct(
       0
     const price = Number(priceValue)
 
-    if (!title || price <= 0) continue
-    if (titleSimilarity(productName, title) < 0.2) continue
+    // Extract product URL from search result
+    const url = String(
+      obj.link ?? obj.url ?? obj.product_url ?? obj.detail_page_url ?? '',
+    )
 
-    return { price, title }
+    if (!title || price <= 0) continue
+    // Pre-filter: require at least 15% word overlap before calling Gemini
+    if (titleSimilarity(productName, title) < 0.15) continue
+
+    return { price, title, url }
   }
 
   return null
 }
 
-// Word-overlap Jaccard similarity for product title matching
+// ─── Gemini: AI-powered product match confidence scoring ──────────────────────
+
+async function scoreMatchWithGemini(
+  amazonTitle: string,
+  candidateTitle: string,
+  apiKey: string,
+): Promise<number> {
+  const prompt = [
+    'You are a product matching expert. Determine if these two product listings refer to the same physical product.',
+    '',
+    `Amazon: "${amazonTitle}"`,
+    `Candidate: "${candidateTitle}"`,
+    '',
+    'Consider: brand, model number, color, storage/capacity, size. Minor wording differences are OK.',
+    'Respond with JSON only — no markdown, no explanation: {"confidence": 0.0}',
+    'confidence 1.0 = definitely the same product, 0.0 = completely different product.',
+  ].join('\n')
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 8000)
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0, maxOutputTokens: 32 },
+        }),
+      },
+    )
+
+    if (!response.ok) {
+      const text = await response.text().catch(() => '')
+      throw new Error(`Gemini API ${response.status}: ${text.slice(0, 120)}`)
+    }
+
+    // deno-lint-ignore no-explicit-any
+    const body: any = await response.json()
+    const raw: string = body?.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
+    // Strip markdown code fences if Gemini wraps the JSON
+    const cleaned = raw.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim()
+    const parsed = JSON.parse(cleaned)
+    const confidence = Number(parsed?.confidence ?? 0)
+    return Math.max(0, Math.min(1, confidence)) // clamp to [0, 1]
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Gemini API timed out')
+    }
+    throw err
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
+// Word-overlap Jaccard similarity — used as pre-filter and Gemini fallback
 function titleSimilarity(a: string, b: string): number {
   const tokenize = (s: string) =>
     new Set(

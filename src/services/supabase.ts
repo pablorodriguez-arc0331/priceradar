@@ -52,10 +52,10 @@ export async function getProductWithPricing(productId: string) {
     .eq('product_id', productId)
     .single()
 
-  // Fetch current prices across retailers
+  // Fetch current prices across retailers (include product_url and product_title for AI-matched rows)
   const { data: prices } = await supabase
     .from('price_points')
-    .select('*, retailer:retailers(*)')
+    .select('*, retailer:retailers(*), product_url, product_title')
     .eq('product_id', productId)
     .eq('is_current', true)
     .order('price', { ascending: true })

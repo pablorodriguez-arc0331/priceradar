@@ -214,6 +214,8 @@ export function ProductResultPage() {
           <PriceComparisonTable
             prices={product?.retailer_prices ?? []}
             isLoading={isLoading}
+            isPaid={isPaid}
+            onUpgrade={() => navigate('/upgrade', { state: { reason: 'comparison' } })}
           />
         </section>
 

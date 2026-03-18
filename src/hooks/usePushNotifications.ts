@@ -21,7 +21,7 @@ const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undef
 
 export type PushPermission = 'default' | 'granted' | 'denied' | 'unsupported'
 
-interface UsePushNotificationsReturn {
+export interface UsePushNotificationsReturn {
   isSupported: boolean
   permission: PushPermission
   isSubscribed: boolean
@@ -89,7 +89,7 @@ export function usePushNotifications(userId: string | undefined): UsePushNotific
       // 3. Subscribe via Push API
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
       })
 
       const json = subscription.toJSON()
