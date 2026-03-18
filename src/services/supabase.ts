@@ -166,13 +166,66 @@ export async function getSubscription(userId: string) {
 
 // ─── Price lookup (calls Edge Function) ──────────────────────────────────────
 
-export async function fetchPricesForUrl(url: string) {
+// supabase.functions is a GETTER — creates a new FunctionsClient instance on
+// every access, so supabase.functions.setAuth() targets a throwaway object.
+// Token must be passed explicitly via headers on every invoke call.
+
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string
+
+async function _invoke(url: string, token: string): Promise<{ product_id: string }> {
   const { data, error } = await supabase.functions.invoke('fetch-prices', {
     body: { url },
+    headers: { Authorization: `Bearer ${token}` },
   })
 
-  if (error) throw error
-  return data as { product_id: string }
+  if (!error) return data as { product_id: string }
+
+  // Extract the real error message and HTTP status from the raw Response
+  let status = 0
+  let msg = error.message ?? 'Request failed'
+  if (error.context instanceof Response) {
+    status = (error.context as Response).status
+    try {
+      const body = await (error.context as Response).json()
+      msg = body?.error ?? body?.message ?? msg
+    } catch { /* body is not JSON */ }
+  }
+
+  // Attach status so the caller can decide whether to retry
+  const e = new Error(msg) as Error & { status: number }
+  e.status = status
+  throw e
+}
+
+export async function fetchPricesForUrl(url: string): Promise<{ product_id: string }> {
+  // ── Attempt 1: fresh session token (or anon key if not logged in) ──────────
+  const { data: { session } } = await supabase.auth.getSession()
+  const token = session?.access_token ?? ANON_KEY
+
+  try {
+    return await _invoke(url, token)
+  } catch (err) {
+    const status = (err as Error & { status?: number }).status ?? 0
+
+    // Only retry on 401 — any other error is a real failure (Rainforest, DB, etc.)
+    if (status !== 401) throw err
+
+    // ── Attempt 2: force a full token refresh, then retry ───────────────────
+    console.warn('[fetchPricesForUrl] 401 — forcing session refresh and retrying')
+    const { data: { session: fresh } } = await supabase.auth.refreshSession()
+    const freshToken = fresh?.access_token ?? ANON_KEY
+
+    try {
+      return await _invoke(url, freshToken)
+    } catch (retryErr) {
+      const retryStatus = (retryErr as Error & { status?: number }).status ?? 0
+      if (retryStatus !== 401) throw retryErr
+
+      // ── Attempt 3: fall back to anon key silently (guest mode) ────────────
+      console.warn('[fetchPricesForUrl] Refresh failed — falling back to guest mode')
+      return await _invoke(url, ANON_KEY)
+    }
+  }
 }
 
 // ─── Batch current prices across multiple products ────────────────────────────

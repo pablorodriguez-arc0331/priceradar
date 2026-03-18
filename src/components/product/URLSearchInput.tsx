@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, AlertCircle } from 'lucide-react'
+import { Search, X, AlertCircle, Clipboard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProductLookup } from '@/hooks'
 import { Button, Spinner } from '@/components/ui/Button'
@@ -15,42 +15,35 @@ interface URLSearchInputProps {
 
 export function URLSearchInput({
   autoFocus = false,
-  size = 'default',
-  placeholder = 'Paste an Amazon product link',
+  placeholder = 'Paste Amazon product link',
   className,
 }: URLSearchInputProps) {
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
-  const { lookup, isLoading, error, setError } = useProductLookup()
+  const { lookup, isLoading, error, hint, setError } = useProductLookup()
 
   useEffect(() => {
     if (autoFocus) inputRef.current?.focus()
   }, [autoFocus])
 
-  // Auto-submit on paste
+  const handleSubmit = async (urlOverride?: string) => {
+    const url = urlOverride ?? value
+    const productId = await lookup(url)
+    if (productId) navigate(`/product/${productId}`)
+  }
+
+  // Auto-submit on paste event (keyboard paste or drag-drop)
   const handlePaste = async (e: React.ClipboardEvent) => {
     const pasted = e.clipboardData.getData('text').trim()
     if (!pasted) return
     setValue(pasted)
-    // Small delay to let React update value before submit
-    setTimeout(() => handleSubmit(pasted), 100)
-  }
-
-  const handleSubmit = async (urlOverride?: string) => {
-    const url = urlOverride ?? value
-    const productId = await lookup(url)
-    if (productId) {
-      navigate(`/product/${productId}`)
-    }
+    setTimeout(() => handleSubmit(pasted), 50)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleSubmit()
-    if (e.key === 'Escape') {
-      setValue('')
-      setError(null)
-    }
+    if (e.key === 'Escape') { setValue(''); setError(null) }
   }
 
   const handleClear = () => {
@@ -59,16 +52,32 @@ export function URLSearchInput({
     inputRef.current?.focus()
   }
 
-  const isLarge = size === 'large'
+  // Clipboard button — reads from OS clipboard and auto-submits
+  const handlePasteButton = async () => {
+    try {
+      const text = await navigator.clipboard.readText()
+      const trimmed = text.trim()
+      if (!trimmed) return
+      setValue(trimmed)
+      setError(null)
+      await handleSubmit(trimmed)
+    } catch {
+      // Clipboard permission denied — focus input so user can paste manually
+      inputRef.current?.focus()
+    }
+  }
+
+  const hasValue = value.trim().length > 0
 
   return (
-    <div className={cn('w-full space-y-1.5', className)}>
+    <div className={cn('w-full space-y-2', className)}>
+
+      {/* ── Input field ─────────────────────────────────────────────────── */}
       <div className="relative flex items-center">
+
+        {/* Left search icon */}
         <Search
-          className={cn(
-            'pointer-events-none absolute left-3 shrink-0 text-muted-foreground',
-            isLarge ? 'h-5 w-5' : 'h-4 w-4',
-          )}
+          className="pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 text-muted-foreground"
           aria-hidden="true"
         />
 
@@ -76,23 +85,17 @@ export function URLSearchInput({
           ref={inputRef}
           type="url"
           value={value}
-          onChange={e => {
-            setValue(e.target.value)
-            if (error) setError(null)
-          }}
+          onChange={e => { setValue(e.target.value); if (error) setError(null) }}
           onPaste={handlePaste}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={cn(
-            'w-full rounded-xl border border-input bg-background/80',
-            'text-foreground placeholder:text-muted-foreground',
-            'transition-all duration-200',
+            'w-full h-14 rounded-xl border border-input bg-background/80',
+            'pl-11 pr-12 text-base text-foreground placeholder:text-muted-foreground',
+            'shadow-sm transition-all duration-200',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
             'focus-visible:border-ring focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.15)]',
             'disabled:opacity-50',
-            isLarge
-              ? 'h-14 pl-11 pr-32 text-base shadow-sm'
-              : 'h-10 pl-9 pr-24 text-sm',
             error && 'border-destructive focus-visible:ring-destructive focus-visible:shadow-[0_0_0_4px_hsl(var(--destructive)/0.15)]',
           )}
           aria-label="Amazon product URL"
@@ -102,71 +105,113 @@ export function URLSearchInput({
           autoCorrect="off"
           autoCapitalize="off"
           spellCheck={false}
+          disabled={isLoading}
         />
 
-        {/* Right side actions */}
-        <div className={cn('absolute right-1.5 flex items-center gap-1')}>
-          <AnimatePresence>
-            {value && (
+        {/* Right icon: paste | clear | spinner */}
+        <div className="absolute right-3 flex items-center">
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.span
+                key="spinner"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center h-8 w-8"
+              >
+                <Spinner className="h-4 w-4 text-muted-foreground" />
+              </motion.span>
+            ) : hasValue ? (
               <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
+                key="clear"
+                initial={{ opacity: 0, scale: 0.7 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                exit={{ opacity: 0, scale: 0.7 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                 onClick={handleClear}
+                type="button"
+                aria-label="Clear"
                 className={cn(
-                  'rounded-md p-1 text-muted-foreground',
-                  'hover:bg-muted hover:text-foreground',
+                  'flex items-center justify-center h-8 w-8 rounded-lg',
+                  'text-muted-foreground hover:text-foreground hover:bg-muted',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 )}
-                type="button"
-                aria-label="Clear search"
               >
                 <X className="h-4 w-4" />
               </motion.button>
+            ) : (
+              <motion.button
+                key="paste"
+                initial={{ opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.7 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                onClick={handlePasteButton}
+                type="button"
+                aria-label="Paste from clipboard"
+                className={cn(
+                  'flex items-center justify-center h-8 w-8 rounded-lg',
+                  'text-muted-foreground hover:text-foreground hover:bg-muted',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                )}
+              >
+                <Clipboard className="h-4 w-4" />
+              </motion.button>
             )}
           </AnimatePresence>
-
-          <Button
-            onClick={() => handleSubmit()}
-            disabled={!value.trim() || isLoading}
-            size={isLarge ? 'default' : 'sm'}
-            className="shrink-0"
-            aria-label="Check price"
-          >
-            {isLoading ? (
-              <>
-                <Spinner className="h-4 w-4" />
-                <span>Checking…</span>
-              </>
-            ) : (
-              'Check Price'
-            )}
-          </Button>
         </div>
       </div>
 
-      {/* Error message */}
+      {/* ── Inline error ────────────────────────────────────────────────── */}
       <AnimatePresence>
         {error && (
           <motion.p
             id="search-error"
             role="alert"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="flex items-center gap-1.5 text-xs text-destructive overflow-hidden"
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: 'auto', marginTop: 0 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            transition={{ duration: 0.18 }}
+            className="flex items-start gap-1.5 text-xs text-destructive overflow-hidden"
           >
-            <AlertCircle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
             {error}
           </motion.p>
         )}
-        {!error && (
-          <p id="search-hint" className="sr-only">
-            Paste an Amazon product URL to check price history and find the best deal instantly.
-          </p>
+      </AnimatePresence>
+
+      {!error && !hint && (
+        <p id="search-hint" className="sr-only">
+          Paste an Amazon product URL to check price history and compare retailers.
+        </p>
+      )}
+
+      {/* Hint — non-error status message (e.g. "Retrying…") */}
+      <AnimatePresence>
+        {hint && !error && (
+          <motion.p
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.15 }}
+            className="text-xs text-muted-foreground"
+          >
+            {hint}
+          </motion.p>
         )}
       </AnimatePresence>
+
+      {/* ── Check Price button — full-width below input ──────────────────── */}
+      <Button
+        onClick={() => handleSubmit()}
+        disabled={!hasValue || isLoading}
+        loading={isLoading}
+        fullWidth
+        size="lg"
+        aria-label="Check price"
+      >
+        {isLoading ? (hint ?? 'Checking price…') : 'Check Price'}
+      </Button>
     </div>
   )
 }

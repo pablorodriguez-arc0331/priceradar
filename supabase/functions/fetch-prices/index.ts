@@ -58,25 +58,38 @@ Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const { url } = await req.json()
+    const body = await req.json().catch(() => ({}))
+    const { url } = body
     if (!url || typeof url !== 'string') return jsonError('URL is required', 400)
+
+    console.log(`[fetch-prices] Incoming URL: ${url}`)
 
     const retailerSlug = detectRetailer(url)
     if (!retailerSlug) {
       return jsonError('Only Amazon product URLs are supported.', 422)
     }
 
-    const asin = extractAsin(url)
+    // Resolve a.co short links to the full Amazon URL before extracting ASIN
+    const resolvedUrl = (new URL(url).hostname === 'a.co') ? await resolveRedirect(url) : url
+    if (resolvedUrl !== url) {
+      console.log(`[fetch-prices] Short link resolved to: ${resolvedUrl}`)
+    }
+
+    const asin = extractAsin(resolvedUrl)
+    console.log(`[fetch-prices] Extracted ASIN: ${asin ?? 'NONE'}`)
     if (!asin) {
       return jsonError(
-        'Invalid Amazon link — could not find a product ASIN. ' +
-        'Make sure you\'re linking to a specific product page (e.g. amazon.com/dp/B0...).',
+        'Could not find a product ASIN in this link. ' +
+        'Please paste a direct product page URL (e.g. amazon.com/dp/B0...).',
         422,
       )
     }
 
     const rainforestKey = Deno.env.get('RAINFOREST_API_KEY')
-    if (!rainforestKey) return jsonError('Price API not configured', 500)
+    if (!rainforestKey) {
+      console.error('[fetch-prices] RAINFOREST_API_KEY secret is not set')
+      return jsonError('Price service is not configured. Please contact support.', 500)
+    }
 
     // deno-lint-ignore no-explicit-any
     const supabase = createClient(
@@ -87,8 +100,10 @@ Deno.serve(async (req: Request) => {
     // ── Cache check — skip refetch if < 1 hour old ────────────────────────────
     // Rewrite all Amazon locales to amazon.com so international users share the
     // same cache entry and always receive US pricing data.
-    const canonicalUrl = retailerSlug === 'amazon' ? normalizeAmazonUrl(url) : url
+    const canonicalUrl = retailerSlug === 'amazon' ? normalizeAmazonUrl(resolvedUrl) : resolvedUrl
     const normalizedUrl = normalizeUrl(canonicalUrl)
+    console.log(`[fetch-prices] Cache key: ${normalizedUrl}`)
+
     const { data: existing } = await supabase
       .from('products')
       .select('id, updated_at')
@@ -98,25 +113,27 @@ Deno.serve(async (req: Request) => {
     if (existing) {
       const ageMs = Date.now() - new Date(existing.updated_at).getTime()
       if (ageMs < 60 * 60 * 1000) {
+        console.log(`[fetch-prices] Cache hit — returning product_id: ${existing.id}`)
         return jsonOk({ product_id: existing.id, cached: true })
       }
     }
 
     // ── Fetch product data from Rainforest ────────────────────────────────────
+    console.log(`[fetch-prices] Calling Rainforest API for ASIN: ${asin}`)
     const normalized: NormalizedProduct = await fetchAmazon(canonicalUrl, rainforestKey)
 
     console.log(
-      `[fetch-prices] Fetched: "${normalized.name}" @ $${normalized.current_price} (${normalized.retailer_slug})`
+      `[fetch-prices] Rainforest OK — "${normalized.name}" @ $${normalized.current_price}`
     )
 
     // Validate core fields
     if (!normalized.name?.trim()) {
-      throw new Error('Product data is incomplete — title missing from API response')
+      throw new Error('Product data is incomplete — title missing from Rainforest response')
     }
     if (normalized.current_price <= 0) {
       throw new Error(
-        'No current price available for this product. ' +
-        'It may be out of stock or sold by 3rd-party sellers only.',
+        'No current price found for this product. ' +
+        'It may be out of stock or available from 3rd-party sellers only.',
       )
     }
 
@@ -246,8 +263,10 @@ Deno.serve(async (req: Request) => {
     return jsonOk({ product_id: product.id })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('[fetch-prices] ERROR:', msg)
-    return jsonError(msg, 500)
+    console.error('[fetch-prices] UNHANDLED ERROR:', msg)
+    // Return a clean user-facing message; internal details stay in logs
+    const userMsg = msg.length < 200 ? msg : "We couldn't fetch data for this product. Please try again."
+    return jsonError(userMsg, 500)
   }
 })
 
@@ -593,7 +612,7 @@ async function fetchWithTimeout(url: string, timeoutMs = 15000): Promise<Respons
 function detectRetailer(url: string): string | null {
   try {
     const { hostname } = new URL(url)
-    if (hostname.includes('amazon.')) return 'amazon'
+    if (hostname.includes('amazon.') || hostname === 'a.co') return 'amazon'
     return null
   } catch {
     return null
@@ -613,11 +632,33 @@ function normalizeAmazonUrl(url: string): string {
 }
 
 function extractAsin(url: string): string | null {
-  const dpMatch = url.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/)
+  const dpMatch = url.match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/)
   if (dpMatch) return dpMatch[1]
   const paramMatch = url.match(/[?&]asin=([A-Z0-9]{10})/)
   if (paramMatch) return paramMatch[1]
   return null
+}
+
+// Follows a.co (and other) short-link redirects to get the canonical Amazon URL.
+// Uses GET (not HEAD) because many redirect chains require a full GET request
+// to resolve correctly — some servers return 404 to HEAD but 301 to GET.
+async function resolveRedirect(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      method: 'GET',
+      redirect: 'follow',
+      headers: {
+        // Mimic a real browser to avoid bot detection on short-link services
+        'User-Agent': 'Mozilla/5.0 (compatible; PriceRadar/1.0)',
+      },
+    })
+    const resolved = res.url || url
+    console.log(`[fetch-prices] resolveRedirect: ${url} → ${resolved}`)
+    return resolved
+  } catch (e) {
+    console.warn(`[fetch-prices] resolveRedirect failed for ${url}:`, (e as Error).message)
+    return url
+  }
 }
 
 function normalizeUrl(url: string): string {

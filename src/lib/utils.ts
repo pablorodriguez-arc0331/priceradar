@@ -75,7 +75,7 @@ export function formatRelativeTime(dateString: string): string {
 export function isValidAmazonUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
-    return parsed.hostname.includes('amazon.')
+    return parsed.hostname.includes('amazon.') || parsed.hostname === 'a.co'
   } catch {
     return false
   }
@@ -85,7 +85,9 @@ export function isValidAmazonUrl(url: string): boolean {
 export const isValidProductUrl = isValidAmazonUrl
 
 export function extractAsinFromUrl(url: string): string | null {
-  const dpMatch = url.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/)
+  // a.co short links must be resolved server-side — no ASIN in the URL
+  try { if (new URL(url).hostname === 'a.co') return null } catch { /* fall through */ }
+  const dpMatch = url.match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/)
   if (dpMatch) return dpMatch[1]
   const paramMatch = url.match(/[?&]asin=([A-Z0-9]{10})/)
   if (paramMatch) return paramMatch[1]

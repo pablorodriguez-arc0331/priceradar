@@ -68,11 +68,14 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
 export function useProductLookup() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // hint is a non-error status message shown under the button (e.g. "Retrying…")
+  const [hint, setHint] = useState<string | null>(null)
 
   const lookup = useCallback(async (url: string): Promise<string | null> => {
     setError(null)
+    setHint(null)
 
-    // Validate URL
+    // ── Client-side validation ───────────────────────────────────────────────
     if (!url.trim()) {
       setError('Paste an Amazon product URL to get started.')
       return null
@@ -83,25 +86,36 @@ export function useProductLookup() {
       return null
     }
 
-    if (!extractAsinFromUrl(url)) {
-      setError('Invalid Amazon link. Make sure you\'re linking to a specific product page.')
+    // a.co short links don't contain an ASIN — the server resolves the redirect
+    const isShortLink = (() => { try { return new URL(url).hostname === 'a.co' } catch { return false } })()
+    const asin = extractAsinFromUrl(url)
+    if (!isShortLink && !asin) {
+      setError("Couldn't find a product in this link. Make sure you're linking to a specific Amazon product page.")
       return null
     }
 
+    // Normalize to canonical form — strips tracking params, locale, mobile paths
+    // a.co links are sent as-is; the edge function resolves the redirect server-side
+    const canonicalUrl = asin ? `https://www.amazon.com/dp/${asin}` : url.trim()
+
     setIsLoading(true)
     try {
-      const result = await fetchPricesForUrl(url)
+      const result = await fetchPricesForUrl(canonicalUrl)
       setIsLoading(false)
+      setHint(null)
       return result.product_id
     } catch (err) {
+      // fetchPricesForUrl already handles 401 retries with token refresh +
+      // anon-key fallback internally. If it still throws, it's a real error.
       setIsLoading(false)
-      const msg = err instanceof Error ? err.message : 'Failed to fetch price data. Please try again.'
+      setHint(null)
+      const msg = err instanceof Error ? err.message : "We couldn't fetch data right now. Please try again."
       setError(msg)
       return null
     }
   }, [])
 
-  return { lookup, isLoading, error, setError }
+  return { lookup, isLoading, error, hint, setError }
 }
 
 // ─── useRecentProducts — most recently fetched products for discovery ─────
