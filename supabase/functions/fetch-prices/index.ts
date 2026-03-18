@@ -260,6 +260,14 @@ Deno.serve(async (req: Request) => {
       { onConflict: 'product_id' },
     )
 
+    // ── Dispatch price change alerts (premium push notifications) ────────────
+    // Fire-and-forget — does not block the response or affect price fetch result
+    supabase.functions.invoke('send-price-alerts', {
+      body: { product_id: product.id, current_price: normalized.current_price },
+    }).catch((e: Error) =>
+      console.warn('[fetch-prices] alert dispatch error:', e.message),
+    )
+
     return jsonOk({ product_id: product.id })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)

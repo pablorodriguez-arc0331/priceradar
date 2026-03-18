@@ -2,12 +2,15 @@ import { motion } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   Check, Lock, Sparkles, Bell, TrendingDown, LayoutDashboard, Zap,
-  User, LogOut, Mail, Shield, ChevronRight,
+  User, LogOut, Mail, Shield, ChevronRight, AlertTriangle,
 } from 'lucide-react'
 import { Page } from '@/components/layout'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore, useToast } from '@/store'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
+import type { UsePushNotificationsReturn } from '@/hooks/usePushNotifications'
 import { cn } from '@/lib/utils'
+import type { AppUser } from '@/types'
 
 // ────────────────────────────────────────────────────────────────────────────
 // Upgrade Page
@@ -185,8 +188,9 @@ export function UpgradePage() {
 
 export function SettingsPage() {
   const navigate = useNavigate()
-  const { user, signOut, isAuthenticated } = useAuthStore()
+  const { user, setUser, signOut, isAuthenticated } = useAuthStore()
   const toast = useToast()
+  const push = usePushNotifications(user?.id)
 
   const handleSignOut = async () => {
     await signOut()
@@ -278,11 +282,19 @@ export function SettingsPage() {
             sublabel={user?.alert_preferences.email_enabled ? 'Enabled' : 'Disabled'}
             onClick={() => toast('info', 'Alert preferences coming soon')}
           />
-          <SettingsRow
-            icon={Bell}
-            label="Push notifications"
-            sublabel={user?.alert_preferences.push_enabled ? 'Enabled' : 'Requires installation'}
-            onClick={() => toast('info', 'Push setup coming soon')}
+          <PushNotificationRow
+            user={user}
+            push={push}
+            onUpgrade={() => navigate('/upgrade')}
+            onSubscribeSuccess={() => {
+              if (user) setUser({ ...user, alert_preferences: { ...user.alert_preferences, push_enabled: true } })
+              toast('success', 'Push notifications enabled', 'You\'ll be notified when prices change.')
+            }}
+            onUnsubscribeSuccess={() => {
+              if (user) setUser({ ...user, alert_preferences: { ...user.alert_preferences, push_enabled: false } })
+              toast('info', 'Push notifications disabled')
+            }}
+            onError={() => toast('error', 'Something went wrong', 'Please try again.')}
           />
         </SettingsSection>
 
@@ -306,6 +318,95 @@ export function SettingsPage() {
   )
 }
 
+// ─── Push Notification Row ─────────────────────────────────────────────────────
+
+function PushNotificationRow({
+  user,
+  push,
+  onUpgrade,
+  onSubscribeSuccess,
+  onUnsubscribeSuccess,
+  onError,
+}: {
+  user: AppUser | null
+  push: UsePushNotificationsReturn
+  onUpgrade: () => void
+  onSubscribeSuccess: () => void
+  onUnsubscribeSuccess: () => void
+  onError: () => void
+}) {
+  const isPremium = user?.plan === 'paid'
+
+  const handleClick = async () => {
+    if (!isPremium) { onUpgrade(); return }
+
+    if (push.permission === 'denied') {
+      alert('Notifications are blocked in your browser. Go to your browser settings and allow notifications for this site, then try again.')
+      return
+    }
+
+    try {
+      if (push.isSubscribed) {
+        await push.unsubscribe()
+        onUnsubscribeSuccess()
+      } else {
+        await push.subscribe()
+        onSubscribeSuccess()
+      }
+    } catch {
+      onError()
+    }
+  }
+
+  // Derive sublabel based on state
+  let sublabel: string
+  let sublabelIcon: React.ReactNode = null
+
+  if (!isPremium) {
+    sublabel = 'Pro feature — tap to upgrade'
+  } else if (!push.isSupported) {
+    sublabel = 'Not supported in this browser'
+  } else if (push.permission === 'denied') {
+    sublabel = 'Blocked — update browser settings'
+    sublabelIcon = <AlertTriangle className="h-3 w-3 text-signal-high mr-1 inline" />
+  } else if (push.isSubscribed) {
+    sublabel = 'On — price changes will notify you'
+  } else {
+    sublabel = push.permission === 'granted' ? 'Off — tap to enable' : 'Tap to enable'
+  }
+
+  const Toggle = (
+    <div
+      className={cn(
+        'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200',
+        push.isSubscribed ? 'bg-signal-low' : 'bg-muted',
+        push.isLoading && 'opacity-50',
+      )}
+      aria-hidden="true"
+    >
+      <span
+        className={cn(
+          'block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200',
+          push.isSubscribed ? 'translate-x-4' : 'translate-x-0.5',
+        )}
+      />
+    </div>
+  )
+
+  return (
+    <SettingsRow
+      icon={Bell}
+      label="Push notifications"
+      sublabel={sublabel}
+      sublabelPrefix={sublabelIcon}
+      onClick={handleClick}
+      rightElement={isPremium && push.isSupported && push.permission !== 'denied' ? Toggle : undefined}
+      disabled={push.isLoading || !push.isSupported}
+      accent={!isPremium}
+    />
+  )
+}
+
 // ─── Settings helpers ──────────────────────────────────────────────────────────
 function SettingsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -322,24 +423,32 @@ function SettingsRow({
   icon: Icon,
   label,
   sublabel,
+  sublabelPrefix,
   onClick,
   accent,
   danger,
+  disabled,
+  rightElement,
 }: {
   icon: React.ElementType
   label: string
   sublabel?: string
+  sublabelPrefix?: React.ReactNode
   onClick: () => void
   accent?: boolean
   danger?: boolean
+  disabled?: boolean
+  rightElement?: React.ReactNode
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         'flex w-full items-center gap-3 bg-card px-4 py-3 text-left',
         'transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+        'disabled:opacity-50 disabled:cursor-not-allowed',
         danger && 'hover:bg-signal-high-bg',
         accent && 'hover:bg-accent-subtle',
         !danger && !accent && 'hover:bg-muted/40',
@@ -365,10 +474,12 @@ function SettingsRow({
           {label}
         </p>
         {sublabel && (
-          <p className="text-xs text-muted-foreground truncate">{sublabel}</p>
+          <p className="text-xs text-muted-foreground truncate">
+            {sublabelPrefix}{sublabel}
+          </p>
         )}
       </div>
-      <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />
+      {rightElement ?? <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />}
     </button>
   )
 }

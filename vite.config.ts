@@ -7,52 +7,15 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',      // Use our custom SW (src/sw.ts)
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'prompt',           // Show "update available" banner — not silent
       includeAssets: ['favicon.svg', 'favicon-32.png', 'icons/*.png', 'og-image.png'],
       manifest: false,                   // We manage manifest.json manually in /public
-      workbox: {
-        // App shell: HTML + JS + CSS → CacheFirst (cached on install)
+      injectManifest: {
+        // App shell: HTML + JS + CSS → precached by Workbox
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-
-        // Runtime caching strategies
-        runtimeCaching: [
-          // Google Fonts — CacheFirst, 1 year
-          {
-            urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts',
-              expiration: { maxEntries: 10, maxAgeSeconds: 365 * 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          // Product images — CacheFirst, 30 days
-          {
-            urlPattern: /^https:\/\/images\.unsplash\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'product-images',
-              expiration: { maxEntries: 100, maxAgeSeconds: 30 * 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          // Supabase price data — NetworkFirst with cache fallback
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/(products|price_points|price_signals|retailers).*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-price-data',
-              networkTimeoutSeconds: 5,
-              expiration: { maxEntries: 200, maxAgeSeconds: 6 * 60 * 60 }, // 6h
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-          // Supabase auth — NetworkOnly (never cache credentials)
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/auth\/.*/i,
-            handler: 'NetworkOnly',
-          },
-        ],
       },
       devOptions: {
         enabled: true,                   // Enable SW in dev mode for testing

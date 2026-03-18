@@ -264,6 +264,38 @@ export async function getRecentProducts(limit = 3) {
   return data ?? []
 }
 
+// ─── Push Subscriptions ───────────────────────────────────────────────────────
+
+export async function savePushSubscription(
+  userId: string,
+  subscription: { endpoint: string; p256dh: string; auth: string; user_agent?: string },
+) {
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .upsert(
+      {
+        user_id: userId,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.p256dh,
+        auth: subscription.auth,
+        user_agent: subscription.user_agent ?? null,
+      },
+      { onConflict: 'endpoint' },
+    )
+
+  if (error) throw error
+}
+
+export async function deletePushSubscription(userId: string, endpoint: string) {
+  const { error } = await supabase
+    .from('push_subscriptions')
+    .delete()
+    .eq('user_id', userId)
+    .eq('endpoint', endpoint)
+
+  if (error) throw error
+}
+
 // ─── Stripe helpers ───────────────────────────────────────────────────────────
 
 export async function createCheckoutSession(userId: string, priceId: string) {
