@@ -173,6 +173,6 @@ export interface DashboardFilters {
 // ─── React type augmentations ─────────────────────────────────────────────────
 declare module 'react' {
   interface ImgHTMLAttributes<T> {
-    fetchPriority?: 'high' | 'low' | 'auto'
+    fetchpriority?: 'high' | 'low' | 'auto'
   }
 }

@@ -72,10 +72,12 @@ export function formatRelativeTime(dateString: string): string {
 
 // ─── URL validation (Amazon-only) ─────────────────────────────────────────────
 
+const AMAZON_SHORT_LINK_HOSTS = new Set(['a.co', 'amzn.com', 'amzn.to', 'amzn.eu', 'amzn.asia'])
+
 export function isValidAmazonUrl(url: string): boolean {
   try {
     const parsed = new URL(url)
-    return parsed.hostname.includes('amazon.') || parsed.hostname === 'a.co'
+    return parsed.hostname.includes('amazon.') || AMAZON_SHORT_LINK_HOSTS.has(parsed.hostname)
   } catch {
     return false
   }
@@ -85,10 +87,12 @@ export function isValidAmazonUrl(url: string): boolean {
 export const isValidProductUrl = isValidAmazonUrl
 
 export function extractAsinFromUrl(url: string): string | null {
-  // a.co short links must be resolved server-side — no ASIN in the URL
-  try { if (new URL(url).hostname === 'a.co') return null } catch { /* fall through */ }
-  const dpMatch = url.match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/)
-  if (dpMatch) return dpMatch[1]
+  // All short-link domains must be resolved server-side — no ASIN in the URL
+  try { if (AMAZON_SHORT_LINK_HOSTS.has(new URL(url).hostname)) return null } catch { /* fall through */ }
+  const pathMatch = url.match(
+    /\/(?:dp|gp\/product|gp\/aw\/d|product-reviews|ask\/questions\/asin)\/([A-Z0-9]{10})/
+  )
+  if (pathMatch) return pathMatch[1]
   const paramMatch = url.match(/[?&]asin=([A-Z0-9]{10})/)
   if (paramMatch) return paramMatch[1]
   return null

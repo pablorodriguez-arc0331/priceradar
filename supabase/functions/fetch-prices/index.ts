@@ -26,6 +26,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// All Amazon-owned short-link and regional domains that redirect to full URLs
+const AMAZON_SHORT_LINK_HOSTS = new Set(['a.co', 'amzn.com', 'amzn.to', 'amzn.eu', 'amzn.asia'])
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface NormalizedProduct {
@@ -52,6 +55,14 @@ interface PriceSignalResult {
   reference_range_days: number
 }
 
+interface GeminiPriceResult {
+  product_name: string
+  amazon: { price: number; url: string }
+  walmart: { found: boolean; price: number | null; url: string | null }
+  bestbuy: { found: boolean; price: number | null; url: string | null }
+  best_price: 'amazon' | 'walmart' | 'bestbuy'
+}
+
 // ─── Main handler ─────────────────────────────────────────────────────────────
 
 Deno.serve(async (req: Request) => {
@@ -69,8 +80,10 @@ Deno.serve(async (req: Request) => {
       return jsonError('Only Amazon product URLs are supported.', 422)
     }
 
-    // Resolve a.co short links to the full Amazon URL before extracting ASIN
-    const resolvedUrl = (new URL(url).hostname === 'a.co') ? await resolveRedirect(url) : url
+    // Resolve short links (a.co, amzn.to, amzn.com, amzn.eu, amzn.asia) before extracting ASIN
+    const resolvedUrl = AMAZON_SHORT_LINK_HOSTS.has(new URL(url).hostname)
+      ? await resolveRedirect(url)
+      : url
     if (resolvedUrl !== url) {
       console.log(`[fetch-prices] Short link resolved to: ${resolvedUrl}`)
     }
@@ -98,10 +111,10 @@ Deno.serve(async (req: Request) => {
     )
 
     // ── Cache check — skip refetch if < 1 hour old ────────────────────────────
-    // Rewrite all Amazon locales to amazon.com so international users share the
-    // same cache entry and always receive US pricing data.
-    const canonicalUrl = retailerSlug === 'amazon' ? normalizeAmazonUrl(resolvedUrl) : resolvedUrl
-    const normalizedUrl = normalizeUrl(canonicalUrl)
+    // Use ASIN-based canonical URL as cache key — collapses all URL variants
+    // (locale paths like /es/, slugs, tracking params, short links) into one entry.
+    const canonicalUrl = `https://www.amazon.com/dp/${asin}`
+    const normalizedUrl = canonicalUrl
     console.log(`[fetch-prices] Cache key: ${normalizedUrl}`)
 
     const { data: existing } = await supabase
@@ -113,7 +126,55 @@ Deno.serve(async (req: Request) => {
     if (existing) {
       const ageMs = Date.now() - new Date(existing.updated_at).getTime()
       if (ageMs < 60 * 60 * 1000) {
-        console.log(`[fetch-prices] Cache hit — returning product_id: ${existing.id}`)
+        console.log(`[fetch-prices] Cache hit — product_id: ${existing.id}`)
+
+        // If Walmart/BestBuy prices are missing (e.g. Gemini failed on the first run),
+        // fetch them now before returning — product data comes from DB, not Rainforest.
+        const { data: compRetailers } = await supabase
+          .from('retailers')
+          .select('id, slug')
+          .in('slug', ['walmart', 'bestbuy'])
+
+        if (compRetailers?.length) {
+          // deno-lint-ignore no-explicit-any
+          const compIds = compRetailers.map((r: any) => r.id)
+          const { count: priceCount } = await supabase
+            .from('price_points')
+            .select('*', { count: 'exact', head: true })
+            .eq('product_id', existing.id)
+            .eq('is_current', true)
+            .in('retailer_id', compIds)
+
+          if ((priceCount ?? 0) === 0) {
+            console.log(`[fetch-prices] No retailer prices found — running comparison search`)
+            const { data: productRow } = await supabase
+              .from('products')
+              .select('name, asin')
+              .eq('id', existing.id)
+              .single()
+
+            // Get Amazon price from price_signals (fastest single-row lookup)
+            const { data: signalRow } = await supabase
+              .from('price_signals')
+              .select('current_best_price')
+              .eq('product_id', existing.id)
+              .single()
+
+            if (productRow?.name && signalRow?.current_best_price) {
+              await searchAndStoreOtherRetailers(
+                productRow.name,
+                existing.id,
+                `https://www.amazon.com/dp/${productRow.asin ?? asin}`,
+                Number(signalRow.current_best_price),
+                supabase,
+                rainforestKey,
+              ).catch((e: Error) =>
+                console.warn('[fetch-prices] cache retailer search error:', e.message),
+              )
+            }
+          }
+        }
+
         return jsonOk({ product_id: existing.id, cached: true })
       }
     }
@@ -205,6 +266,8 @@ Deno.serve(async (req: Request) => {
       await searchAndStoreOtherRetailers(
         normalized.name,
         product.id,
+        normalizedUrl,
+        normalized.current_price,
         supabase,
         rainforestKey,
       ).catch((e: Error) => console.warn('[fetch-prices] multi-retailer error:', e.message))
@@ -420,6 +483,8 @@ interface RetailerSearchResult {
 async function searchAndStoreOtherRetailers(
   productName: string,
   productId: string,
+  amazonUrl: string,
+  amazonPrice: number,
   // deno-lint-ignore no-explicit-any
   supabase: any,
   rainforestKey: string,
@@ -440,12 +505,94 @@ async function searchAndStoreOtherRetailers(
     retailers.map((r: any) => [r.slug, r.id]),
   )
 
-  // Search all retailers in parallel — failures are isolated per retailer
+  // Helper: retire stale current prices for a retailer before inserting a fresh one
+  const retireOldPrices = async (slug: string) => {
+    if (!retailerMap[slug]) return
+    await supabase
+      .from('price_points')
+      .update({ is_current: false })
+      .eq('product_id', productId)
+      .eq('retailer_id', retailerMap[slug])
+      .eq('is_current', true)
+      .catch((e: Error) => console.warn(`[multi-retailer] retire ${slug} failed: ${e.message}`))
+  }
+
+  // Helper: insert a confirmed price point
+  const storePrice = async (
+    slug: string,
+    price: number,
+    productUrl: string | null,
+    productTitle: string,
+    confidence: number,
+  ) => {
+    await retireOldPrices(slug)
+    await supabase
+      .from('price_points')
+      .insert({
+        product_id: productId,
+        retailer_id: retailerMap[slug],
+        price,
+        currency: 'USD',
+        captured_at: new Date().toISOString(),
+        is_current: true,
+        product_url: productUrl || null,
+        product_title: productTitle || null,
+        match_confidence: Math.round(confidence * 100) / 100,
+      })
+      .catch((e: Error) => console.warn(`[multi-retailer] insert ${slug} failed: ${e.message}`))
+
+    console.log(`[multi-retailer] Stored ${slug} @ $${price} (confidence: ${confidence.toFixed(2)})`)
+  }
+
+  // ── Primary: Gemini structured search with Google Search grounding ──────────
+  console.log('STEP 1: Amazon URL received:', amazonUrl)
+  console.log('STEP 2: Extracted product data:', { productName, amazonPrice, productId })
+
+  if (geminiKey) {
+    try {
+      console.log('STEP 3: Sending request to Gemini...')
+      const geminiResult = await searchPricesWithGemini(productName, amazonUrl, amazonPrice, geminiKey)
+
+      console.log('STEP 5: Parsed Gemini JSON:', JSON.stringify(geminiResult))
+
+      if (!geminiResult || (!geminiResult.walmart && !geminiResult.bestbuy)) {
+        throw new Error('Invalid Gemini response structure')
+      }
+
+      let storedCount = 0
+      const slots: Array<['walmart' | 'bestbuy', GeminiPriceResult['walmart']]> = [
+        ['walmart', geminiResult.walmart],
+        ['bestbuy', geminiResult.bestbuy],
+      ]
+
+      for (const [slug, data] of slots) {
+        if (data.found && data.price && data.price > 0 && retailerMap[slug]) {
+          await storePrice(slug, data.price, data.url, geminiResult.product_name || productName, 1.0)
+          storedCount++
+          console.log(`STEP 6: Final decision — ${slug}: FOUND @ $${data.price}`)
+        } else {
+          console.log(`STEP 6: Final decision — ${slug}: NOT FOUND (found=${data.found}, price=${data.price})`)
+        }
+      }
+
+      // Only skip Rainforest if at least one retailer price was stored.
+      // If Gemini found nothing, fall through so Rainforest can try.
+      if (storedCount > 0) return
+
+      console.warn('[multi-retailer] Gemini found 0 retailers — falling back to Rainforest')
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      console.error('Gemini API error:', msg)
+      console.warn(`[multi-retailer] Gemini search threw: ${msg} — falling back to Rainforest`)
+    }
+  }
+
+  // ── Fallback: Rainforest search + Gemini/Jaccard match scoring ─────────────
   const searches = SEARCH_SLUGS.map(slug =>
     searchRetailerForProduct(productName, slug, rainforestKey)
       .then(result => ({ slug, result }))
       .catch((e: Error) => {
-        console.warn(`[multi-retailer] ${slug} search failed: ${e.message}`)
+        console.warn(`[multi-retailer] ${slug} Rainforest search failed: ${e.message}`)
         return { slug, result: null }
       })
   )
@@ -455,47 +602,31 @@ async function searchAndStoreOtherRetailers(
   for (const { slug, result } of results) {
     if (!result || !retailerMap[slug]) continue
 
-    // ── Use Gemini to verify match confidence ──────────────────────────────
-    let confidence = 0.5 // fallback when Gemini is unavailable
-
+    let confidence = 0.5
+    let usedGemini = false
     if (geminiKey) {
       try {
         confidence = await scoreMatchWithGemini(productName, result.title, geminiKey)
-        console.log(`[multi-retailer] Gemini confidence for ${slug}: ${confidence} ("${result.title}")`)
+        usedGemini = true
+        console.log(`[multi-retailer] Gemini match score for ${slug}: ${confidence} ("${result.title}")`)
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
-        console.warn(`[multi-retailer] Gemini scoring failed for ${slug}: ${msg} — falling back to Jaccard`)
-        // Fall back to Jaccard similarity when Gemini is unavailable
+        console.warn(`[multi-retailer] Gemini match scoring failed for ${slug}: ${msg} — using Jaccard`)
         confidence = titleSimilarity(productName, result.title)
       }
     } else {
-      // No Gemini key — use Jaccard similarity as confidence proxy
       confidence = titleSimilarity(productName, result.title)
       console.log(`[multi-retailer] Jaccard confidence for ${slug}: ${confidence}`)
     }
 
-    // Reject low-confidence matches to avoid showing unrelated products
-    if (confidence < 0.6) {
-      console.log(`[multi-retailer] ${slug} rejected: confidence too low (${confidence.toFixed(2)}) for "${result.title}"`)
+    // Jaccard underestimates product title similarity — use a lower bar when Gemini is unavailable
+    const threshold = usedGemini ? 0.6 : 0.35
+    if (confidence < threshold) {
+      console.log(`[multi-retailer] ${slug} rejected: confidence ${confidence.toFixed(2)} < ${threshold} for "${result.title}"`)
       continue
     }
 
-    await supabase
-      .from('price_points')
-      .insert({
-        product_id: productId,
-        retailer_id: retailerMap[slug],
-        price: result.price,
-        currency: 'USD',
-        captured_at: new Date().toISOString(),
-        is_current: true,
-        product_url: result.url || null,
-        product_title: result.title || null,
-        match_confidence: Math.round(confidence * 100) / 100,
-      })
-      .catch((e: Error) => console.warn(`[multi-retailer] insert ${slug} failed: ${e.message}`))
-
-    console.log(`[multi-retailer] Stored ${slug} @ $${result.price} (confidence: ${confidence.toFixed(2)})`)
+    await storePrice(slug, result.price, result.url, result.title, confidence)
   }
 }
 
@@ -618,6 +749,211 @@ async function scoreMatchWithGemini(
   }
 }
 
+// ─── Gemini: structured price search with Google Search grounding ─────────────
+//
+// Uses Gemini 2.0 Flash with google_search tool to find the exact same product
+// on Walmart and Best Buy and return real-time prices and URLs.
+// Falls back to gemini-1.5-flash (no grounding) if 2.0-flash is unavailable.
+
+async function searchPricesWithGemini(
+  amazonTitle: string,
+  amazonUrl: string,
+  amazonPrice: number,
+  apiKey: string,
+): Promise<GeminiPriceResult | null> {
+  const prompt = `You are a product search and price comparison engine.
+
+Input:
+- Product URL: ${amazonUrl}
+- Product Title: ${amazonTitle}
+
+Task:
+Search for the exact same product on Walmart US (walmart.com) and Best Buy (bestbuy.com).
+
+Rules:
+- Only return results if the product is an exact match (same model, version, and key attributes).
+- If no exact match is found on a retailer, set found: false and price/url to null.
+- Extract only NEW product prices (ignore used/refurbished).
+- For best_price, compare all prices and return the retailer slug with the lowest price.
+- Return structured JSON only — no markdown, no explanation, no code fences.
+
+Output format (JSON only):
+{
+  "product_name": "${amazonTitle}",
+  "amazon": {
+    "price": ${amazonPrice},
+    "url": "${amazonUrl}"
+  },
+  "walmart": {
+    "found": true or false,
+    "price": number or null,
+    "url": "full product URL or null"
+  },
+  "bestbuy": {
+    "found": true or false,
+    "price": number or null,
+    "url": "full product URL or null"
+  },
+  "best_price": "amazon" or "walmart" or "bestbuy"
+}`
+
+  console.log('STEP 3.1: Gemini prompt:', prompt.slice(0, 300))
+
+  // Each entry specifies the model and the exact tools payload for that model.
+  // gemini-2.0-flash uses `google_search`, gemini-1.5-flash uses `google_search_retrieval`.
+  // Final fallback has no grounding (uses Gemini training data only).
+  const attempts: Array<{ model: string; tools: unknown[] | null }> = [
+    { model: 'gemini-2.0-flash', tools: [{ google_search: {} }] },
+    {
+      model: 'gemini-1.5-flash',
+      tools: [{
+        google_search_retrieval: {
+          dynamic_retrieval_config: { mode: 'MODE_DYNAMIC', dynamic_threshold: 0.3 },
+        },
+      }],
+    },
+    { model: 'gemini-1.5-flash', tools: null },
+  ]
+
+  for (const { model, tools } of attempts) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 25000)
+
+    try {
+      // deno-lint-ignore no-explicit-any
+      const requestBody: Record<string, any> = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0, maxOutputTokens: 1024 },
+      }
+      if (tools) {
+        requestBody.tools = tools
+      }
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        },
+      )
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '')
+        console.error(`[gemini-search] ${model} HTTP ${response.status}: ${text.slice(0, 300)}`)
+        throw new Error(`Gemini ${model} ${response.status}: ${text.slice(0, 200)}`)
+      }
+
+      // deno-lint-ignore no-explicit-any
+      const body: any = await response.json()
+
+      // Join ALL parts — with grounding the JSON can span multiple parts
+      // deno-lint-ignore no-explicit-any
+      const parts: any[] = body?.candidates?.[0]?.content?.parts ?? []
+      const finishReason: string = body?.candidates?.[0]?.finishReason ?? 'unknown'
+      const raw: string = parts.map((p: { text?: string }) => p.text ?? '').join('')
+
+      console.log(`STEP 4: Gemini ${model} finishReason=${finishReason} rawLength=${raw.length}:`, raw.slice(0, 500))
+
+      const result = parseGeminiPriceResponse(raw, amazonUrl, amazonPrice)
+      if (result) {
+        console.log(
+          `[gemini-search] ${model}${tools ? '+search' : ''} → ` +
+          `walmart=${result.walmart.found}($${result.walmart.price ?? 'n/a'}) ` +
+          `bestbuy=${result.bestbuy.found}($${result.bestbuy.price ?? 'n/a'})`,
+        )
+        return result
+      }
+      console.warn(`[gemini-search] ${model} returned unparseable response, trying next`)
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      console.warn(`[gemini-search] ${model}${tools ? '+search' : ''} failed: ${msg}`)
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  }
+
+  return null
+}
+
+function parseGeminiPriceResponse(
+  raw: string,
+  amazonUrl: string,
+  amazonPrice: number,
+): GeminiPriceResult | null {
+  try {
+    // Strip markdown fences (Gemini sometimes wraps JSON in ```json ... ```)
+    const cleaned = raw.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim()
+    // Extract the outermost JSON object
+    const jsonMatch = cleaned.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      console.warn('[gemini-search] No JSON object found in response')
+      return null
+    }
+
+    // deno-lint-ignore no-explicit-any
+    const parsed: any = JSON.parse(jsonMatch[0])
+
+    // Structure validation — must have walmart and bestbuy keys
+    if (!parsed || !parsed.walmart || !parsed.bestbuy) {
+      throw new Error('Invalid Gemini response structure — missing walmart or bestbuy keys')
+    }
+
+    // Use Boolean() cast, NOT === true, to handle both boolean true and string "true"
+    const walmartFound = Boolean(parsed.walmart.found)
+    const bestbuyFound = Boolean(parsed.bestbuy.found)
+
+    // Parse prices; treat "null" string as null
+    const parsePrice = (val: unknown): number | null => {
+      if (val === null || val === 'null' || val === undefined) return null
+      const n = Number(val)
+      return isNaN(n) ? null : n
+    }
+
+    const walmartPrice = walmartFound ? parsePrice(parsed.walmart.price) : null
+    const bestbuyPrice = bestbuyFound ? parsePrice(parsed.bestbuy.price) : null
+
+    // Require non-zero prices for "found" to be truly valid
+    const walmartValid = walmartFound && walmartPrice !== null && walmartPrice > 0
+    const bestbuyValid = bestbuyFound && bestbuyPrice !== null && bestbuyPrice > 0
+
+    console.log('[gemini-search] parseGeminiPriceResponse:', {
+      walmartFound, walmartPrice, walmartValid,
+      bestbuyFound, bestbuyPrice, bestbuyValid,
+    })
+
+    // Compute best price from actual values (don't trust Gemini's best_price field blindly)
+    const candidates: Array<['amazon' | 'walmart' | 'bestbuy', number]> = [['amazon', amazonPrice]]
+    if (walmartValid && walmartPrice) candidates.push(['walmart', walmartPrice])
+    if (bestbuyValid && bestbuyPrice) candidates.push(['bestbuy', bestbuyPrice])
+    candidates.sort((a, b) => a[1] - b[1])
+    const bestPrice = candidates[0][0]
+
+    return {
+      product_name: String(parsed.product_name ?? amazonUrl),
+      amazon: {
+        price: Number(parsed.amazon?.price ?? amazonPrice),
+        url: String(parsed.amazon?.url ?? amazonUrl),
+      },
+      walmart: {
+        found: walmartValid,
+        price: walmartValid ? walmartPrice : null,
+        url: walmartValid ? String(parsed.walmart?.url ?? '') || null : null,
+      },
+      bestbuy: {
+        found: bestbuyValid,
+        price: bestbuyValid ? bestbuyPrice : null,
+        url: bestbuyValid ? String(parsed.bestbuy?.url ?? '') || null : null,
+      },
+      best_price: bestPrice,
+    }
+  } catch (e) {
+    console.error('[gemini-search] JSON parse failed:', e)
+    return null
+  }
+}
+
 // Word-overlap Jaccard similarity — used as pre-filter and Gemini fallback
 function titleSimilarity(a: string, b: string): number {
   const tokenize = (s: string) =>
@@ -721,7 +1057,7 @@ async function fetchWithTimeout(url: string, timeoutMs = 15000): Promise<Respons
 function detectRetailer(url: string): string | null {
   try {
     const { hostname } = new URL(url)
-    if (hostname.includes('amazon.') || hostname === 'a.co') return 'amazon'
+    if (hostname.includes('amazon.') || AMAZON_SHORT_LINK_HOSTS.has(hostname)) return 'amazon'
     return null
   } catch {
     return null
@@ -741,8 +1077,12 @@ function normalizeAmazonUrl(url: string): string {
 }
 
 function extractAsin(url: string): string | null {
-  const dpMatch = url.match(/\/(?:dp|gp\/product|gp\/aw\/d)\/([A-Z0-9]{10})/)
-  if (dpMatch) return dpMatch[1]
+  // Path-based patterns: /dp/, /gp/product/, /gp/aw/d/, /product-reviews/, /ask/questions/asin/
+  const pathMatch = url.match(
+    /\/(?:dp|gp\/product|gp\/aw\/d|product-reviews|ask\/questions\/asin)\/([A-Z0-9]{10})/
+  )
+  if (pathMatch) return pathMatch[1]
+  // Query string fallback: ?asin= or &asin=
   const paramMatch = url.match(/[?&]asin=([A-Z0-9]{10})/)
   if (paramMatch) return paramMatch[1]
   return null

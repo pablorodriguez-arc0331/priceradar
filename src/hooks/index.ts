@@ -21,6 +21,11 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
       try {
         const { product, signal, prices, history } = await getProductWithPricing(productId)
 
+        console.log('STEP 2: Extracted product data from DB:', {
+          product: product?.name,
+          priceRows: (prices ?? []).map(p => ({ retailer: p.retailer?.slug, price: p.price, captured_at: p.captured_at })),
+        })
+
         if (cancelled) return
 
         if (!product || !signal) {
@@ -29,8 +34,23 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
           return
         }
 
+        // Deduplicate: keep only the most-recent price row per retailer slug
+        // (repeated fetches can leave multiple is_current:true rows per retailer)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const latestBySlug = new Map<string, any>()
+        for (const p of (prices ?? [])) {
+          const slug = p.retailer.slug
+          const existing = latestBySlug.get(slug)
+          if (!existing || new Date(p.captured_at) > new Date(existing.captured_at)) {
+            latestBySlug.set(slug, p)
+          }
+        }
+        // Re-sort by price ascending so is_best_price marks the cheapest
+        const dedupedPrices = Array.from(latestBySlug.values())
+          .sort((a, b) => Number(a.price) - Number(b.price))
+
         // Build retailer prices from DB rows
-        const availablePrices = (prices ?? []).map((p, i) => ({
+        const availablePrices = dedupedPrices.map((p, i) => ({
           retailer: p.retailer,
           price: Number(p.price),
           product_title: (p.product_title as string | null) ?? undefined,
@@ -51,8 +71,10 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
           { slug: 'bestbuy', name: 'Best Buy' },
         ]
         const foundSlugs = new Set(availablePrices.map(rp => rp.retailer.slug))
+        console.log('STEP 6: Final decision — retailers found in DB:', [...foundSlugs])
         for (const r of COMPARISON_RETAILERS) {
           if (!foundSlugs.has(r.slug)) {
+            console.log(`STEP 6: ${r.name} NOT found in DB — injecting "Not found" placeholder`)
             availablePrices.push({
               retailer: { id: '', name: r.name, slug: r.slug as 'amazon' | 'walmart' | 'bestbuy' | 'ebay' | 'target', logo_url: '', affiliate_url_template: '' },
               price: 0,

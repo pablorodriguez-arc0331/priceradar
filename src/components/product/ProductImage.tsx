@@ -69,7 +69,7 @@ interface ProductImageProps {
   /** Class for the icon inside the fallback container */
   iconClassName?: string
   loading?: 'lazy' | 'eager'
-  fetchPriority?: 'high' | 'low' | 'auto'
+  fetchpriority?: 'high' | 'low' | 'auto'
 }
 
 export function ProductImage({
@@ -79,7 +79,7 @@ export function ProductImage({
   className,
   iconClassName,
   loading = 'lazy',
-  fetchPriority,
+  fetchpriority,
 }: ProductImageProps) {
   const [hasError, setHasError] = useState(false)
   const Icon = getCategoryIcon(category)
@@ -108,8 +108,7 @@ export function ProductImage({
       alt={alt}
       className={cn('object-contain', className)}
       loading={loading}
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      {...(fetchPriority ? { fetchPriority } as any : {})}
+      fetchpriority={fetchpriority}
       onError={() => setHasError(true)}
     />
   )

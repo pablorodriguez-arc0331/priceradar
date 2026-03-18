@@ -260,7 +260,7 @@ function ProductHeader({ product }: { product: { name: string; image_url?: strin
           className="h-full w-full p-2"
           iconClassName="h-7 w-7"
           loading="eager"
-          fetchPriority="high"
+          fetchpriority="high"
         />
       </div>
       <div className="flex-1 min-w-0">

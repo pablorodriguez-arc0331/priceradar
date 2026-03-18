@@ -23,7 +23,7 @@ declare const self: ServiceWorkerGlobalScope
 
 // ── Precache app shell ─────────────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-precacheAndRoute((self as any).__WB_MANIFEST)
+precacheAndRoute((self as any).__WB_MANIFEST ?? [])
 cleanupOutdatedCaches()
 
 // ── Runtime caching ────────────────────────────────────────────────────────────
