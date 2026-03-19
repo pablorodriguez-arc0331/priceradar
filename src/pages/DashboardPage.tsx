@@ -7,6 +7,7 @@ import { TrackedProductCard, TrackedProductCardSkeleton } from '@/components/das
 import { EmptyState } from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore, useTrackedStore, useUIStore, useToast } from '@/store'
+import { useDocumentTitle } from '@/hooks'
 import { cn, FREE_TIER_LIMIT } from '@/lib/utils'
 import type { PriceVerdict } from '@/types'
 
@@ -25,6 +26,7 @@ export function DashboardPage() {
   const toast = useToast()
   const [isRefreshing, setIsRefreshing] = useState(false)
 
+  useDocumentTitle('My Watchlist — PriceRadar')
   const isPaid = user?.plan === 'paid'
   const trackingCount = trackedProducts.length
   const atLimit = !isPaid && trackingCount >= FREE_TIER_LIMIT
@@ -67,7 +69,7 @@ export function DashboardPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold text-foreground">
+          <h1 className="font-display text-xl font-bold text-foreground">
             {user?.name ? `${user.name}'s Watchlist` : 'My Watchlist'}
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -237,8 +239,8 @@ function VerdictFilters({
             'shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
             'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             active === f.value
-              ? 'bg-accent text-white border-accent shadow-sm'
-              : 'glass text-muted-foreground hover:border-accent hover:text-accent',
+              ? 'bg-accent text-[#050D1A] font-semibold border-accent'
+              : 'glass-card text-muted-foreground border-transparent hover:border-accent/30 hover:text-foreground',
           )}
           aria-pressed={active === f.value}
         >
