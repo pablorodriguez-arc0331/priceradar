@@ -5,7 +5,7 @@ import { Page } from '@/components/layout'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { formatPrice } from '@/lib/utils'
-import { useRecentProducts } from '@/hooks'
+import { useRecentProducts, useDocumentTitle } from '@/hooks'
 import { ProductImage } from '@/components/product/ProductImage'
 
 const RETAILER_COLORS: Record<string, string> = {
@@ -90,6 +90,7 @@ function SwipeToDismiss({
 
 export function SearchPage() {
   const { data: recentProducts, isLoading: recentLoading, dismiss } = useRecentProducts(6)
+  useDocumentTitle('Check a Price — PriceRadar')
 
   const containerVariants = {
     hidden: {},
@@ -103,7 +104,7 @@ export function SearchPage() {
   return (
     <Page className="space-y-6">
       <div className="space-y-1">
-        <h1 className="text-xl font-bold text-foreground">Check a price</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">Check a price</h1>
         <p className="text-xs text-muted-foreground">
           Paste an Amazon link to see price history and compare retailers
         </p>
@@ -222,7 +223,7 @@ export function SearchPage() {
       )}
 
       {/* How to paste */}
-      <div className="glass-card rounded-xl px-4 py-4 space-y-2 border-dashed">
+      <div className="glass-card rounded-xl px-4 py-4 space-y-2">
         <p className="text-xs font-semibold text-foreground">
           How to check a price
         </p>
@@ -233,7 +234,7 @@ export function SearchPage() {
             'Paste it above — we\'ll show price history and compare retailers',
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-[10px] font-bold text-accent mt-0.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10 border border-accent/25 font-display text-[10px] font-bold text-accent mt-0.5">
                 {i + 1}
               </span>
               <span className="text-xs text-muted-foreground">{step}</span>
