@@ -1,12 +1,13 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { faTrashCan, faClock } from '@fortawesome/free-solid-svg-icons'
+import { faTrashCan, faClock, faFire } from '@fortawesome/free-solid-svg-icons'
 import { FaIcon } from '@/components/ui/FaIcon'
 import { Page } from '@/components/layout'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { formatPrice } from '@/lib/utils'
-import { useRecentProducts, useDocumentTitle } from '@/hooks'
+import { usePersonalHistory, useHotProducts, useDocumentTitle } from '@/hooks'
+import { useAuthStore } from '@/store'
 import { ProductImage } from '@/components/product/ProductImage'
 
 const RETAILER_COLORS: Record<string, string> = {
@@ -90,7 +91,10 @@ function SwipeToDismiss({
 }
 
 export function SearchPage() {
-  const { data: recentProducts, isLoading: recentLoading, dismiss } = useRecentProducts(6)
+  const { isAuthenticated } = useAuthStore()
+  const { data: recentProducts, isLoading: recentLoading, dismiss } = usePersonalHistory(6)
+  const { data: hotProducts, isLoading: hotLoading } = useHotProducts(6)
+  const [hotDismissed, setHotDismissed] = useState(false)
   useDocumentTitle('Check a Price — PriceRadar')
 
   const containerVariants = {
@@ -113,6 +117,115 @@ export function SearchPage() {
 
       <URLSearchInput size="large" autoFocus />
 
+      {/* Hot right now */}
+      {!hotDismissed && (hotLoading || hotProducts.length > 0) && (
+        <motion.section
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          aria-labelledby="hot-heading"
+          className="space-y-3"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <FaIcon icon={faFire} className="h-4 w-4 text-orange-400" aria-hidden="true" />
+              <h2 id="hot-heading" className="text-sm font-semibold text-foreground">
+                Hot right now
+              </h2>
+            </div>
+            <div className="flex items-center gap-3">
+              <p className="text-xs text-muted-foreground">Products lots of people are watching.</p>
+              <button
+                onClick={() => setHotDismissed(true)}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Dismiss hot products section"
+                type="button"
+              >
+                <FaIcon icon={faTrashCan} className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            {hotLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 animate-pulse"
+                  >
+                    <div className="h-10 w-10 shrink-0 rounded-lg bg-muted" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 w-3/4 rounded bg-muted" />
+                      <div className="h-2.5 w-1/3 rounded bg-muted" />
+                    </div>
+                    <div className="h-4 w-14 rounded bg-muted" />
+                  </div>
+                ))
+              : hotProducts.map((product, i) => {
+                  const signal = product.price_signals?.[0]
+                  const retailer = product.live_retailer ?? getRetailerName(product.source_url ?? '')
+                  const retailerColor = RETAILER_COLORS[retailer]
+                  const displayPrice: number | null =
+                    product.live_price ??
+                    (signal?.current_best_price > 0 ? Number(signal.current_best_price) : null)
+
+                  return (
+                    <motion.div key={product.id} variants={itemVariants}>
+                      <a
+                        href={`/product/${product.id}`}
+                        className="glass-card flex items-center gap-3 rounded-xl p-3 hover:brightness-105 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={`${product.name}${signal ? ` — ${signal.label}` : ''}`}
+                      >
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/20">
+                          <ProductImage
+                            src={product.image_url}
+                            alt={product.name}
+                            category={product.category}
+                            className="h-full w-full p-1"
+                            iconClassName="h-4 w-4"
+                            loading={i === 0 ? 'eager' : 'lazy'}
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {product.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {retailerColor && (
+                              <span className="flex items-center gap-1">
+                                <span
+                                  className={`inline-block h-1.5 w-1.5 rounded-full ${retailerColor}`}
+                                  aria-hidden="true"
+                                />
+                                <span className="text-xs text-muted-foreground">{retailer}</span>
+                              </span>
+                            )}
+                            {displayPrice !== null && (
+                              <>
+                                <span className="text-muted-foreground/40 text-xs">·</span>
+                                <span className="price text-xs font-medium text-foreground">
+                                  {formatPrice(displayPrice)}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {signal && (
+                          <SignalBadge
+                            verdict={signal.verdict}
+                            label={signal.label}
+                            size="inline"
+                            animated={false}
+                          />
+                        )}
+                      </a>
+                    </motion.div>
+                  )
+                })}
+          </div>
+        </motion.section>
+      )}
+
       {/* Recently checked products from DB */}
       {(recentLoading || recentProducts.length > 0) && (
         <motion.section
@@ -126,7 +239,7 @@ export function SearchPage() {
             <div className="flex items-center gap-1.5">
               <FaIcon icon={faClock} className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <h2 id="recent-heading" className="text-sm font-semibold text-foreground">
-                Recently checked
+                {isAuthenticated ? 'Your recently checked' : 'Recently checked on this device'}
               </h2>
             </div>
             <p className="text-xs text-muted-foreground">Swipe left to remove</p>
