@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { ProductWithPricing, ApiResponse, PriceHistoryRange } from '@/types'
 import { isValidAmazonUrl, extractAsinFromUrl } from '@/lib/utils'
-import { getProductWithPricing, fetchPricesForUrl, getRecentProducts, getCurrentPricesForProducts } from '@/services/supabase'
+import { getProductWithPricing, fetchPricesForUrl, getRecentProducts, getCurrentPricesForProducts, getComparisonPrices } from '@/services/supabase'
 import { appendAffiliateTag, buildAmazonAffiliateUrl } from '@/lib/affiliate'
 
 // ─── useProduct — fetch product + pricing by ID ────────────────────────────
-export function useProduct(productId: string | undefined): ApiResponse<ProductWithPricing> {
+export function useProduct(productId: string | undefined): ApiResponse<ProductWithPricing> & { isLoadingComparison: boolean } {
   const [data, setData] = useState<ProductWithPricing | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingComparison, setIsLoadingComparison] = useState(false)
 
   useEffect(() => {
     if (!productId) return
@@ -49,48 +50,22 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
         const dedupedPrices = Array.from(latestBySlug.values())
           .sort((a, b) => Number(a.price) - Number(b.price))
 
-        // Build retailer prices from DB rows
-        const availablePrices = dedupedPrices.map((p, i) => ({
-          retailer: p.retailer,
-          price: Number(p.price),
-          product_title: (p.product_title as string | null) ?? undefined,
+        // Build Amazon price from DB
+        const amazonRow = dedupedPrices.find(p => p.retailer.slug === 'amazon')
+        const retailerPrices = amazonRow ? [{
+          retailer: amazonRow.retailer,
+          price: Number(amazonRow.price),
+          product_title: (amazonRow.product_title as string | null) ?? undefined,
           is_available: true,
-          // Use the actual matched product URL when available (Walmart/Best Buy),
-          // otherwise fall back to affiliate URL template or Amazon affiliate URL
-          affiliate_url: p.retailer.slug === 'amazon'
-            ? (product.asin ? buildAmazonAffiliateUrl(product.asin) : appendAffiliateTag(product.source_url))
-            : ((p.product_url as string | null) || (p.retailer.affiliate_url_template ?? '').replace('{{query}}', encodeURIComponent(product.name))),
-          last_updated: p.captured_at,
-          is_best_price: i === 0, // ordered price ASC
-        }))
-
-        // Always show Amazon, Walmart, and Best Buy — inject "Not found" for missing retailers
-        const COMPARISON_RETAILERS: Array<{ slug: string; name: string }> = [
-          { slug: 'amazon', name: 'Amazon' },
-          { slug: 'walmart', name: 'Walmart' },
-          { slug: 'bestbuy', name: 'Best Buy' },
-        ]
-        const foundSlugs = new Set(availablePrices.map(rp => rp.retailer.slug))
-        console.log('STEP 6: Final decision — retailers found in DB:', [...foundSlugs])
-        for (const r of COMPARISON_RETAILERS) {
-          if (!foundSlugs.has(r.slug)) {
-            console.log(`STEP 6: ${r.name} NOT found in DB — injecting "Not found" placeholder`)
-            availablePrices.push({
-              retailer: { id: '', name: r.name, slug: r.slug as 'amazon' | 'walmart' | 'bestbuy' | 'ebay' | 'target', logo_url: '', affiliate_url_template: '' },
-              price: 0,
-              product_title: undefined,
-              is_available: false,
-              affiliate_url: '',
-              last_updated: new Date().toISOString(),
-              is_best_price: false,
-            })
-          }
-        }
+          affiliate_url: product.asin ? buildAmazonAffiliateUrl(product.asin) : appendAffiliateTag(product.source_url),
+          last_updated: amazonRow.captured_at,
+          is_best_price: true,
+        }] : []
 
         const mapped: ProductWithPricing = {
           ...product,
           signal,
-          retailer_prices: availablePrices,
+          retailer_prices: retailerPrices,
           price_history: (history ?? []).map(h => ({
             date: h.captured_at,
             price: Number(h.price),
@@ -99,6 +74,50 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
         }
         setData(mapped)
         setIsLoading(false)
+
+        // Fetch live Gemini comparison prices (Walmart + Best Buy) in the background
+        setIsLoadingComparison(true)
+        getComparisonPrices(product.name)
+          .then(results => {
+            if (cancelled) return
+            console.log('Gemini comparison results:', results)
+            setIsLoadingComparison(false)
+            const geminiPrices = results
+              .filter(r => r.price > 0 && !r.store.toLowerCase().includes('amazon'))
+              .map((r) => ({
+                retailer: {
+                  id: '',
+                  name: r.store,
+                  slug: r.store.toLowerCase().includes('walmart') ? 'walmart' as const
+                    : r.store.toLowerCase().includes('best buy') ? 'bestbuy' as const
+                    : 'amazon' as const,
+                  logo_url: '',
+                  affiliate_url_template: '',
+                },
+                price: r.price,
+                product_title: undefined,
+                is_available: true,
+                affiliate_url: r.url,
+                last_updated: new Date().toISOString(),
+                is_best_price: r.is_best_deal,
+              }))
+
+            if (geminiPrices.length === 0) return
+
+            setData(prev => {
+              if (!prev) return prev
+              // Merge: Amazon from DB + Gemini retailers, re-sort by price
+              const allPrices = [...prev.retailer_prices, ...geminiPrices]
+                .sort((a, b) => a.price - b.price)
+              // Mark cheapest as best price
+              allPrices.forEach((p, i) => { p.is_best_price = i === 0 })
+              return { ...prev, retailer_prices: allPrices }
+            })
+          })
+          .catch(err => {
+            if (!cancelled) setIsLoadingComparison(false)
+            console.warn('Gemini comparison failed:', err)
+          })
       } catch {
         if (cancelled) return
         setError("We couldn't find this product. Try a different URL.")
@@ -110,7 +129,7 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
     return () => { cancelled = true }
   }, [productId])
 
-  return { data, error, isLoading }
+  return { data, error, isLoading, isLoadingComparison }
 }
 
 // ─── useProductLookup — URL paste → product lookup ────────────────────────
@@ -168,27 +187,15 @@ export function useProductLookup() {
 }
 
 // ─── useRecentProducts — most recently fetched products for discovery ─────
-const DISMISSED_KEY = 'price-radar-dismissed-recents'
-
-function getDismissed(): Set<string> {
-  try {
-    const raw = localStorage.getItem(DISMISSED_KEY)
-    return new Set(raw ? JSON.parse(raw) : [])
-  } catch {
-    return new Set()
-  }
-}
-
-function saveDismissed(ids: Set<string>) {
-  try {
-    localStorage.setItem(DISMISSED_KEY, JSON.stringify([...ids]))
-  } catch { /* storage full — ignore */ }
-}
-
 export function useRecentProducts(limit = 6) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [allData, setAllData] = useState<any[]>([])
-  const [dismissed, setDismissed] = useState<Set<string>>(getDismissed)
+  // Dismissed is session-only (not persisted) so the list always resets on next visit
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    // Clear any old persisted dismissed state left from before this change
+    try { localStorage.removeItem('price-radar-dismissed-recents') } catch { /* ignore */ }
+    return new Set()
+  })
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -236,7 +243,6 @@ export function useRecentProducts(limit = 6) {
     setDismissed(prev => {
       const next = new Set(prev)
       next.add(id)
-      saveDismissed(next)
       return next
     })
   }, [])
@@ -320,3 +326,5 @@ export function usePWAInstall() {
 
   return { shouldShow, promptInstall, dismissPrompt, isInstalled }
 }
+
+export { useDocumentTitle } from './useDocumentTitle'
