@@ -344,7 +344,7 @@ export function usePersonalHistory(limit = 6) {
     })()
 
     return () => { cancelled = true }
-  }, [isAuthenticated, user?.id, limit])
+  }, [isAuthenticated, user?.id, limit]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const dismiss = useCallback((id: string) => {
     setDismissed(prev => {
