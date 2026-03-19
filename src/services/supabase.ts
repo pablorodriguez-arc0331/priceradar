@@ -228,6 +228,27 @@ export async function fetchPricesForUrl(url: string): Promise<{ product_id: stri
   }
 }
 
+// ─── Live Gemini comparison prices (Walmart + Best Buy, not stored in DB) ────
+
+export interface ComparisonResult {
+  store: string
+  price: number
+  formatted_price: string
+  url: string
+  is_best_deal: boolean
+  confidence_score: 'high' | 'medium' | 'low'
+}
+
+export async function getComparisonPrices(productName: string): Promise<ComparisonResult[]> {
+  // Always use anon key — logged-in JWT can conflict with this public function
+  const { data, error } = await supabase.functions.invoke('compare-prices', {
+    body: { product_title: productName, country: 'United States', currency: 'USD' },
+    headers: { Authorization: `Bearer ${ANON_KEY}` },
+  })
+  if (error || !data?.results) return []
+  return data.results as ComparisonResult[]
+}
+
 // ─── Batch current prices across multiple products ────────────────────────────
 
 export async function getCurrentPricesForProducts(productIds: string[]) {
