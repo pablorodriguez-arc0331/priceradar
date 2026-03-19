@@ -11,6 +11,7 @@ import { PriceHistoryChart, PriceHistoryChartSkeleton } from '@/components/produ
 import { AlertSetupSheet, EmptyState } from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { useProduct, useDocumentTitle } from '@/hooks'
+import { recordSearchHistory } from '@/services/supabase'
 import { useAuthStore, useTrackedStore, useToast } from '@/store'
 import { formatPrice, formatRelativeTime, isAtTrackingLimit, FREE_TIER_LIMIT } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,27 @@ export function ProductResultPage() {
       fetchTracked(user.id)
     }
   }, [user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Record this product view in personal history
+  useEffect(() => {
+    if (!product || !id) return
+
+    if (isAuthenticated && user) {
+      // Fire-and-forget — don't block the UI
+      recordSearchHistory(user.id, id).catch(() => {})
+    } else {
+      // Anonymous: upsert into localStorage
+      try {
+        const key = 'price-radar-history'
+        const raw = localStorage.getItem(key)
+        const arr: Array<{ productId: string; checkedAt: string }> = raw ? JSON.parse(raw) : []
+        const filtered = arr.filter(e => e.productId !== id)
+        filtered.unshift({ productId: id, checkedAt: new Date().toISOString() })
+        localStorage.setItem(key, JSON.stringify(filtered.slice(0, 20)))
+      } catch { /* ignore storage errors */ }
+    }
+  }, [product?.id, isAuthenticated, user?.id]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const [alertSheetOpen, setAlertSheetOpen] = useState(false)
   const [isTracking, setIsTracking] = useState(false)
 
