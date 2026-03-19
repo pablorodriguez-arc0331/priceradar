@@ -1,4 +1,5 @@
 export { GlassBackground } from './GlassBackground'
+export { ThemeProvider } from './ThemeProvider'
 
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
