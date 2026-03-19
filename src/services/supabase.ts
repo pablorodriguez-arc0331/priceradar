@@ -334,10 +334,12 @@ export async function getHotProducts(limit = 6) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const productIds = (hotRows as any[]).map(r => r.product_id as string)
 
-  const { data: products } = await supabase
+  const { data: products, error: productsError } = await supabase
     .from('products')
     .select('*, price_signals(*)')
     .in('id', productIds)
+
+  if (productsError) throw productsError
 
   // Return in watcher-count order (hotRows is already sorted)
   const productMap = new Map((products ?? []).map(p => [p.id, p]))
