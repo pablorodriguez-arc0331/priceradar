@@ -124,4 +124,5 @@ function Spinner({ className }: { className?: string }) {
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants, Spinner }

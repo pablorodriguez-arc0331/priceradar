@@ -309,9 +309,9 @@ export function usePWAInstall() {
 
   const promptInstall = async () => {
     if (!deferredPrompt) return
-    // @ts-ignore
+    // @ts-expect-error BeforeInstallPromptEvent not in TS lib
     deferredPrompt.prompt()
-    // @ts-ignore
+    // @ts-expect-error BeforeInstallPromptEvent not in TS lib
     const { outcome } = await deferredPrompt.userChoice
     if (outcome === 'accepted') setIsInstalled(true)
     setDeferredPrompt(null)

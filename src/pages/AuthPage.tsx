@@ -79,8 +79,9 @@ export function AuthPage() {
         await initAuth()
         navigate(returnTo, { replace: true })
       }
-    } catch (err: any) {
-      toast('error', 'Sign-in failed', err?.message ?? 'Check your credentials and try again.')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Check your credentials and try again.'
+      toast('error', 'Sign-in failed', message)
     } finally {
       setIsEmailLoading(false)
     }
