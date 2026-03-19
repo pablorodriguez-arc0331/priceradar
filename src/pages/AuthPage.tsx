@@ -207,7 +207,7 @@ export function AuthPage() {
               onChange={updateField('email')}
               error={errors.email}
               placeholder="you@example.com"
-              leftIcon={<FaIcon icon={faEnvelope} className="h-4 w-4" />}
+              leftIcon={<FaIcon icon={faEnvelope} className="h-4 w-4" aria-hidden="true" />}
               required
             />
 
@@ -229,8 +229,8 @@ export function AuthPage() {
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword
-                    ? <FaIcon icon={faEyeSlash} className="h-4 w-4" />
-                    : <FaIcon icon={faEye} className="h-4 w-4" />
+                    ? <FaIcon icon={faEyeSlash} className="h-4 w-4" aria-hidden="true" />
+                    : <FaIcon icon={faEye} className="h-4 w-4" aria-hidden="true" />
                   }
                 </button>
               }
