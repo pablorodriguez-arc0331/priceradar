@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, ShieldCheck, Bell, TrendingDown, Radar, Package } from 'lucide-react'
+import { ArrowRight, Bell, TrendingDown, Radar, Package } from 'lucide-react'
+import { faShieldHalved } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { Page } from '@/components/layout'
@@ -120,7 +122,7 @@ export function LandingPage() {
           className="glass-card rounded-xl px-5 py-5 space-y-3"
         >
           <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-signal-low shrink-0" aria-hidden="true" />
+            <FaIcon icon={faShieldHalved} className="h-4 w-4 text-signal-low shrink-0" aria-hidden="true" />
             <p className="text-sm font-semibold text-foreground">Designed for smart buyers</p>
           </div>
           <ul className="space-y-2" role="list">
