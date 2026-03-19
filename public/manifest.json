@@ -1,13 +1,13 @@
 {
-  "name": "Price Radar",
-  "short_name": "Price Radar",
+  "name": "PriceRadar",
+  "short_name": "PriceRadar",
   "description": "Track prices across major US retailers. Know if a product's current price is historically high or low — instantly.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FFFFFF",
-  "theme_color": "#2563EB",
+  "background_color": "#050D1A",
+  "theme_color": "#06B6D4",
   "lang": "en-US",
   "categories": ["shopping", "utilities"],
   "icons": [
