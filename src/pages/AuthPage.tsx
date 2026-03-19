@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Radar, Eye, EyeOff, Mail } from 'lucide-react'
+import { Radar } from 'lucide-react'
+import { faEye, faEyeSlash, faEnvelope } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import {
@@ -205,7 +207,7 @@ export function AuthPage() {
               onChange={updateField('email')}
               error={errors.email}
               placeholder="you@example.com"
-              leftIcon={<Mail className="h-4 w-4" />}
+              leftIcon={<FaIcon icon={faEnvelope} className="h-4 w-4" />}
               required
             />
 
@@ -227,8 +229,8 @@ export function AuthPage() {
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword
-                    ? <EyeOff className="h-4 w-4" />
-                    : <Eye className="h-4 w-4" />
+                    ? <FaIcon icon={faEyeSlash} className="h-4 w-4" />
+                    : <FaIcon icon={faEye} className="h-4 w-4" />
                   }
                 </button>
               }
