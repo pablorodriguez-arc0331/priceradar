@@ -1,4 +1,6 @@
-import { ExternalLink, TrendingDown, TrendingUp, Minus, Lock } from 'lucide-react'
+import { TrendingDown, TrendingUp, Minus } from 'lucide-react'
+import { faLock, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
 import { motion } from 'framer-motion'
 import { cn, formatPrice, formatPriceDelta } from '@/lib/utils'
 import type { RetailerPrice } from '@/types'
@@ -149,7 +151,7 @@ export function PriceComparisonTable({
                     )}
                     aria-label={!isAuthenticated ? 'Sign in to buy' : 'Upgrade to buy'}
                   >
-                    <Lock className="h-3 w-3" aria-hidden="true" />
+                    <FaIcon icon={faLock} className="h-3 w-3" aria-hidden="true" />
                     {!isAuthenticated ? 'Sign in' : 'Upgrade'}
                   </button>
                 ) : item.is_available ? (
@@ -168,7 +170,7 @@ export function PriceComparisonTable({
                     aria-label={`Buy on ${item.retailer.name} for ${formatPrice(item.price)} — opens in new tab`}
                   >
                     Buy
-                    <ExternalLink className="h-3 w-3" aria-hidden="true" />
+                    <FaIcon icon={faArrowUpRightFromSquare} className="h-3 w-3" aria-hidden="true" />
                   </a>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
