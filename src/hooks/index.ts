@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { ProductWithPricing, ApiResponse, PriceHistoryRange } from '@/types'
 import { isValidAmazonUrl, extractAsinFromUrl } from '@/lib/utils'
-import { getProductWithPricing, fetchPricesForUrl, getRecentProducts, getCurrentPricesForProducts, getComparisonPrices } from '@/services/supabase'
+import { getProductWithPricing, fetchPricesForUrl, getRecentProducts, getCurrentPricesForProducts, getComparisonPrices, getUserSearchHistory, getProductsByIds, getHotProducts } from '@/services/supabase'
+import { useAuthStore } from '@/store'
 import { appendAffiliateTag, buildAmazonAffiliateUrl } from '@/lib/affiliate'
 
 // ─── useProduct — fetch product + pricing by ID ────────────────────────────
@@ -250,6 +251,156 @@ export function useRecentProducts(limit = 6) {
   const data = allData.filter(p => !dismissed.has(p.id))
 
   return { data, isLoading, dismiss }
+}
+
+// ─── usePersonalHistory — personal search history (per-user or per-device) ───
+export function usePersonalHistory(limit = 6) {
+  const { user, isAuthenticated } = useAuthStore()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [allData, setAllData] = useState<any[]>([])
+  const [dismissed, setDismissed] = useState<Set<string>>(new Set())
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    setIsLoading(true)
+
+    ;(async () => {
+      try {
+        if (isAuthenticated && user) {
+          // ── Signed-in: read from Supabase search_history ───────────────────
+          const rows = await getUserSearchHistory(user.id, limit)
+          if (cancelled) return
+
+          const ids = rows.map(r => r.product_id)
+          const currentPrices = await getCurrentPricesForProducts(ids).catch(() => [])
+          if (cancelled) return
+
+          const priceMap = new Map<string, { price: number; retailer: string }>()
+          for (const cp of currentPrices) {
+            if (!priceMap.has(cp.product_id)) {
+              priceMap.set(cp.product_id, {
+                price: Number(cp.price),
+                retailer: cp.retailer?.name ?? cp.retailer?.slug ?? '',
+              })
+            }
+          }
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const enriched = rows.map((r: any) => {
+            const live = priceMap.get(r.product_id)
+            return {
+              ...r.product,
+              live_price: live?.price ?? null,
+              live_retailer: live?.retailer ?? null,
+            }
+          })
+
+          if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+        } else {
+          // ── Anonymous: read from localStorage ─────────────────────────────
+          const raw = localStorage.getItem('price-radar-history')
+          const arr: Array<{ productId: string; checkedAt: string }> = raw ? JSON.parse(raw) : []
+          const ids = arr.slice(0, limit).map(e => e.productId)
+
+          if (ids.length === 0) {
+            if (!cancelled) { setAllData([]); setIsLoading(false) }
+            return
+          }
+
+          const products = await getProductsByIds(ids)
+          if (cancelled) return
+
+          const currentPrices = await getCurrentPricesForProducts(ids).catch(() => [])
+          if (cancelled) return
+
+          const priceMap = new Map<string, { price: number; retailer: string }>()
+          for (const cp of currentPrices) {
+            if (!priceMap.has(cp.product_id)) {
+              priceMap.set(cp.product_id, {
+                price: Number(cp.price),
+                retailer: cp.retailer?.name ?? cp.retailer?.slug ?? '',
+              })
+            }
+          }
+
+          // Maintain localStorage order (most recently checked first)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const productMap = new Map((products as any[]).map((p: any) => [p.id, p]))
+          const enriched = ids
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .map(id => productMap.get(id) as any)
+            .filter(Boolean)
+            .map(p => {
+              const live = priceMap.get(p.id)
+              return { ...p, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
+            })
+
+          if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+        }
+      } catch {
+        if (!cancelled) setIsLoading(false)
+      }
+    })()
+
+    return () => { cancelled = true }
+  }, [isAuthenticated, user?.id, limit])
+
+  const dismiss = useCallback((id: string) => {
+    setDismissed(prev => {
+      const next = new Set(prev)
+      next.add(id)
+      return next
+    })
+  }, [])
+
+  const data = allData.filter(p => !dismissed.has(p.id))
+  return { data, isLoading, dismiss }
+}
+
+// ─── useHotProducts — products most people are watching ───────────────────────
+export function useHotProducts(limit = 6) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [data, setData] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const rows = await getHotProducts(limit)
+        if (cancelled) return
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ids = (rows as any[]).map((r: any) => r.id as string)
+        const currentPrices = await getCurrentPricesForProducts(ids).catch(() => [])
+        if (cancelled) return
+
+        const priceMap = new Map<string, { price: number; retailer: string }>()
+        for (const cp of currentPrices) {
+          if (!priceMap.has(cp.product_id)) {
+            priceMap.set(cp.product_id, {
+              price: Number(cp.price),
+              retailer: cp.retailer?.name ?? cp.retailer?.slug ?? '',
+            })
+          }
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const enriched = (rows as any[]).map((r: any) => {
+          const live = priceMap.get(r.id)
+          return { ...r, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
+        })
+
+        if (!cancelled) { setData(enriched); setIsLoading(false) }
+      } catch {
+        if (!cancelled) setIsLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [limit])
+
+  return { data, isLoading }
 }
 
 // ─── usePriceHistory — range-aware history for chart ──────────────────────
