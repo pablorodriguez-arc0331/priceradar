@@ -11,6 +11,7 @@ import {
 } from '@/lib/supabase'
 import { useAuthStore, useToast } from '@/store'
 import { cn } from '@/lib/utils'
+import { useDocumentTitle } from '@/hooks'
 
 type AuthMode = 'signin' | 'signup'
 
@@ -21,6 +22,7 @@ export function AuthPage() {
   const toast = useToast()
 
   const returnTo = (location.state as { returnTo?: string })?.returnTo ?? '/dashboard'
+  useDocumentTitle('Sign In — PriceRadar')
   const [mode, setMode] = useState<AuthMode>('signin')
   const [showPassword, setShowPassword] = useState(false)
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
@@ -99,7 +101,7 @@ export function AuthPage() {
               <Radar className="h-5 w-5 text-white" aria-hidden="true" />
             </div>
           </Link>
-          <h1 className="text-xl font-bold text-foreground">
+          <h1 className="font-display text-xl font-bold text-foreground">
             {mode === 'signin' ? 'Welcome back' : 'Create your account'}
           </h1>
           <p className="text-xs text-muted-foreground">
