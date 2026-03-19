@@ -1,7 +1,7 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  darkMode: ['media'],
+  // Always dark — no media query toggle
   content: [
     './index.html',
     './src/**/*.{ts,tsx}',
@@ -9,11 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Semantic tokens mapped from design system
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
+        // Alpha-carrying tokens use static rgba() to preserve Tailwind opacity modifier compatibility
+        border: 'rgba(6, 182, 212, 0.12)',
+        'border-strong': 'rgba(6, 182, 212, 0.24)',
+        input: 'rgba(6, 182, 212, 0.12)',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
+        surface: 'hsl(var(--surface))',
+        'surface-raised': 'hsl(var(--surface-raised))',
         foreground: 'hsl(var(--foreground))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
@@ -34,7 +37,7 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
-          subtle: 'hsl(var(--accent-subtle))',
+          subtle: 'rgba(6, 182, 212, 0.10)',
           hover: 'hsl(var(--accent-hover))',
         },
         card: {
@@ -45,43 +48,45 @@ const config: Config = {
           DEFAULT: 'hsl(var(--popover))',
           foreground: 'hsl(var(--popover-foreground))',
         },
-        // Price Radar signal colors (CSS-variable-backed for dark mode)
         signal: {
-          low:            'hsl(var(--signal-low))',
-          'low-bg':       'hsl(var(--signal-low-bg))',
-          'low-border':   'hsl(var(--signal-low-border))',
-          high:           'hsl(var(--signal-high))',
-          'high-bg':      'hsl(var(--signal-high-bg))',
-          'high-border':  'hsl(var(--signal-high-border))',
-          neutral:        'hsl(var(--signal-neutral))',
-          'neutral-bg':   'hsl(var(--signal-neutral-bg))',
-          'neutral-border': 'hsl(var(--signal-neutral-border))',
+          low:              'hsl(var(--signal-low))',
+          'low-bg':         'rgba(16, 185, 129, 0.12)',
+          'low-border':     'rgba(16, 185, 129, 0.30)',
+          high:             'hsl(var(--signal-high))',
+          'high-bg':        'rgba(244, 63, 94, 0.12)',
+          'high-border':    'rgba(244, 63, 94, 0.30)',
+          neutral:          'hsl(var(--signal-neutral))',
+          'neutral-bg':     'rgba(107, 127, 163, 0.12)',
+          'neutral-border': 'rgba(107, 127, 163, 0.25)',
         },
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 4px)',
+        sm: 'calc(var(--radius) - 8px)',
         xl: 'calc(var(--radius) + 4px)',
         '2xl': 'calc(var(--radius) + 8px)',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        // DM Sans — body, labels, UI text
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+        // Space Grotesk — headings, prices, stats
+        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       fontSize: {
-        xs: ['0.75rem', { lineHeight: '1rem' }],
-        sm: ['0.875rem', { lineHeight: '1.25rem' }],
-        base: ['1rem', { lineHeight: '1.5rem' }],
-        lg: ['1.125rem', { lineHeight: '1.75rem' }],
-        xl: ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
+        xs:    ['0.75rem',  { lineHeight: '1rem' }],
+        sm:    ['0.875rem', { lineHeight: '1.25rem' }],
+        base:  ['1rem',     { lineHeight: '1.5rem' }],
+        lg:    ['1.125rem', { lineHeight: '1.75rem' }],
+        xl:    ['1.25rem',  { lineHeight: '1.75rem' }],
+        '2xl': ['1.5rem',   { lineHeight: '2rem' }],
         '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+        '4xl': ['2.25rem',  { lineHeight: '2.5rem' }],
       },
       spacing: {
-        'nav': '4rem',      // 64px bottom nav
-        'header': '3.5rem', // 56px header
+        nav: '4rem',
+        header: '3.5rem',
         'safe-bottom': 'env(safe-area-inset-bottom, 0px)',
       },
       animation: {
@@ -95,7 +100,7 @@ const config: Config = {
       keyframes: {
         'skeleton-pulse': {
           '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.4' },
+          '50%': { opacity: '0.3' },
         },
         'fade-in': {
           from: { opacity: '0' },
