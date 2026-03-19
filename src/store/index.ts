@@ -301,3 +301,23 @@ export const useTrackedStore = create<TrackedStore>((set, get) => ({
     updateTrackedProductAlert(id, userId, targetPrice ?? null, enabled).catch(console.error)
   },
 }))
+
+// ─── Theme Store ───────────────────────────────────────────────────────────────
+type Theme = 'dark' | 'light'
+
+interface ThemeStore {
+  theme: Theme
+  toggleTheme: () => void
+}
+
+export const useThemeStore = create<ThemeStore>()(
+  persist(
+    (set, get) => ({
+      theme: 'dark' as Theme,
+      toggleTheme: () => set({ theme: get().theme === 'dark' ? 'light' : 'dark' }),
+    }),
+    {
+      name: 'price-radar-theme',
+    },
+  ),
+)
