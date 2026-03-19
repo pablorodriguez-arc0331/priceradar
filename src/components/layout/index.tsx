@@ -19,34 +19,32 @@ export function Header() {
       <Link
         to="/"
         className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
-        aria-label="Price Radar — Home"
+        aria-label="PriceRadar — Home"
       >
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent">
-          <Radar className="h-4 w-4 text-white" aria-hidden="true" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 glow-cyan">
+          <Radar className="h-4 w-4 text-accent" aria-hidden="true" />
         </div>
-        <span className="text-base font-bold tracking-tight text-foreground">
+        <span className="font-display text-base font-bold tracking-tight text-foreground">
           Price<span className="text-accent">Radar</span>
         </span>
       </Link>
 
       <div className="flex items-center gap-2">
-        {/* Offline indicator */}
         <AnimatePresence>
           {!isOnline && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-2 py-1"
+              className="flex items-center gap-1 rounded-full bg-amber-950/60 border border-amber-700/40 px-2 py-1"
               role="status"
               aria-label="You are offline"
             >
-              <WifiOff className="h-3 w-3 text-amber-600" aria-hidden="true" />
-              <span className="text-xs font-medium text-amber-700">Offline</span>
+              <WifiOff className="h-3 w-3 text-amber-400" aria-hidden="true" />
+              <span className="text-xs font-medium text-amber-400">Offline</span>
             </motion.div>
           )}
         </AnimatePresence>
-
         <UserMenuButton />
       </div>
     </header>
@@ -63,6 +61,7 @@ function UserMenuButton() {
         variant="outline"
         size="sm"
         onClick={() => navigate('/auth')}
+        className="border-accent/30 text-accent hover:bg-accent/10 hover:border-accent min-h-[36px]"
       >
         Sign in
       </Button>
@@ -74,19 +73,15 @@ function UserMenuButton() {
       to="/settings"
       className={cn(
         'flex h-8 w-8 items-center justify-center rounded-full overflow-hidden',
-        'border-2 border-border hover:border-accent transition-colors',
+        'border border-accent/30 hover:border-accent transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
       )}
       aria-label="Account settings"
     >
       {user?.avatar_url ? (
-        <img
-          src={user.avatar_url}
-          alt={user.name}
-          className="h-full w-full object-cover"
-        />
+        <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-accent-subtle">
+        <div className="flex h-full w-full items-center justify-center bg-accent/10">
           <User className="h-4 w-4 text-accent" aria-hidden="true" />
         </div>
       )}
@@ -152,7 +147,8 @@ export function BottomNav() {
               {active && (
                 <motion.div
                   layoutId="nav-indicator"
-                  className="absolute -bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-accent"
+                  className="absolute -bottom-1 left-1/2 h-[2px] w-5 -translate-x-1/2 rounded-full bg-accent"
+                  style={{ boxShadow: '0 0 8px rgba(6, 182, 212, 0.8)' }}
                   transition={{ type: 'spring', stiffness: 350, damping: 30 }}
                 />
               )}
