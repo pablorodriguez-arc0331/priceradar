@@ -329,10 +329,32 @@ export async function getHotProducts(limit = 6) {
     .rpc('get_hot_products', { p_limit: limit })
 
   if (error) throw error
-  if (!hotRows || hotRows.length === 0) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const productIds = (hotRows as any[]).map(r => r.product_id as string)
+  let productIds: string[]
+
+  if (hotRows && hotRows.length > 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    productIds = (hotRows as any[]).map(r => r.product_id as string)
+  } else {
+    // Fallback: any tracked products (≥1 watcher) ordered by most-recently added
+    const { data: fallbackRows, error: fallbackError } = await supabase
+      .from('tracked_products')
+      .select('product_id')
+      .order('added_at', { ascending: false })
+      .limit(limit * 3) // fetch extra to dedupe
+
+    if (fallbackError) throw fallbackError
+    if (!fallbackRows || fallbackRows.length === 0) return []
+
+    // Dedupe while preserving order
+    const seen = new Set<string>()
+    productIds = (fallbackRows as any[]) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .map(r => r.product_id as string)
+      .filter(id => !seen.has(id) && seen.add(id) !== undefined)
+      .slice(0, limit)
+
+    if (productIds.length === 0) return []
+  }
 
   const { data: products, error: productsError } = await supabase
     .from('products')
@@ -341,7 +363,7 @@ export async function getHotProducts(limit = 6) {
 
   if (productsError) throw productsError
 
-  // Return in watcher-count order (hotRows is already sorted)
+  // Return in watcher-count order (productIds is already sorted)
   const productMap = new Map((products ?? []).map(p => [p.id, p]))
   return productIds.map(id => productMap.get(id)).filter(Boolean)
 }

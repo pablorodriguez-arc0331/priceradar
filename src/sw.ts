@@ -100,8 +100,11 @@ self.addEventListener('push', (event: PushEvent) => {
     badge: payload.badge ?? '/icons/icon-72x72.png',
     tag: payload.tag ?? 'price-alert',
     data: { url: payload.url ?? '/' },
-    // Keep notification until user interacts on mobile
     requireInteraction: false,
+    // Vibrate on Android (ignored on iOS): short-pause-short pattern
+    vibrate: [100, 50, 100],
+    // Re-alert even if a notification with the same tag already exists
+    renotify: true,
   }
 
   event.waitUntil(

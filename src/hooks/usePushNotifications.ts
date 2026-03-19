@@ -17,12 +17,24 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY as string | undefined
 
+// Detect iOS devices (push only works in standalone/PWA mode on iOS 16.4+)
+function isIOS(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(navigator as unknown as { MSStream?: unknown }).MSStream
+}
+
+function isStandalone(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as unknown as { standalone?: boolean }).standalone === true
+}
+
 // ─── usePushNotifications ─────────────────────────────────────────────────────
 
 export type PushPermission = 'default' | 'granted' | 'denied' | 'unsupported'
 
 export interface UsePushNotificationsReturn {
   isSupported: boolean
+  /** iOS in Safari (not installed as PWA) — push requires Home Screen install */
+  needsHomeScreenInstall: boolean
   permission: PushPermission
   isSubscribed: boolean
   isLoading: boolean
@@ -31,6 +43,14 @@ export interface UsePushNotificationsReturn {
 }
 
 export function usePushNotifications(userId: string | undefined): UsePushNotificationsReturn {
+  // iOS requires the app to be installed as a PWA (Home Screen) for push to work.
+  // Detect this case separately so the UI can show a helpful hint.
+  const needsHomeScreenInstall =
+    typeof window !== 'undefined' &&
+    isIOS() &&
+    !isStandalone() &&
+    'serviceWorker' in navigator
+
   const isSupported =
     typeof window !== 'undefined' &&
     'serviceWorker' in navigator &&
@@ -142,5 +162,5 @@ export function usePushNotifications(userId: string | undefined): UsePushNotific
     }
   }, [userId, isSupported])
 
-  return { isSupported, permission, isSubscribed, isLoading, subscribe, unsubscribe }
+  return { isSupported, needsHomeScreenInstall, permission, isSubscribed, isLoading, subscribe, unsubscribe }
 }

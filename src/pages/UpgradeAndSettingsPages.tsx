@@ -338,13 +338,19 @@ function PushNotificationRow({
   onUnsubscribeSuccess: () => void
   onError: () => void
 }) {
+  const toast = useToast()
   const isPremium = user?.plan === 'paid'
 
   const handleClick = async () => {
     if (!isPremium) { onUpgrade(); return }
 
+    if (push.needsHomeScreenInstall) {
+      toast('info', 'Add to Home Screen first', 'Tap the Share button, then "Add to Home Screen" to enable push notifications.')
+      return
+    }
+
     if (push.permission === 'denied') {
-      alert('Notifications are blocked in your browser. Go to your browser settings and allow notifications for this site, then try again.')
+      toast('error', 'Notifications blocked', 'Open your browser settings, find this site, and allow notifications.')
       return
     }
 
@@ -367,6 +373,9 @@ function PushNotificationRow({
 
   if (!isPremium) {
     sublabel = 'Pro feature — tap to upgrade'
+  } else if (push.needsHomeScreenInstall) {
+    sublabel = 'Add to Home Screen to enable'
+    sublabelIcon = <AlertTriangle className="h-3 w-3 text-signal-high mr-1 inline" />
   } else if (!push.isSupported) {
     sublabel = 'Not supported in this browser'
   } else if (push.permission === 'denied') {
@@ -403,8 +412,8 @@ function PushNotificationRow({
       sublabel={sublabel}
       sublabelPrefix={sublabelIcon}
       onClick={handleClick}
-      rightElement={isPremium && push.isSupported && push.permission !== 'denied' ? Toggle : undefined}
-      disabled={push.isLoading || !push.isSupported}
+      rightElement={isPremium && push.isSupported && !push.needsHomeScreenInstall && push.permission !== 'denied' ? Toggle : undefined}
+      disabled={push.isLoading || (!push.isSupported && !push.needsHomeScreenInstall)}
       accent={!isPremium}
     />
   )

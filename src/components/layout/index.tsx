@@ -13,7 +13,7 @@ export function Header() {
   const isOnline = useOnlineStatus()
 
   return (
-    <header className="glass sticky top-0 z-40 flex h-14 items-center justify-between px-4">
+    <header className="glass sticky top-0 z-40 flex items-center justify-between pt-safe" style={{ padding: '2.5em 1em 1em' }}>
       <a href="#main-content" className="skip-to-content">
         Skip to content
       </a>
@@ -142,7 +142,7 @@ export function BottomNav() {
       style={{
         bottom: 0,
         marginBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-        height: '56px',
+        height: '80px',
       }}
     >
       {NAV_TABS.map(tab => {
@@ -168,14 +168,6 @@ export function BottomNav() {
                 className={cn('h-5 w-5 transition-transform', active && 'scale-110')}
                 aria-hidden="true"
               />
-              {active && (
-                <motion.div
-                  layoutId="nav-indicator"
-                  className="absolute -bottom-1 left-1/2 h-[2px] w-5 -translate-x-1/2 rounded-full bg-accent"
-                  style={{ boxShadow: '0 0 8px rgba(6, 182, 212, 0.8)' }}
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
             </div>
             <span
               className={cn(

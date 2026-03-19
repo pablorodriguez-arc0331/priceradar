@@ -145,34 +145,6 @@ Deno.serve(async (req: Request) => {
             .eq('is_current', true)
             .in('retailer_id', compIds)
 
-          if ((priceCount ?? 0) === 0) {
-            console.log(`[fetch-prices] No retailer prices found — running comparison search`)
-            const { data: productRow } = await supabase
-              .from('products')
-              .select('name, asin')
-              .eq('id', existing.id)
-              .single()
-
-            // Get Amazon price from price_signals (fastest single-row lookup)
-            const { data: signalRow } = await supabase
-              .from('price_signals')
-              .select('current_best_price')
-              .eq('product_id', existing.id)
-              .single()
-
-            if (productRow?.name && signalRow?.current_best_price) {
-              await searchAndStoreOtherRetailers(
-                productRow.name,
-                existing.id,
-                `https://www.amazon.com/dp/${productRow.asin ?? asin}`,
-                Number(signalRow.current_best_price),
-                supabase,
-                rainforestKey,
-              ).catch((e: Error) =>
-                console.warn('[fetch-prices] cache retailer search error:', e.message),
-              )
-            }
-          }
         }
 
         return jsonOk({ product_id: existing.id, cached: true })
@@ -259,18 +231,6 @@ Deno.serve(async (req: Request) => {
       }
     } else {
       console.log(`[fetch-prices] No price history returned by API for: ${normalized.name}`)
-    }
-
-    // ── Multi-retailer: search Walmart + Best Buy (free, runs for all users) ──
-    if (retailerSlug === 'amazon') {
-      await searchAndStoreOtherRetailers(
-        normalized.name,
-        product.id,
-        normalizedUrl,
-        normalized.current_price,
-        supabase,
-        rainforestKey,
-      ).catch((e: Error) => console.warn('[fetch-prices] multi-retailer error:', e.message))
     }
 
     // ── Compute signal from primary retailer price history ────────────────────
@@ -714,7 +674,7 @@ async function scoreMatchWithGemini(
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         signal: controller.signal,
@@ -800,19 +760,11 @@ Output format (JSON only):
   console.log('STEP 3.1: Gemini prompt:', prompt.slice(0, 300))
 
   // Each entry specifies the model and the exact tools payload for that model.
-  // gemini-2.0-flash uses `google_search`, gemini-1.5-flash uses `google_search_retrieval`.
   // Final fallback has no grounding (uses Gemini training data only).
   const attempts: Array<{ model: string; tools: unknown[] | null }> = [
-    { model: 'gemini-2.0-flash', tools: [{ google_search: {} }] },
-    {
-      model: 'gemini-1.5-flash',
-      tools: [{
-        google_search_retrieval: {
-          dynamic_retrieval_config: { mode: 'MODE_DYNAMIC', dynamic_threshold: 0.3 },
-        },
-      }],
-    },
-    { model: 'gemini-1.5-flash', tools: null },
+    { model: 'gemini-2.5-flash', tools: [{ google_search: {} }] },
+    { model: 'gemini-2.5-flash-lite', tools: [{ google_search: {} }] },
+    { model: 'gemini-2.5-flash-lite', tools: null },
   ]
 
   for (const { model, tools } of attempts) {
@@ -823,7 +775,7 @@ Output format (JSON only):
       // deno-lint-ignore no-explicit-any
       const requestBody: Record<string, any> = {
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0, maxOutputTokens: 1024 },
+        generationConfig: { temperature: 0, maxOutputTokens: 4096 },
       }
       if (tools) {
         requestBody.tools = tools

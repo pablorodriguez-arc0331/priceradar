@@ -92,22 +92,31 @@ async function searchWithGemini(
 ): Promise<GlobalComparisonResponse | null> {
   const systemInstruction = `Actúa como un motor de búsqueda de productos global especializado en comparación de precios en tiempo real.
 
-Tu objetivo es encontrar el producto en el país especificado y devolver una comparativa de las 3 tiendas líderes locales.
+Tu objetivo es encontrar el producto en el país especificado y devolver una comparativa de las 2 tiendas líderes locales EXCLUYENDO Amazon (se rastrea por separado).
 
 Reglas estrictas:
 1. Solo devuelves coincidencias EXACTAS (mismo modelo, mismas especificaciones, producto nuevo).
-2. Identifica dinámicamente los 3 retailers más relevantes del país especificado (Amazon, Walmart, Mercado Libre, El Corte Inglés, Siman, Best Buy, MediaMarkt, etc.).
-3. Extrae precio actual, URL directa del producto y disponibilidad.
-4. Si la moneda de la tienda no es ${currency}, realiza la conversión al tipo de cambio actual.
-5. Calcula el promedio global de precios encontrados.
-6. Asigna confidence_score: "high" si el producto es idéntico, "medium" si es probable, "low" si es aproximado.
-7. Respuesta ÚNICA en JSON puro, sin markdown, sin explicaciones.`
+2. NUNCA incluyas Amazon en los resultados.
+3. Para United States: usa EXACTAMENTE Walmart (walmart.com) y Best Buy (bestbuy.com).
+4. Para otros países: identifica los 2 retailers más relevantes excluyendo Amazon.
+5. Las URLs DEBEN ser URLs válidas del dominio oficial del retailer que apunten directamente al producto.
+   - Para Walmart USA: https://www.walmart.com/ip/PRODUCT-NAME/ITEM_ID (busca el producto con Google Search y extrae la URL real)
+   - Para Best Buy USA: https://www.bestbuy.com/site/PRODUCT-NAME/SKU.p (busca el producto con Google Search y extrae la URL real)
+   - Si no encuentras URL directa al producto, usa URL de búsqueda:
+     Walmart: https://www.walmart.com/search?q=TERMINOS
+     Best Buy: https://www.bestbuy.com/site/searchpage.jsp?st=TERMINOS
+6. Extrae precio actual y disponibilidad usando Google Search.
+7. Si la moneda de la tienda no es ${currency}, realiza la conversión al tipo de cambio actual.
+8. Asigna confidence_score: "high" si el producto es idéntico, "medium" si es probable, "low" si es aproximado.
+9. Respuesta ÚNICA en JSON puro, sin markdown, sin explicaciones.`
 
-  const userPrompt = `Busca este producto en ${country} y devuelve comparativa de precios en ${currency}:
+  const userPrompt = `Busca este producto en ${country} y devuelve comparativa de precios en ${currency}. NO incluyas Amazon.
 
 Producto: "${productTitle}"
 País: ${country}
 Moneda de salida: ${currency}
+
+Usa Google Search para encontrar el precio actual y la URL directa del producto en cada tienda.
 
 Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional):
 {
@@ -118,7 +127,7 @@ Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional)
       "store": "nombre de la tienda",
       "price": precio_numerico,
       "formatted_price": "precio con símbolo de moneda",
-      "url": "https://url-directa-al-producto",
+      "url": "https://url-directa-al-producto-en-el-sitio-del-retailer",
       "is_best_deal": true_o_false,
       "confidence_score": "high|medium|low"
     }
@@ -126,22 +135,15 @@ Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional)
   "global_avg_price": precio_promedio_numerico
 }
 
-Exactamente 3 resultados. Solo un resultado puede tener is_best_deal: true.`
+Exactamente 2 resultados. Solo un resultado puede tener is_best_deal: true.`
 
-  // Attempt 1: gemini-2.0-flash with google_search
-  // Attempt 2: gemini-1.5-flash with google_search_retrieval (correct tool for 1.5)
-  // Attempt 3: gemini-1.5-flash no grounding (training data only, last resort)
+  // Attempt 1: gemini-2.5-flash with google_search
+  // Attempt 2: gemini-2.5-flash-lite with google_search
+  // Attempt 3: gemini-2.5-flash-lite no grounding (training data only, last resort)
   const attempts: Array<{ model: string; tools: unknown[] | null }> = [
-    { model: 'gemini-2.0-flash', tools: [{ google_search: {} }] },
-    {
-      model: 'gemini-1.5-flash',
-      tools: [{
-        google_search_retrieval: {
-          dynamic_retrieval_config: { mode: 'MODE_DYNAMIC', dynamic_threshold: 0.3 },
-        },
-      }],
-    },
-    { model: 'gemini-1.5-flash', tools: null },
+    { model: 'gemini-2.5-flash', tools: [{ google_search: {} }] },
+    { model: 'gemini-2.5-flash-lite', tools: [{ google_search: {} }] },
+    { model: 'gemini-2.5-flash-lite', tools: null },
   ]
 
   for (const { model, tools } of attempts) {
@@ -153,7 +155,7 @@ Exactamente 3 resultados. Solo un resultado puede tener is_best_deal: true.`
       const requestBody: Record<string, any> = {
         system_instruction: { parts: [{ text: systemInstruction }] },
         contents: [{ parts: [{ text: userPrompt }] }],
-        generationConfig: { temperature: 0.1, maxOutputTokens: 2048 },
+        generationConfig: { temperature: 0.1, maxOutputTokens: 4096 },
       }
       if (tools) requestBody.tools = tools
 

@@ -267,15 +267,10 @@ export function usePersonalHistory(limit = 6) {
 
     ;(async () => {
       try {
-        if (isAuthenticated && user) {
-          // ── Signed-in: read from Supabase search_history ───────────────────
-          const rows = await getUserSearchHistory(user.id, limit)
-          if (cancelled) return
-
-          const ids = rows.map(r => r.product_id)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const enrichWithPrices = async (rows: any[], idKey: string) => {
+          const ids: string[] = rows.map(r => (idKey === 'id' ? r.id : r[idKey]))
           const currentPrices = await getCurrentPricesForProducts(ids).catch(() => [])
-          if (cancelled) return
-
           const priceMap = new Map<string, { price: number; retailer: string }>()
           for (const cp of currentPrices) {
             if (!priceMap.has(cp.product_id)) {
@@ -285,58 +280,81 @@ export function usePersonalHistory(limit = 6) {
               })
             }
           }
+          return { ids, priceMap }
+        }
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const enriched = rows.map((r: any) => {
-            const live = priceMap.get(r.product_id)
-            return {
-              ...r.product,
-              live_price: live?.price ?? null,
-              live_retailer: live?.retailer ?? null,
-            }
-          })
+        if (isAuthenticated && user) {
+          // ── Signed-in: read from Supabase search_history ───────────────────
+          const rows = await getUserSearchHistory(user.id, limit)
+          if (cancelled) return
 
-          if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+          if (rows.length > 0) {
+            const { priceMap } = await enrichWithPrices(rows, 'product_id')
+            if (cancelled) return
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const enriched = rows.map((r: any) => {
+              const live = priceMap.get(r.product_id)
+              return { ...r.product, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
+            })
+            if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+          } else {
+            // No personal history yet — fall back to global recent products
+            const fallback = await getRecentProducts(limit)
+            if (cancelled) return
+            const { priceMap } = await enrichWithPrices(fallback, 'id')
+            if (cancelled) return
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const enriched = (fallback as any[]).map(r => {
+              const live = priceMap.get(r.id)
+              return { ...r, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
+            })
+            if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+          }
         } else {
           // ── Anonymous: read from localStorage ─────────────────────────────
           const raw = localStorage.getItem('price-radar-history')
           const arr: Array<{ productId: string; checkedAt: string }> = raw ? JSON.parse(raw) : []
           const ids = arr.slice(0, limit).map(e => e.productId)
 
-          if (ids.length === 0) {
-            if (!cancelled) { setAllData([]); setIsLoading(false) }
-            return
-          }
-
-          const products = await getProductsByIds(ids)
-          if (cancelled) return
-
-          const currentPrices = await getCurrentPricesForProducts(ids).catch(() => [])
-          if (cancelled) return
-
-          const priceMap = new Map<string, { price: number; retailer: string }>()
-          for (const cp of currentPrices) {
-            if (!priceMap.has(cp.product_id)) {
-              priceMap.set(cp.product_id, {
-                price: Number(cp.price),
-                retailer: cp.retailer?.name ?? cp.retailer?.slug ?? '',
-              })
+          if (ids.length > 0) {
+            const products = await getProductsByIds(ids)
+            if (cancelled) return
+            const currentPrices = await getCurrentPricesForProducts(ids).catch(() => [])
+            if (cancelled) return
+            const priceMap = new Map<string, { price: number; retailer: string }>()
+            for (const cp of currentPrices) {
+              if (!priceMap.has(cp.product_id)) {
+                priceMap.set(cp.product_id, {
+                  price: Number(cp.price),
+                  retailer: cp.retailer?.name ?? cp.retailer?.slug ?? '',
+                })
+              }
             }
-          }
-
-          // Maintain localStorage order (most recently checked first)
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const productMap = new Map((products as any[]).map((p: any) => [p.id, p]))
-          const enriched = ids
+            // Maintain localStorage order (most recently checked first)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .map(id => productMap.get(id) as any)
-            .filter(Boolean)
-            .map(p => {
-              const live = priceMap.get(p.id)
-              return { ...p, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
+            const productMap = new Map((products as any[]).map((p: any) => [p.id, p]))
+            const enriched = ids
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              .map(id => productMap.get(id) as any)
+              .filter(Boolean)
+              .map(p => {
+                const live = priceMap.get(p.id)
+                return { ...p, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
+              })
+            if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+          } else {
+            // No personal history yet — fall back to global recent products
+            const fallback = await getRecentProducts(limit)
+            if (cancelled) return
+            const { priceMap } = await enrichWithPrices(fallback, 'id')
+            if (cancelled) return
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const enriched = (fallback as any[]).map(r => {
+              const live = priceMap.get(r.id)
+              return { ...r, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
             })
-
-          if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+            if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+          }
         }
       } catch {
         if (!cancelled) setIsLoading(false)

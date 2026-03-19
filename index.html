@@ -5,11 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     <!-- Primary meta -->
-    <title>PriceRadar — Is This Amazon Price a Good Deal?</title>
-    <meta name="description" content="See if an Amazon product's current price is historically high or low. Compare Walmart and Best Buy in real time. No extension needed — free price checks, no account required." />
-    <meta name="keywords" content="amazon price tracker, price history, best price, walmart price comparison, best buy deals, price alert, is this a good deal, price radar" />
+    <title>PriceRadar — Free Amazon Price Tracker & Price History Checker</title>
+    <meta name="description" content="Check Amazon price history instantly — see if today's price is a 90-day high or low. Compare Amazon, Walmart and Best Buy side by side. Free, no account, no browser extension needed." />
+    <meta name="keywords" content="amazon price tracker, amazon price history, check amazon price history free, price drop alert, amazon deal checker, walmart price comparison, best buy price comparison, is this a good deal, free price tracker, price radar, amazon price drop, camelcamelcamel alternative" />
     <meta name="theme-color" content="#050D1A" />
     <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="author" content="PriceRadar" />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
@@ -30,19 +32,22 @@
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="PriceRadar" />
-    <meta property="og:title" content="PriceRadar — Is This Amazon Price a Good Deal?" />
-    <meta property="og:description" content="Multi-retailer price tracking with historical high/low signal. No extension needed." />
+    <meta property="og:title" content="PriceRadar — Free Amazon Price Tracker & Price History Checker" />
+    <meta property="og:description" content="Is this Amazon price a good deal? See the full price history, compare Walmart and Best Buy, and set a price drop alert. Free, no extension needed." />
     <meta property="og:image" content="https://price-radar.io/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="PriceRadar — Amazon price history and multi-retailer comparison" />
     <meta property="og:url" content="https://price-radar.io" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@priceradar" />
-    <meta name="twitter:title" content="PriceRadar — Is This Amazon Price a Good Deal?" />
-    <meta name="twitter:description" content="Is this price actually a good deal? Check now — free, no account required." />
+    <meta name="twitter:title" content="PriceRadar — Free Amazon Price Tracker & Price History Checker" />
+    <meta name="twitter:description" content="Is this Amazon price a deal or a rip-off? Check the price history instantly — free, no account, no extension." />
     <meta name="twitter:image" content="https://price-radar.io/og-image.png" />
+    <meta name="twitter:image:alt" content="PriceRadar price history dashboard" />
 
     <!-- Windows tile -->
     <meta name="msapplication-TileColor" content="#050D1A" />
@@ -67,11 +72,57 @@
       "@context": "https://schema.org",
       "@type": "WebApplication",
       "name": "PriceRadar",
-      "description": "Track Amazon prices, see price history, and compare Walmart and Best Buy — know if you're getting a deal.",
+      "description": "Free Amazon price tracker and price history checker. Compare prices across Amazon, Walmart, and Best Buy in real time. Get price drop alerts with no browser extension required.",
       "url": "https://price-radar.io",
       "applicationCategory": "ShoppingApplication",
       "operatingSystem": "All",
-      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      "browserRequirements": "Requires JavaScript",
+      "featureList": [
+        "Amazon price history chart",
+        "90-day price high/low signal",
+        "Multi-retailer price comparison (Amazon, Walmart, Best Buy)",
+        "Price drop email alerts",
+        "No browser extension required",
+        "Free price checks, no account needed"
+      ],
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Free",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Unlimited price checks, price history, and retailer comparison"
+        },
+        {
+          "@type": "Offer",
+          "name": "Pro",
+          "price": "4.99",
+          "priceCurrency": "USD",
+          "description": "Unlimited product tracking, full 1-year price history, push notifications"
+        }
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "name": "PriceRadar",
+        "url": "https://price-radar.io"
+      }
+    }
+    </script>
+
+    <!-- Structured Data: Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "PriceRadar",
+      "url": "https://price-radar.io",
+      "logo": "https://price-radar.io/icons/icon-192.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@price-radar.io",
+        "contactType": "customer support"
+      },
+      "sameAs": []
     }
     </script>
 
@@ -84,17 +135,37 @@
         {
           "@type": "Question",
           "name": "Is PriceRadar free to use?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Checking any Amazon product price and seeing the price history is completely free — no account required." }
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Checking any Amazon product price and seeing its full price history is completely free — no account or credit card required." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I check Amazon price history?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Just copy any Amazon product URL and paste it into PriceRadar. We'll instantly show you the price history chart and tell you whether today's price is a 90-day high or low." }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need a browser extension to track Amazon prices?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No browser extension needed. PriceRadar is a web app — just paste an Amazon link on any device and see the price history instantly." }
         },
         {
           "@type": "Question",
           "name": "Which retailers does PriceRadar compare?",
-          "acceptedAnswer": { "@type": "Answer", "text": "PriceRadar compares Amazon, Walmart, and Best Buy prices in real time for products in the United States." }
+          "acceptedAnswer": { "@type": "Answer", "text": "PriceRadar compares Amazon, Walmart, and Best Buy prices side by side in real time so you can find the lowest price across major US retailers." }
         },
         {
           "@type": "Question",
-          "name": "Do I need a browser extension?",
-          "acceptedAnswer": { "@type": "Answer", "text": "No. Just paste any Amazon product URL into PriceRadar and we'll show you the full price history and retailer comparison instantly." }
+          "name": "Can I get a price drop alert when an Amazon price goes down?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Create a free account, track the product, and set a target price. PriceRadar will email you when the price drops to or below your target." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is PriceRadar a good CamelCamelCamel alternative?",
+          "acceptedAnswer": { "@type": "Answer", "text": "PriceRadar offers Amazon price history like CamelCamelCamel, plus real-time Walmart and Best Buy comparison, a mobile-friendly PWA, and push notification alerts — all in one free tool." }
+        },
+        {
+          "@type": "Question",
+          "name": "How accurate is the price history data?",
+          "acceptedAnswer": { "@type": "Answer", "text": "PriceRadar fetches live price data directly and updates regularly. Price history reflects real recorded prices over time, not estimates." }
         }
       ]
     }

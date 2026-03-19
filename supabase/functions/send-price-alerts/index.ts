@@ -174,16 +174,35 @@ Deno.serve(async (req: Request) => {
 
     const sentCount = results.filter((r) => r.status === 'fulfilled').length
 
-    // Log failed sends (expired/invalid subscriptions should be cleaned up)
+    // Log failed sends and clean up expired/invalid subscriptions (HTTP 410/404)
+    const staleEndpoints: string[] = []
     results.forEach((r, i) => {
       if (r.status === 'rejected') {
         const sub = (subscriptions as Array<{ endpoint: string }>)[i]
+        const reason = (r as PromiseRejectedResult).reason
+        const statusCode = reason?.statusCode ?? reason?.status ?? 0
         console.warn(
-          `[send-price-alerts] Failed to send to ${sub.endpoint.slice(0, 60)}…:`,
-          (r as PromiseRejectedResult).reason,
+          `[send-price-alerts] Failed to send to ${sub.endpoint.slice(0, 60)}… (status ${statusCode}):`,
+          reason,
         )
+        // 410 Gone = subscription permanently expired; 404 Not Found = invalid endpoint
+        // Remove these from DB so future sends don't waste time on dead subscriptions
+        if (statusCode === 410 || statusCode === 404) {
+          staleEndpoints.push(sub.endpoint)
+        }
       }
     })
+
+    if (staleEndpoints.length > 0) {
+      await supabase
+        .from('push_subscriptions')
+        .delete()
+        .in('endpoint', staleEndpoints)
+        .then(({ error }) => {
+          if (error) console.warn('[send-price-alerts] Failed to clean stale subscriptions:', error.message)
+          else console.log(`[send-price-alerts] Cleaned ${staleEndpoints.length} stale subscription(s)`)
+        })
+    }
 
     // ── 8. Record in price_alerts ──────────────────────────────────────────────
     const alertRows = (subscriptions as Array<{ user_id: string }>)

@@ -22,6 +22,10 @@ const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(m => ({ de
 const AuthPage = lazy(() => import('@/pages/AuthPage').then(m => ({ default: m.AuthPage })))
 const UpgradePage = lazy(() => import('@/pages/UpgradeAndSettingsPages').then(m => ({ default: m.UpgradePage })))
 const SettingsPage = lazy(() => import('@/pages/UpgradeAndSettingsPages').then(m => ({ default: m.SettingsPage })))
+const PricingPage = lazy(() => import('@/pages/PricingPage').then(m => ({ default: m.PricingPage })))
+const TermsPage = lazy(() => import('@/pages/LegalPages').then(m => ({ default: m.TermsPage })))
+const PrivacyPage = lazy(() => import('@/pages/LegalPages').then(m => ({ default: m.PrivacyPage })))
+const RefundPage = lazy(() => import('@/pages/LegalPages').then(m => ({ default: m.RefundPage })))
 
 function PageSkeleton() {
   return (
@@ -110,6 +114,10 @@ function AnimatedRoutes() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/upgrade" element={<UpgradePage />} />
+          <Route path="/pricing" element={<PricingPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/refund" element={<RefundPage />} />
           <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
           <Route path="/settings" element={<RequireAuth><SettingsPage /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
