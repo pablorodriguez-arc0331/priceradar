@@ -44,7 +44,7 @@ export function PriceComparisonTable({
       <table className="w-full" role="table">
         <caption className="sr-only">Current prices across retailers</caption>
         <thead>
-          <tr className="border-b border-[var(--glass-border)] bg-black/[0.03] dark:bg-white/[0.03]">
+          <tr className="border-b border-[var(--glass-border)] bg-white/[0.03]">
             <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
               Retailer
             </th>
@@ -245,7 +245,7 @@ function RetailerLogo({ retailer }: { retailer: RetailerPrice['retailer'] }) {
 function PriceTableSkeleton() {
   return (
     <div className="glass overflow-hidden rounded-xl">
-      <div className="border-b border-[var(--glass-border)] bg-black/[0.03] dark:bg-white/[0.03] px-4 py-3">
+      <div className="border-b border-[var(--glass-border)] bg-white/[0.03] px-4 py-3">
         <div className="skeleton h-4 w-32" />
       </div>
       {[...Array(3)].map((_, i) => (
