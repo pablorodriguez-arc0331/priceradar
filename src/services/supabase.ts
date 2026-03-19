@@ -285,6 +285,65 @@ export async function getRecentProducts(limit = 3) {
   return data ?? []
 }
 
+// ─── Search history (per-user) ────────────────────────────────────────────────
+
+export async function recordSearchHistory(userId: string, productId: string) {
+  const { error } = await supabase
+    .from('search_history')
+    .upsert(
+      { user_id: userId, product_id: productId, checked_at: new Date().toISOString() },
+      { onConflict: 'user_id,product_id' },
+    )
+
+  if (error) throw error
+}
+
+export async function getUserSearchHistory(userId: string, limit = 6) {
+  const { data, error } = await supabase
+    .from('search_history')
+    .select('product_id, checked_at, product:products(*, price_signals(*))')
+    .eq('user_id', userId)
+    .order('checked_at', { ascending: false })
+    .limit(limit)
+
+  if (error) throw error
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []) as Array<{ product_id: string; checked_at: string; product: any }>
+}
+
+export async function getProductsByIds(ids: string[]) {
+  if (ids.length === 0) return []
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, price_signals(*)')
+    .in('id', ids)
+
+  if (error) throw error
+  return data ?? []
+}
+
+// ─── Hot products (most-watched, ≥2 watchers) ─────────────────────────────────
+
+export async function getHotProducts(limit = 6) {
+  const { data: hotRows, error } = await supabase
+    .rpc('get_hot_products', { p_limit: limit })
+
+  if (error) throw error
+  if (!hotRows || hotRows.length === 0) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const productIds = (hotRows as any[]).map(r => r.product_id as string)
+
+  const { data: products } = await supabase
+    .from('products')
+    .select('*, price_signals(*)')
+    .in('id', productIds)
+
+  // Return in watcher-count order (hotRows is already sorted)
+  const productMap = new Map((products ?? []).map(p => [p.id, p]))
+  return productIds.map(id => productMap.get(id)).filter(Boolean)
+}
+
 // ─── Push Subscriptions ───────────────────────────────────────────────────────
 
 export async function savePushSubscription(
