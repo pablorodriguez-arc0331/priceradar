@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Clock, Trash2 } from 'lucide-react'
+import { faTrashCan, faClock } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
 import { Page } from '@/components/layout'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
@@ -66,7 +67,7 @@ function SwipeToDismiss({
           aria-label="Remove from recently checked"
           type="button"
         >
-          <Trash2 className="h-5 w-5" aria-hidden="true" />
+          <FaIcon icon={faTrashCan} className="h-5 w-5" aria-hidden="true" />
           <span className="text-[10px] font-medium">Remove</span>
         </button>
       </motion.div>
@@ -123,7 +124,7 @@ export function SearchPage() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+              <FaIcon icon={faClock} className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               <h2 id="recent-heading" className="text-sm font-semibold text-foreground">
                 Recently checked
               </h2>
