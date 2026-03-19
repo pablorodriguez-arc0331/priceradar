@@ -5,6 +5,7 @@ import { SignalBadge } from '@/components/product/SignalBadge'
 import { Page } from '@/components/layout'
 import { InstallBanner } from '@/components/common'
 import { cn, formatPrice } from '@/lib/utils'
+import { useDocumentTitle } from '@/hooks'
 
 const STEPS = [
   {
@@ -28,6 +29,7 @@ const STEPS = [
 ]
 
 export function LandingPage() {
+  useDocumentTitle('PriceRadar — Is This Amazon Price a Good Deal?')
   const containerVariants = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
@@ -49,13 +51,13 @@ export function LandingPage() {
           aria-labelledby="hero-heading"
         >
           <motion.div variants={itemVariants} className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent-subtle px-3 py-1 text-xs font-medium text-accent">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
               <Radar className="h-3.5 w-3.5" aria-hidden="true" />
               Amazon price intelligence
             </div>
             <h1
               id="hero-heading"
-              className="text-3xl font-bold tracking-tight text-foreground leading-tight"
+              className="font-display text-4xl font-bold tracking-tight text-foreground leading-tight"
             >
               Is this price actually
               <br />
@@ -115,7 +117,7 @@ export function LandingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="glass-card rounded-xl px-4 py-5 space-y-3"
+          className="glass-card rounded-xl px-5 py-5 space-y-3"
         >
           <div className="flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-signal-low shrink-0" aria-hidden="true" />
@@ -235,16 +237,16 @@ function StepCard({
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28, delay }}
-      className="glass-card flex items-start gap-3 rounded-xl px-4 py-3"
+      className="glass-card flex items-start gap-3 rounded-xl px-4 py-3.5 border-l-2 border-l-accent/30"
     >
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-accent-subtle">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 border border-accent/20">
         <Icon className="h-4 w-4 text-accent" aria-hidden="true" />
       </div>
       <div className="space-y-0.5">
-        <p className="text-xs font-semibold text-foreground">{title}</p>
+        <p className="font-display text-sm font-semibold text-foreground">{title}</p>
         <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
       </div>
-      <span className="ml-auto shrink-0 text-xs font-bold text-muted/60">{step}</span>
+      <span className="ml-auto shrink-0 font-display text-xs font-bold text-accent/40">{step}</span>
     </motion.div>
   )
 }
