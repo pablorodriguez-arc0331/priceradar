@@ -9,7 +9,7 @@ import { PriceComparisonTable } from '@/components/product/PriceComparisonTable'
 import { PriceHistoryChart, PriceHistoryChartSkeleton } from '@/components/product/PriceHistoryChart'
 import { AlertSetupSheet, EmptyState } from '@/components/common'
 import { Button } from '@/components/ui/Button'
-import { useProduct } from '@/hooks'
+import { useProduct, useDocumentTitle } from '@/hooks'
 import { useAuthStore, useTrackedStore, useToast } from '@/store'
 import { formatPrice, formatRelativeTime, isAtTrackingLimit, FREE_TIER_LIMIT } from '@/lib/utils'
 import { cn } from '@/lib/utils'
@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils'
 export function ProductResultPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
-  const { data: product, isLoading, error } = useProduct(id)
+  const { data: product, isLoading, error, isLoadingComparison } = useProduct(id)
   const { user, isAuthenticated } = useAuthStore()
   const { trackedProducts, fetchTracked, addTracked, removeTracked } = useTrackedStore()
   const toast = useToast()
@@ -36,6 +36,7 @@ export function ProductResultPage() {
   const existingTracked = trackedProducts.find(t => t.product_id === id)
   const isTracked = !!existingTracked
   const atLimit = isAtTrackingLimit(user?.tracked_count ?? 0, user?.plan ?? 'free')
+  useDocumentTitle(product ? `${product.name} — Price History & Comparison | PriceRadar` : 'PriceRadar')
 
   const handleTrack = async () => {
     if (!isAuthenticated) {
@@ -128,7 +129,7 @@ export function ProductResultPage() {
                     size="hero"
                   />
                   <div className="text-center">
-                    <p className="price text-3xl font-bold text-foreground">
+                    <p className="price font-display text-4xl font-bold text-foreground">
                       {formatPrice(product.signal.current_best_price)}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -214,7 +215,10 @@ export function ProductResultPage() {
           <PriceComparisonTable
             prices={product?.retailer_prices ?? []}
             isLoading={isLoading}
+            isLoadingComparison={isLoadingComparison}
+            isAuthenticated={isAuthenticated}
             isPaid={isPaid}
+            onSignIn={() => navigate('/auth', { state: { returnTo: `/product/${id}` } })}
             onUpgrade={() => navigate('/upgrade', { state: { reason: 'comparison' } })}
           />
         </section>
@@ -267,7 +271,7 @@ function ProductHeader({ product }: { product: { name: string; image_url?: strin
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
           {product.category ?? 'Product'}
         </p>
-        <h1 className="text-base font-semibold text-foreground leading-snug line-clamp-3">
+        <h1 className="font-display text-base font-semibold text-foreground leading-snug line-clamp-3">
           {product.name}
         </h1>
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
@@ -302,11 +306,11 @@ function StatsGrid({ signal }: {
     <section aria-label="Price statistics">
       <div className="grid grid-cols-4 gap-2">
         {stats.map(stat => (
-          <div key={stat.label} className="glass-card flex flex-col items-center rounded-lg px-2 py-3 text-center">
-            <p className={cn('price text-sm font-bold', stat.highlight ? 'text-signal-low' : 'text-foreground')}>
+          <div key={stat.label} className="glass-card flex flex-col items-center rounded-xl px-2 py-3.5 text-center">
+            <p className={cn('price font-display text-sm font-bold', stat.highlight ? 'text-signal-low' : 'text-foreground')}>
               {stat.value}
             </p>
-            <p className="mt-0.5 text-[10px] text-muted-foreground">{stat.label}</p>
+            <p className="mt-0.5 text-[10px] text-muted-foreground font-sans">{stat.label}</p>
           </div>
         ))}
       </div>
