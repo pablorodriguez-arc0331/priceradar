@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useDocumentTitle } from '@/hooks'
 import {
   Check, Lock, Sparkles, Bell, TrendingDown, LayoutDashboard, Zap,
   User, LogOut, Mail, Shield, ChevronRight, AlertTriangle,
@@ -41,6 +42,7 @@ export function UpgradePage() {
   const toast = useToast()
 
   const reason = (location.state as { reason?: string })?.reason
+  useDocumentTitle('Upgrade to PriceRadar Pro — PriceRadar')
 
   const handleUpgrade = () => {
     // In production: open Stripe checkout
@@ -77,7 +79,7 @@ export function UpgradePage() {
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           Price Radar Pro
         </div>
-        <h1 className="text-2xl font-bold text-foreground tracking-tight">
+        <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
           {reason === 'tracking_limit'
             ? "You've reached the free limit"
             : 'See the full price story'}
@@ -191,6 +193,7 @@ export function SettingsPage() {
   const { user, setUser, signOut, isAuthenticated } = useAuthStore()
   const toast = useToast()
   const push = usePushNotifications(user?.id)
+  useDocumentTitle('Account Settings — PriceRadar')
 
   const handleSignOut = async () => {
     await signOut()
@@ -215,7 +218,7 @@ export function SettingsPage() {
 
   return (
     <Page className="space-y-6">
-      <h1 className="text-xl font-bold text-foreground">Account</h1>
+      <h1 className="font-display text-xl font-bold text-foreground">Account</h1>
 
       {/* Profile card */}
       <motion.div
