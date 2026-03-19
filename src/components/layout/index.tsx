@@ -3,9 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Radar } from 'lucide-react'
 import { faHouse, faMagnifyingGlass, faTableCells, faUser, faWifi, faMoon, faSun } from '@fortawesome/free-solid-svg-icons'
 import { FaIcon } from '@/components/ui/FaIcon'
-import { useThemeStore } from '@/store'
+import { useThemeStore, useAuthStore } from '@/store'
 import { cn } from '@/lib/utils'
-import { useAuthStore } from '@/store'
 import { useOnlineStatus } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 
@@ -102,7 +101,7 @@ function ThemeToggleButton() {
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       <FaIcon
-        icon={theme === 'dark' ? faMoon : faSun}
+        icon={theme === 'dark' ? faSun : faMoon}
         className="h-4 w-4"
         aria-hidden="true"
       />
