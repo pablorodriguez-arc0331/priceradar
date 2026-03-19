@@ -5,47 +5,41 @@ import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
-  // Base — applied to all variants
   [
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md',
-    'text-sm font-medium',
-    'transition-colors',
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg',
+    'font-sans text-sm font-medium',
+    'transition-all duration-200',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-    'disabled:pointer-events-none disabled:opacity-50',
+    'disabled:pointer-events-none disabled:opacity-40',
     'touch-action-manipulation',
   ],
   {
     variants: {
       variant: {
         primary:
-          'bg-accent text-accent-foreground hover:bg-accent-hover hover:brightness-110 active:bg-accent-hover shadow-sm hover:shadow-md transition-shadow',
+          'bg-accent text-[#050D1A] font-semibold hover:bg-accent-hover active:bg-accent shadow-[0_0_16px_rgba(6,182,212,0.35)] hover:shadow-[0_0_24px_rgba(6,182,212,0.50)]',
         secondary:
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+          'bg-surface text-foreground border border-[rgba(6,182,212,0.20)] hover:border-accent/40 hover:bg-surface-raised',
         outline:
-          'border border-border bg-background hover:bg-accent-subtle hover:text-accent hover:border-accent',
+          'border border-accent/25 bg-transparent text-accent hover:bg-accent/10 hover:border-accent/50',
         ghost:
-          'hover:bg-accent-subtle hover:text-accent',
+          'hover:bg-accent/10 hover:text-accent text-muted-foreground',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         link:
           'text-accent underline-offset-4 hover:underline p-0 h-auto',
       },
       size: {
-        sm: 'h-8 px-3 text-xs rounded-md',
-        default: 'h-10 px-4',
-        lg: 'h-12 px-6 text-base rounded-lg',
-        xl: 'h-14 px-8 text-base rounded-xl',
-        icon: 'h-10 w-10',
-        'icon-sm': 'h-8 w-8',
+        sm:      'h-9 px-3 text-xs rounded-md min-h-[36px]',
+        default: 'h-11 px-4 min-h-[44px]',
+        lg:      'h-12 px-6 text-base rounded-xl min-h-[44px]',
+        xl:      'h-14 px-8 text-base rounded-xl min-h-[44px]',
+        icon:    'h-11 w-11 min-h-[44px] min-w-[44px]',
+        'icon-sm': 'h-9 w-9',
       },
-      fullWidth: {
-        true: 'w-full',
-      },
+      fullWidth: { true: 'w-full' },
     },
-    defaultVariants: {
-      variant: 'primary',
-      size: 'default',
-    },
+    defaultVariants: { variant: 'primary', size: 'default' },
   },
 )
 
