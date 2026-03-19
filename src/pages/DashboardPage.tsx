@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { LayoutGrid, List, RefreshCw } from 'lucide-react'
+import { faRotate, faBorderAll, faList } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
 import { Page } from '@/components/layout'
 import { TrackedProductCard, TrackedProductCardSkeleton } from '@/components/dashboard/TrackedProductCard'
 import { EmptyState } from '@/components/common'
@@ -90,7 +91,8 @@ export function DashboardPage() {
             aria-label="Refresh all prices"
             disabled={isRefreshing}
           >
-            <RefreshCw
+            <FaIcon
+              icon={faRotate}
               className={cn('h-4 w-4', isRefreshing && 'animate-spin')}
               aria-hidden="true"
             />
@@ -117,8 +119,8 @@ export function DashboardPage() {
                 aria-label={`${view} view`}
               >
                 {view === 'grid'
-                  ? <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
-                  : <List className="h-3.5 w-3.5" aria-hidden="true" />
+                  ? <FaIcon icon={faBorderAll} className="h-3.5 w-3.5" aria-hidden="true" />
+                  : <FaIcon icon={faList} className="h-3.5 w-3.5" aria-hidden="true" />
                 }
               </button>
             ))}
