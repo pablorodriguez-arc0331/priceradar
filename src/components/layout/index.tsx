@@ -1,6 +1,9 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Home, Search, LayoutDashboard, User, Radar, WifiOff } from 'lucide-react'
+import { Radar } from 'lucide-react'
+import { faHouse, faMagnifyingGlass, faTableCells, faUser, faWifi, faMoon, faSun } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
+import { useThemeStore } from '@/store'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/store'
 import { useOnlineStatus } from '@/hooks'
@@ -40,11 +43,12 @@ export function Header() {
               role="status"
               aria-label="You are offline"
             >
-              <WifiOff className="h-3 w-3 text-amber-400" aria-hidden="true" />
+              <FaIcon icon={faWifi} className="h-3 w-3 text-amber-400 opacity-50" aria-hidden="true" />
               <span className="text-xs font-medium text-amber-400">Offline</span>
             </motion.div>
           )}
         </AnimatePresence>
+        <ThemeToggleButton />
         <UserMenuButton />
       </div>
     </header>
@@ -82,19 +86,36 @@ function UserMenuButton() {
         <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" />
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-accent/10">
-          <User className="h-4 w-4 text-accent" aria-hidden="true" />
+          <FaIcon icon={faUser} className="h-4 w-4 text-accent" aria-hidden="true" />
         </div>
       )}
     </Link>
   )
 }
 
+function ThemeToggleButton() {
+  const { theme, toggleTheme } = useThemeStore()
+  return (
+    <button
+      onClick={toggleTheme}
+      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+    >
+      <FaIcon
+        icon={theme === 'dark' ? faMoon : faSun}
+        className="h-4 w-4"
+        aria-hidden="true"
+      />
+    </button>
+  )
+}
+
 // ─── Bottom Navigation ────────────────────────────────────────────────────────
 const NAV_TABS = [
-  { path: '/', label: 'Home', icon: Home, exactMatch: true },
-  { path: '/search', label: 'Search', icon: Search },
-  { path: '/dashboard', label: 'Watchlist', icon: LayoutDashboard, requiresAuth: true },
-  { path: '/settings', label: 'Account', icon: User },
+  { path: '/', label: 'Home', icon: faHouse, exactMatch: true },
+  { path: '/search', label: 'Search', icon: faMagnifyingGlass },
+  { path: '/dashboard', label: 'Watchlist', icon: faTableCells, requiresAuth: true },
+  { path: '/settings', label: 'Account', icon: faUser },
 ]
 
 export function BottomNav() {
@@ -117,13 +138,16 @@ export function BottomNav() {
 
   return (
     <nav
-      className="glass fixed bottom-0 inset-x-0 z-40 flex pb-safe"
+      className="liquid-glass-nav fixed left-4 right-4 z-40 flex"
       aria-label="Main navigation"
-      style={{ height: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
+      style={{
+        bottom: 0,
+        marginBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
+        height: '56px',
+      }}
     >
       {NAV_TABS.map(tab => {
         const active = isActive(tab)
-        const Icon = tab.icon
 
         return (
           <button
@@ -140,7 +164,8 @@ export function BottomNav() {
             aria-label={tab.label}
           >
             <div className="relative">
-              <Icon
+              <FaIcon
+                icon={tab.icon}
                 className={cn('h-5 w-5 transition-transform', active && 'scale-110')}
                 aria-hidden="true"
               />
@@ -155,7 +180,7 @@ export function BottomNav() {
             </div>
             <span
               className={cn(
-                'text-[10px] font-medium',
+                'text-[11px] font-medium',
                 active ? 'text-accent' : 'text-muted-foreground',
               )}
             >
