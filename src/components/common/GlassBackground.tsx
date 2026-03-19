@@ -3,36 +3,24 @@ import { motion } from 'framer-motion'
 // Animated blob configuration
 const BLOBS = [
   {
-    // Primary — accent blue, top-right
-    className: 'absolute -top-24 -right-24 h-[380px] w-[380px] rounded-full opacity-[0.18] dark:opacity-25',
-    style: { background: 'radial-gradient(circle, #2563EB 0%, #3B82F6 60%, transparent 100%)' },
-    animate: {
-      x: [0, 40, -15, 0],
-      y: [0, -60, 30, 0],
-      scale: [1, 1.08, 0.94, 1],
-    },
+    // Primary — electric cyan, top-right
+    className: 'absolute -top-32 -right-32 h-[420px] w-[420px] rounded-full opacity-25',
+    style: { background: 'radial-gradient(circle, #06B6D4 0%, #0891B2 50%, transparent 100%)' },
+    animate: { x: [0, 40, -15, 0], y: [0, -60, 30, 0], scale: [1, 1.08, 0.94, 1] },
     transition: { duration: 22, ease: 'easeInOut', repeat: Infinity },
   },
   {
     // Secondary — violet, bottom-left
-    className: 'absolute -bottom-24 -left-24 h-[420px] w-[420px] rounded-full opacity-[0.14] dark:opacity-20',
-    style: { background: 'radial-gradient(circle, #7C3AED 0%, #8B5CF6 60%, transparent 100%)' },
-    animate: {
-      x: [0, -35, 25, 0],
-      y: [0, 50, -40, 0],
-      scale: [1, 0.93, 1.07, 1],
-    },
+    className: 'absolute -bottom-32 -left-32 h-[460px] w-[460px] rounded-full opacity-20',
+    style: { background: 'radial-gradient(circle, #7C3AED 0%, #6D28D9 50%, transparent 100%)' },
+    animate: { x: [0, -35, 25, 0], y: [0, 50, -40, 0], scale: [1, 0.93, 1.07, 1] },
     transition: { duration: 26, ease: 'easeInOut', repeat: Infinity, delay: 9 },
   },
   {
-    // Tertiary — teal, mid-left
-    className: 'absolute top-1/3 -left-20 h-[300px] w-[300px] rounded-full opacity-[0.12] dark:opacity-[0.18]',
-    style: { background: 'radial-gradient(circle, #0D9488 0%, #14B8A6 60%, transparent 100%)' },
-    animate: {
-      x: [0, 25, -18, 0],
-      y: [0, -40, 55, 0],
-      scale: [1, 1.1, 0.9, 1],
-    },
+    // Tertiary — deep cyan-teal, mid-right
+    className: 'absolute top-1/2 -right-20 h-[320px] w-[320px] rounded-full opacity-[0.15]',
+    style: { background: 'radial-gradient(circle, #0E7490 0%, #164E63 60%, transparent 100%)' },
+    animate: { x: [0, 25, -18, 0], y: [0, -40, 55, 0], scale: [1, 1.1, 0.9, 1] },
     transition: { duration: 30, ease: 'easeInOut', repeat: Infinity, delay: 4 },
   },
 ]
@@ -44,7 +32,7 @@ export function GlassBackground() {
       aria-hidden="true"
     >
       {/* Base background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-accent/[0.04]" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#050D1A] via-[#070F20] to-[#050D1A]" />
 
       {/* Animated blobs */}
       {BLOBS.map((blob, i) => (
