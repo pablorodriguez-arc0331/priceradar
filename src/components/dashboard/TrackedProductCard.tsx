@@ -1,7 +1,10 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Bell, BellOff, Trash2, ChevronRight, Clock } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import { faBell, faBellSlash, faTrashCan, faClock } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
 import { cn, formatPrice, formatRelativeTime } from '@/lib/utils'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { ProductImage } from '@/components/product/ProductImage'
@@ -131,7 +134,7 @@ function SwipeToDelete({
           aria-label="Delete from watchlist"
           type="button"
         >
-          <Trash2 className="h-5 w-5" aria-hidden="true" />
+          <FaIcon icon={faTrashCan} className="h-5 w-5" aria-hidden="true" />
           <span className="text-[10px] font-medium">Delete</span>
         </button>
       </motion.div>
@@ -224,18 +227,18 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
         {/* Footer */}
         <div className="mt-auto flex items-center justify-between border-t border-border pt-2">
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" aria-hidden="true" />
+            <FaIcon icon={faClock} className="h-3 w-3" aria-hidden="true" />
             {formatRelativeTime(item.last_checked_at)}
           </span>
           <div className="flex items-center gap-1">
             <CardAction
-              icon={item.alert_enabled ? Bell : BellOff}
+              icon={item.alert_enabled ? faBell : faBellSlash}
               label={item.alert_enabled ? 'Pause alert' : 'Enable alert'}
               onClick={onAlertToggle}
               active={item.alert_enabled}
             />
             <CardAction
-              icon={Trash2}
+              icon={faTrashCan}
               label="Remove from watchlist"
               onClick={onRemove}
               danger
@@ -307,7 +310,7 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
         </div>
         <div className="flex items-center gap-1">
           <CardAction
-            icon={item.alert_enabled ? Bell : BellOff}
+            icon={item.alert_enabled ? faBell : faBellSlash}
             label={item.alert_enabled ? 'Pause alert' : 'Enable alert'}
             onClick={onAlertToggle}
             active={item.alert_enabled}
@@ -321,13 +324,13 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
 
 // ─── Card action button ────────────────────────────────────────────────────────
 function CardAction({
-  icon: Icon,
+  icon,
   label,
   onClick,
   active,
   danger,
 }: {
-  icon: React.ElementType
+  icon: IconDefinition
   label: string
   onClick: (e: React.MouseEvent) => void
   active?: boolean
@@ -348,7 +351,7 @@ function CardAction({
       aria-label={label}
       type="button"
     >
-      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
+      <FaIcon icon={icon} className="h-3.5 w-3.5" aria-hidden="true" />
     </motion.button>
   )
 }

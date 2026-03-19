@@ -10,7 +10,8 @@ import {
   ReferenceLine,
   CartesianGrid,
 } from 'recharts'
-import { Lock } from 'lucide-react'
+import { faLock } from '@fortawesome/free-solid-svg-icons'
+import { FaIcon } from '@/components/ui/FaIcon'
 import { motion } from 'framer-motion'
 import { cn, formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
@@ -221,7 +222,7 @@ function PaywallOverlay({ onUpgrade }: { onUpgrade: () => void }) {
     >
       <div className="flex flex-col items-center gap-2 text-center px-6">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted border border-border">
-          <Lock className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <FaIcon icon={faLock} className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         </div>
         <p className="text-sm font-semibold text-foreground">See the full price story</p>
         <p className="text-xs text-muted-foreground max-w-[200px]">

@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Bell, TrendingDown, Radar, Package } from 'lucide-react'
-import { faShieldHalved } from '@fortawesome/free-solid-svg-icons'
+import { ArrowRight, TrendingDown, Radar, Package } from 'lucide-react'
+import { faShieldHalved, faBell } from '@fortawesome/free-solid-svg-icons'
 import { FaIcon } from '@/components/ui/FaIcon'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
@@ -11,19 +11,19 @@ import { useDocumentTitle } from '@/hooks'
 
 const STEPS = [
   {
-    icon: ArrowRight,
+    icon: <ArrowRight className="h-4 w-4 text-accent" aria-hidden="true" />,
     step: '01',
     title: 'Paste an Amazon product link',
     body: 'Copy any Amazon product URL and paste it here. No extension needed.',
   },
   {
-    icon: TrendingDown,
+    icon: <TrendingDown className="h-4 w-4 text-accent" aria-hidden="true" />,
     step: '02',
     title: 'Get the verdict instantly',
     body: "We compare the current price to its history and tell you: is this a good deal right now?",
   },
   {
-    icon: Bell,
+    icon: <FaIcon icon={faBell} className="h-4 w-4 text-accent" aria-hidden="true" />,
     step: '03',
     title: 'Set an alert, buy at the right time',
     body: "We'll notify you when the price drops to where you want it. You come back, you buy.",
@@ -222,13 +222,13 @@ function RetailerDot({ slug }: { slug: string }) {
 
 // ─── Step card ─────────────────────────────────────────────────────────────────
 function StepCard({
-  icon: Icon,
+  icon,
   step,
   title,
   body,
   delay,
 }: {
-  icon: React.ElementType
+  icon: React.ReactNode
   step: string
   title: string
   body: string
@@ -242,7 +242,7 @@ function StepCard({
       className="glass-card flex items-start gap-3 rounded-xl px-4 py-3.5 border-l-2 border-l-accent/30"
     >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 border border-accent/20">
-        <Icon className="h-4 w-4 text-accent" aria-hidden="true" />
+        {icon}
       </div>
       <div className="space-y-0.5">
         <p className="font-display text-sm font-semibold text-foreground">{title}</p>
