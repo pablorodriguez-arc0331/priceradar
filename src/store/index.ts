@@ -27,8 +27,21 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
 
   initAuth: async () => {
     try {
+      // "Remember me = false" enforcement:
+      // If the user signed in without remember-me, auto sign out when the browser session ends.
+      // pr_no_remember is in localStorage (survives restarts); pr_alive is in sessionStorage (clears on close).
+      const noRemember = localStorage.getItem('pr_no_remember')
+      if (noRemember && !sessionStorage.getItem('pr_alive')) {
+        await supabase.auth.signOut()
+        localStorage.removeItem('pr_no_remember')
+        set({ user: null, isAuthenticated: false, isLoading: false })
+        return
+      }
+
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
+        // Mark this tab as alive so refreshes don't trigger auto sign-out
+        if (noRemember) sessionStorage.setItem('pr_alive', '1')
         // Fetch profile from Supabase
         const { data: profile } = await supabase
           .from('profiles')
@@ -120,6 +133,8 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   setUser: (user) => set({ user, isAuthenticated: !!user }),
 
   signOut: async () => {
+    localStorage.removeItem('pr_no_remember')
+    sessionStorage.removeItem('pr_alive')
     await supabaseSignOut()
     set({ user: null, isAuthenticated: false })
   },
@@ -307,17 +322,30 @@ type Theme = 'dark' | 'light'
 
 interface ThemeStore {
   theme: Theme
+  userOverride: boolean   // true = user manually picked; false = follow system
   toggleTheme: () => void
+  setSystemTheme: (t: Theme) => void
+}
+
+function getSystemTheme(): Theme {
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    return 'light'
+  }
+  return 'dark'
 }
 
 export const useThemeStore = create<ThemeStore>()(
   persist(
     (set, get) => ({
-      theme: 'dark' as Theme,
-      toggleTheme: () => set({ theme: get().theme === 'dark' ? 'light' : 'dark' }),
+      theme: getSystemTheme(),
+      userOverride: false,
+      toggleTheme: () => set({ theme: get().theme === 'dark' ? 'light' : 'dark', userOverride: true }),
+      setSystemTheme: (t: Theme) => { if (!get().userOverride) set({ theme: t }) },
     }),
     {
       name: 'price-radar-theme',
+      // Only persist the manual override and chosen theme, not the setter functions
+      partialize: (s) => ({ theme: s.theme, userOverride: s.userOverride }),
     },
   ),
 )

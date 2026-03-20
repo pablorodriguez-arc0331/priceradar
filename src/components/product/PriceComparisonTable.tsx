@@ -8,6 +8,8 @@ import { appendAffiliateTag } from '@/lib/affiliate'
 
 // Retailers whose Buy button requires a paid account
 const GATED_RETAILER_SLUGS = new Set(['walmart', 'bestbuy'])
+// Retailers whose Buy button requires at least being signed in
+const AUTH_GATED_SLUGS = new Set(['target'])
 
 interface PriceComparisonTableProps {
   prices: RetailerPrice[]
@@ -70,6 +72,8 @@ export function PriceComparisonTable({
             const isCheapest = index === 0 && prices.length > 1
             const isMostExpensive = index === prices.length - 1 && prices.length > 1
             const isBuyLocked = GATED_RETAILER_SLUGS.has(item.retailer.slug) && (!isAuthenticated || !isPaid)
+            const isAuthLocked = AUTH_GATED_SLUGS.has(item.retailer.slug) && !isAuthenticated
+            const isAmazon = item.retailer.slug === 'amazon'
             return (
             <motion.tr
               key={item.retailer.slug}
@@ -137,7 +141,7 @@ export function PriceComparisonTable({
 
               {/* Buy CTA */}
               <td className="px-4 py-3 text-right">
-                {isBuyLocked ? (
+                {isBuyLocked || isAuthLocked ? (
                   <button
                     onClick={!isAuthenticated ? onSignIn : onUpgrade}
                     className={cn(
@@ -166,6 +170,7 @@ export function PriceComparisonTable({
                       'transition-colors',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       'min-h-[32px]',
+                      isAmazon && 'shadow-[0_0_12px_rgba(6,182,212,0.5)] hover:shadow-[0_0_20px_rgba(6,182,212,0.7)]',
                     )}
                     aria-label={`Buy on ${item.retailer.name} for ${formatPrice(item.price)} — opens in new tab`}
                   >
@@ -182,11 +187,18 @@ export function PriceComparisonTable({
         </motion.tbody>
       </table>
 
-      {/* Skeleton rows while Gemini comparison is loading */}
+      {/* AI search indicator while Gemini comparison is loading */}
       {isLoadingComparison && (
-        <>
+        <div className="border-t border-[var(--glass-border)] px-4 py-3 space-y-2.5">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <svg className="h-3.5 w-3.5 shrink-0 animate-spin text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span>AI searching Walmart, Best Buy &amp; Target…</span>
+          </div>
           {[...Array(2)].map((_, i) => (
-            <div key={i} className="flex items-center justify-between border-t border-[var(--glass-border)] px-4 py-3">
+            <div key={i} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="skeleton h-7 w-7 rounded-md" />
                 <div className="skeleton h-4 w-20" />
@@ -196,7 +208,7 @@ export function PriceComparisonTable({
               <div className="skeleton h-7 w-12 rounded-md" />
             </div>
           ))}
-        </>
+        </div>
       )}
     </div>
   )

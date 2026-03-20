@@ -8,19 +8,80 @@ import { cn } from '@/lib/utils'
 import { useOnlineStatus } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 
+// ─── Nav config (shared) ──────────────────────────────────────────────────────
+const NAV_TABS = [
+  { path: '/', label: 'Home', icon: faHouse, exactMatch: true },
+  { path: '/search', label: 'Search', icon: faMagnifyingGlass },
+  { path: '/dashboard', label: 'Watchlist', icon: faTableCells, requiresAuth: true },
+  { path: '/settings', label: 'Account', icon: faUser },
+]
+
+// ─── Desktop Nav (shown inside Header on md+) ─────────────────────────────────
+function DesktopNav() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { isAuthenticated } = useAuthStore()
+
+  const isActive = (tab: typeof NAV_TABS[0]) => {
+    if (tab.exactMatch) return location.pathname === tab.path
+    return location.pathname.startsWith(tab.path)
+  }
+
+  const handleClick = (tab: typeof NAV_TABS[0]) => {
+    if (tab.requiresAuth && !isAuthenticated) {
+      navigate('/auth', { state: { returnTo: tab.path } })
+      return
+    }
+    navigate(tab.path)
+  }
+
+  return (
+    <nav className="hidden md:flex items-center gap-1" aria-label="Desktop navigation">
+      {NAV_TABS.map(tab => {
+        const active = isActive(tab)
+        return (
+          <button
+            key={tab.path}
+            onClick={() => handleClick(tab)}
+            aria-current={active ? 'page' : undefined}
+            className={cn(
+              'flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              active
+                ? 'bg-accent/10 text-accent'
+                : 'text-muted-foreground hover:text-foreground hover:bg-white/5',
+            )}
+          >
+            <FaIcon icon={tab.icon} className="h-3.5 w-3.5" aria-hidden="true" />
+            {tab.label}
+          </button>
+        )
+      })}
+    </nav>
+  )
+}
+
 // ─── Header ───────────────────────────────────────────────────────────────────
 export function Header() {
   const isOnline = useOnlineStatus()
 
   return (
-    <header className="glass sticky top-0 z-40 flex items-center justify-between pt-safe" style={{ padding: '2.5em 1em 1em' }}>
+    <header
+      className="glass sticky top-0 z-40 flex items-center justify-between gap-4"
+      style={{
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75em)',
+        paddingRight: '1em',
+        paddingBottom: '0.75em',
+        paddingLeft: '1em',
+      }}
+    >
       <a href="#main-content" className="skip-to-content">
         Skip to content
       </a>
 
       <Link
         to="/"
-        className="flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+        className="flex shrink-0 items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
         aria-label="PriceRadar — Home"
       >
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 glow-cyan">
@@ -30,6 +91,8 @@ export function Header() {
           Price<span className="text-accent">Radar</span>
         </span>
       </Link>
+
+      <DesktopNav />
 
       <div className="flex items-center gap-2">
         <AnimatePresence>
@@ -110,13 +173,6 @@ function ThemeToggleButton() {
 }
 
 // ─── Bottom Navigation ────────────────────────────────────────────────────────
-const NAV_TABS = [
-  { path: '/', label: 'Home', icon: faHouse, exactMatch: true },
-  { path: '/search', label: 'Search', icon: faMagnifyingGlass },
-  { path: '/dashboard', label: 'Watchlist', icon: faTableCells, requiresAuth: true },
-  { path: '/settings', label: 'Account', icon: faUser },
-]
-
 export function BottomNav() {
   const location = useLocation()
   const { isAuthenticated } = useAuthStore()
@@ -137,7 +193,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="liquid-glass-nav fixed left-4 right-4 z-40 flex"
+      className="liquid-glass-nav fixed left-4 right-4 z-40 flex md:hidden"
       aria-label="Main navigation"
       style={{
         bottom: 0,
@@ -195,7 +251,7 @@ export function Page({ children, className, id = 'main-content' }: PageProps) {
   return (
     <motion.main
       id={id}
-      className={cn('px-4 pb-nav pt-4', className)}
+      className={cn('px-4 pb-nav pt-4 md:mx-auto md:w-full md:max-w-5xl md:px-8', className)}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -6 }}

@@ -19,6 +19,7 @@ export function URLSearchInput({
   className,
 }: URLSearchInputProps) {
   const [value, setValue] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
   const { lookup, isLoading, error, hint, setError } = useProductLookup()
@@ -73,92 +74,103 @@ export function URLSearchInput({
     <div className={cn('w-full space-y-2', className)}>
 
       {/* ── Input field ─────────────────────────────────────────────────── */}
-      <div className="relative flex items-center">
+      <div
+        className="search-border-wrap relative rounded-xl p-px"
+        data-focused={isFocused ? 'true' : undefined}
+        data-error={error ? 'true' : undefined}
+      >
+        {/* Inner container — clips to rounded and provides the background that "cuts" the border */}
+        <div className="relative flex items-center rounded-[calc(0.75rem-1px)] bg-background overflow-hidden">
 
-        {/* Left search icon */}
-        <Search
-          className="pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 text-muted-foreground"
-          aria-hidden="true"
-        />
-
-        <input
-          ref={inputRef}
-          type="url"
-          value={value}
-          onChange={e => { setValue(e.target.value); if (error) setError(null) }}
-          onPaste={handlePaste}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className={cn(
-            'w-full h-14 rounded-xl border border-input bg-background/80',
-            'pl-11 pr-12 text-base text-foreground placeholder:text-muted-foreground',
-            'shadow-sm transition-all duration-200',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
-            'focus-visible:border-ring focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.15)]',
-            'disabled:opacity-50',
-            error && 'border-destructive focus-visible:ring-destructive focus-visible:shadow-[0_0_0_4px_hsl(var(--destructive)/0.15)]',
-          )}
-          aria-label="Amazon product URL"
-          aria-describedby={error ? 'search-error' : 'search-hint'}
-          aria-invalid={!!error}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck={false}
-          disabled={isLoading}
-        />
-
-        {/* Right icon: paste | clear | spinner */}
-        <div className="absolute right-3 flex items-center">
-          <AnimatePresence mode="wait">
-            {isLoading ? (
-              <motion.span
-                key="spinner"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center justify-center h-8 w-8"
-              >
-                <Spinner className="h-4 w-4 text-muted-foreground" />
-              </motion.span>
-            ) : hasValue ? (
-              <motion.button
-                key="clear"
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.7 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                onClick={handleClear}
-                type="button"
-                aria-label="Clear"
-                className={cn(
-                  'flex items-center justify-center h-8 w-8 rounded-lg',
-                  'text-muted-foreground hover:text-foreground hover:bg-muted',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                )}
-              >
-                <X className="h-4 w-4" />
-              </motion.button>
-            ) : (
-              <motion.button
-                key="paste"
-                initial={{ opacity: 0, scale: 0.7 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.7 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 22 }}
-                onClick={handlePasteButton}
-                type="button"
-                aria-label="Paste from clipboard"
-                className={cn(
-                  'flex items-center justify-center h-8 w-8 rounded-lg',
-                  'text-muted-foreground hover:text-foreground hover:bg-muted',
-                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                )}
-              >
-                <Clipboard className="h-4 w-4" />
-              </motion.button>
+          {/* Left search icon */}
+          <Search
+            className={cn(
+              'pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 transition-colors duration-300',
+              isFocused ? 'text-accent' : 'text-muted-foreground',
             )}
-          </AnimatePresence>
+            aria-hidden="true"
+          />
+
+          <input
+            ref={inputRef}
+            type="url"
+            value={value}
+            onChange={e => { setValue(e.target.value); if (error) setError(null) }}
+            onPaste={handlePaste}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            placeholder={placeholder}
+            className={cn(
+              'w-full h-14 rounded-[calc(0.75rem-1px)] bg-transparent',
+              'pl-11 pr-12 text-base text-foreground placeholder:text-muted-foreground',
+              'transition-colors duration-200',
+              'focus-visible:outline-none',
+              'disabled:opacity-50',
+            )}
+            aria-label="Amazon product URL"
+            aria-describedby={error ? 'search-error' : 'search-hint'}
+            aria-invalid={!!error}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            disabled={isLoading}
+          />
+
+          {/* Right icon: paste | clear | spinner */}
+          <div className="absolute right-3 flex items-center">
+            <AnimatePresence mode="wait">
+              {isLoading ? (
+                <motion.span
+                  key="spinner"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex items-center justify-center h-8 w-8"
+                >
+                  <Spinner className="h-4 w-4 text-muted-foreground" />
+                </motion.span>
+              ) : hasValue ? (
+                <motion.button
+                  key="clear"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                  onClick={handleClear}
+                  type="button"
+                  aria-label="Clear"
+                  className={cn(
+                    'flex items-center justify-center h-8 w-8 rounded-lg',
+                    'text-muted-foreground hover:text-foreground hover:bg-muted',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  )}
+                >
+                  <X className="h-4 w-4" />
+                </motion.button>
+              ) : (
+                <motion.button
+                  key="paste"
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
+                  onClick={handlePasteButton}
+                  type="button"
+                  aria-label="Paste from clipboard"
+                  className={cn(
+                    'flex items-center justify-center h-8 w-8 rounded-lg',
+                    'text-muted-foreground hover:text-foreground hover:bg-muted',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  )}
+                >
+                  <Clipboard className="h-4 w-4" />
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+
         </div>
       </div>
 

@@ -99,9 +99,10 @@ Deno.serve(async (req: Request) => {
     if (!product) return jsonError('Product not found', 404)
 
     // ── 3. Find users tracking this product with alerts enabled ───────────────
+    // Also fetch alert_target_price so we can check per-user thresholds.
     const { data: trackedRows } = await supabase
       .from('tracked_products')
-      .select('id, user_id')
+      .select('id, user_id, alert_target_price')
       .eq('product_id', product_id)
       .eq('alert_enabled', true)
 
@@ -109,14 +110,28 @@ Deno.serve(async (req: Request) => {
       return jsonOk({ sent: 0, reason: 'no_tracking_users' })
     }
 
-    const userIds = trackedRows.map((r: { id: string; user_id: string }) => r.user_id)
+    // Only notify users whose target price has been reached:
+    // - If user set a target price: only notify when current_price <= target
+    // - If no target price set: notify on any meaningful price drop
+    const eligibleTracked = (trackedRows as Array<{ id: string; user_id: string; alert_target_price: number | null }>)
+      .filter(row => {
+        if (!isPriceDrop) return false // never notify on price increases
+        if (row.alert_target_price === null) return true // no target = notify on any drop
+        return current_price <= row.alert_target_price
+      })
 
-    // ── 4. Filter to premium users with push enabled ───────────────────────────
+    if (!eligibleTracked.length) {
+      console.log(`[send-price-alerts] No users with target price reached for ${product_id}`)
+      return jsonOk({ sent: 0, reason: 'target_price_not_reached' })
+    }
+
+    const userIds = eligibleTracked.map(r => r.user_id)
+
+    // ── 4. Filter to users with push_alerts enabled ────────────────────────────
     const { data: eligibleProfiles } = await supabase
       .from('profiles')
       .select('id')
       .in('id', userIds)
-      .eq('plan', 'paid')
       .eq('push_alerts', true)
 
     if (!eligibleProfiles?.length) {
@@ -208,9 +223,7 @@ Deno.serve(async (req: Request) => {
     const alertRows = (subscriptions as Array<{ user_id: string }>)
       .filter((sub, i) => results[i].status === 'fulfilled')
       .map((sub) => {
-        const tp = trackedRows.find(
-          (r: { user_id: string }) => r.user_id === sub.user_id,
-        )
+        const tp = eligibleTracked.find(r => r.user_id === sub.user_id)
         return tp
           ? {
               tracked_product_id: tp.id,
@@ -226,7 +239,7 @@ Deno.serve(async (req: Request) => {
       await supabase
         .from('price_alerts')
         .insert(alertRows)
-        .catch((e: Error) =>
+        .then(null, (e: Error) =>
           console.warn('[send-price-alerts] price_alerts insert error:', e.message),
         )
     }

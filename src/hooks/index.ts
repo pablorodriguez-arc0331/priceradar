@@ -91,6 +91,7 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
                   name: r.store,
                   slug: r.store.toLowerCase().includes('walmart') ? 'walmart' as const
                     : r.store.toLowerCase().includes('best buy') ? 'bestbuy' as const
+                    : r.store.toLowerCase().includes('target') ? 'target' as const
                     : 'amazon' as const,
                   logo_url: '',
                   affiliate_url_template: '',

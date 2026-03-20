@@ -70,6 +70,9 @@
 
   html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; font-size: 14px; }
 
+  /* Prevent iOS auto-zoom on focus — all interactive inputs must be ≥ 16px */
+  input, textarea, select, button { font-size: 16px; }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
@@ -154,6 +157,125 @@
   .pb-nav  { padding-bottom: var(--page-bottom-pad); }
   .h-nav   { height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px)); }
   .touch-action-manipulation { touch-action: manipulation; }
+}
+
+/* ─── Desktop overrides ─── */
+@media (min-width: 768px) {
+  :root {
+    --page-bottom-pad: 2rem;
+  }
+}
+
+/* ─── AI search glow border ─── */
+@property --search-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes search-border-spin {
+  to { --search-angle: 360deg; }
+}
+
+/* Default: always spinning */
+.search-border-wrap {
+  background: conic-gradient(
+    from var(--search-angle),
+    transparent 0%,
+    rgba(6, 182, 212, 0.25) 10%,
+    rgba(34, 211, 238, 0.7) 26%,
+    rgba(103, 232, 249, 0.5) 34%,
+    rgba(6, 182, 212, 0.25) 46%,
+    transparent 58%,
+    transparent 100%
+  );
+  animation: search-border-spin 4s linear infinite;
+  box-shadow:
+    0 0 16px rgba(6, 182, 212, 0.14),
+    0 0 32px rgba(6, 182, 212, 0.06);
+  transition: box-shadow 0.4s ease;
+}
+
+/* Focused: brighter, faster */
+.search-border-wrap[data-focused="true"] {
+  background: conic-gradient(
+    from var(--search-angle),
+    transparent 0%,
+    rgba(6, 182, 212, 0.45) 10%,
+    rgba(34, 211, 238, 1.0) 26%,
+    rgba(103, 232, 249, 0.8) 34%,
+    rgba(6, 182, 212, 0.5) 46%,
+    transparent 58%,
+    transparent 100%
+  );
+  animation: search-border-spin 2.5s linear infinite;
+  box-shadow:
+    0 0 28px rgba(6, 182, 212, 0.36),
+    0 0 56px rgba(6, 182, 212, 0.16),
+    0 0 90px rgba(6, 182, 212, 0.07);
+}
+
+.search-border-wrap[data-error="true"] {
+  background: conic-gradient(
+    from var(--search-angle),
+    transparent 0%,
+    rgba(244, 63, 94, 0.35) 10%,
+    rgba(251, 113, 133, 1.0) 26%,
+    rgba(244, 63, 94, 0.6) 40%,
+    transparent 56%,
+    transparent 100%
+  );
+  animation: search-border-spin 3s linear infinite;
+  box-shadow:
+    0 0 24px rgba(244, 63, 94, 0.28),
+    0 0 48px rgba(244, 63, 94, 0.12);
+}
+
+:root[data-theme="light"] .search-border-wrap {
+  background: conic-gradient(
+    from var(--search-angle),
+    transparent 0%,
+    rgba(6, 182, 212, 0.30) 10%,
+    rgba(8, 145, 178, 0.75) 26%,
+    rgba(6, 182, 212, 0.35) 40%,
+    transparent 56%,
+    transparent 100%
+  );
+  animation: search-border-spin 4s linear infinite;
+  box-shadow:
+    0 0 14px rgba(6, 182, 212, 0.14),
+    0 0 28px rgba(6, 182, 212, 0.06);
+}
+
+:root[data-theme="light"] .search-border-wrap[data-focused="true"] {
+  background: conic-gradient(
+    from var(--search-angle),
+    transparent 0%,
+    rgba(6, 182, 212, 0.5) 10%,
+    rgba(8, 145, 178, 1.0) 26%,
+    rgba(6, 182, 212, 0.5) 42%,
+    transparent 58%,
+    transparent 100%
+  );
+  animation: search-border-spin 2.5s linear infinite;
+  box-shadow:
+    0 0 22px rgba(6, 182, 212, 0.26),
+    0 0 44px rgba(6, 182, 212, 0.12);
+}
+
+:root[data-theme="light"] .search-border-wrap[data-error="true"] {
+  background: conic-gradient(
+    from var(--search-angle),
+    transparent 0%,
+    rgba(225, 29, 72, 0.45) 10%,
+    rgba(244, 63, 94, 0.9) 26%,
+    rgba(225, 29, 72, 0.4) 40%,
+    transparent 56%,
+    transparent 100%
+  );
+  box-shadow:
+    0 0 20px rgba(244, 63, 94, 0.22),
+    0 0 40px rgba(244, 63, 94, 0.08);
 }
 
 /* ─── Components ─── */

@@ -92,20 +92,24 @@ async function searchWithGemini(
 ): Promise<GlobalComparisonResponse | null> {
   const systemInstruction = `Actúa como un motor de búsqueda de productos global especializado en comparación de precios en tiempo real.
 
-Tu objetivo es encontrar el producto en el país especificado y devolver una comparativa de las 2 tiendas líderes locales EXCLUYENDO Amazon (se rastrea por separado).
+Tu objetivo es encontrar el producto en el país especificado y devolver una comparativa de las tiendas líderes locales EXCLUYENDO Amazon (se rastrea por separado).
 
 Reglas estrictas:
 1. Solo devuelves coincidencias EXACTAS (mismo modelo, mismas especificaciones, producto nuevo).
 2. NUNCA incluyas Amazon en los resultados.
-3. Para United States: usa EXACTAMENTE Walmart (walmart.com) y Best Buy (bestbuy.com).
-4. Para otros países: identifica los 2 retailers más relevantes excluyendo Amazon.
-5. Las URLs DEBEN ser URLs válidas del dominio oficial del retailer que apunten directamente al producto.
-   - Para Walmart USA: https://www.walmart.com/ip/PRODUCT-NAME/ITEM_ID (busca el producto con Google Search y extrae la URL real)
-   - Para Best Buy USA: https://www.bestbuy.com/site/PRODUCT-NAME/SKU.p (busca el producto con Google Search y extrae la URL real)
-   - Si no encuentras URL directa al producto, usa URL de búsqueda:
-     Walmart: https://www.walmart.com/search?q=TERMINOS
-     Best Buy: https://www.bestbuy.com/site/searchpage.jsp?st=TERMINOS
-6. Extrae precio actual y disponibilidad usando Google Search.
+3. Para United States: busca en EXACTAMENTE estas 3 tiendas: Walmart (walmart.com), Best Buy (bestbuy.com) y Target (target.com).
+4. Para otros países: identifica los 3 retailers más relevantes excluyendo Amazon.
+5. Las URLs DEBEN ser URLs reales y funcionales que el usuario pueda abrir en su navegador.
+   Usa Google Search para encontrar la URL real de cada producto en cada tienda.
+   Formatos válidos por tienda:
+   - Walmart USA (producto directo): https://www.walmart.com/ip/PRODUCT-SLUG/ITEM_ID
+   - Walmart USA (búsqueda):         https://www.walmart.com/search?q=TERMINOS
+   - Best Buy USA (producto directo): https://www.bestbuy.com/site/PRODUCT-NAME/SKU.p
+   - Best Buy USA (búsqueda):         https://www.bestbuy.com/site/searchpage.jsp?st=TERMINOS
+   - Target USA (producto directo):   https://www.target.com/p/PRODUCT-SLUG/-/A-DPCI
+   - Target USA (búsqueda):           https://www.target.com/s?searchTerm=TERMINOS
+   CRÍTICO: NUNCA inventes ni supongas IDs de producto, SKUs ni DPCIs. Si Google Search no te devuelve la URL exacta del producto, usa SIEMPRE la URL de búsqueda de la tienda con los términos del producto. Es mejor una URL de búsqueda real que una URL de producto inventada.
+6. Extrae precio actual usando Google Search. Si el producto no está disponible en esa tienda, omite ese resultado.
 7. Si la moneda de la tienda no es ${currency}, realiza la conversión al tipo de cambio actual.
 8. Asigna confidence_score: "high" si el producto es idéntico, "medium" si es probable, "low" si es aproximado.
 9. Respuesta ÚNICA en JSON puro, sin markdown, sin explicaciones.`
@@ -116,7 +120,8 @@ Producto: "${productTitle}"
 País: ${country}
 Moneda de salida: ${currency}
 
-Usa Google Search para encontrar el precio actual y la URL directa del producto en cada tienda.
+Usa Google Search para encontrar el precio actual y la URL real del producto en cada tienda.
+Para United States busca en: Walmart, Best Buy y Target.
 
 Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional):
 {
@@ -127,7 +132,7 @@ Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional)
       "store": "nombre de la tienda",
       "price": precio_numerico,
       "formatted_price": "precio con símbolo de moneda",
-      "url": "https://url-directa-al-producto-en-el-sitio-del-retailer",
+      "url": "https://url-real-y-funcional-del-producto-o-busqueda-en-la-tienda",
       "is_best_deal": true_o_false,
       "confidence_score": "high|medium|low"
     }
@@ -135,7 +140,7 @@ Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional)
   "global_avg_price": precio_promedio_numerico
 }
 
-Exactamente 2 resultados. Solo un resultado puede tener is_best_deal: true.`
+Entre 2 y 3 resultados (omite una tienda si el producto definitivamente no está disponible). Solo un resultado puede tener is_best_deal: true.`
 
   // Attempt 1: gemini-2.5-flash with google_search
   // Attempt 2: gemini-2.5-flash-lite with google_search

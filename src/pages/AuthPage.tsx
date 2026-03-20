@@ -32,6 +32,7 @@ export function AuthPage() {
 
   const [form, setForm] = useState({ name: '', email: '', password: '' })
   const [errors, setErrors] = useState<Partial<typeof form>>({})
+  const [rememberMe, setRememberMe] = useState(true)
 
   const updateField = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm(prev => ({ ...prev, [field]: e.target.value }))
@@ -64,6 +65,9 @@ export function AuthPage() {
 
     setIsEmailLoading(true)
     try {
+      if (!rememberMe) localStorage.setItem('pr_no_remember', '1')
+      else localStorage.removeItem('pr_no_remember')
+
       if (mode === 'signup') {
         const { data, error } = await signUpWithEmail(form.email, form.password, form.name)
         if (error) throw error
@@ -235,6 +239,32 @@ export function AuthPage() {
                 </button>
               }
             />
+
+            {mode === 'signin' && (
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <div className="relative flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={e => setRememberMe(e.target.checked)}
+                    className="sr-only"
+                  />
+                  <div className={cn(
+                    'h-4 w-4 rounded border-2 flex items-center justify-center transition-colors',
+                    rememberMe
+                      ? 'bg-accent border-accent'
+                      : 'bg-transparent border-muted-foreground/40 hover:border-muted-foreground',
+                  )}>
+                    {rememberMe && (
+                      <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                        <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </div>
+                </div>
+                <span className="text-sm text-muted-foreground">Remember me</span>
+              </label>
+            )}
 
             <Button
               type="submit"
