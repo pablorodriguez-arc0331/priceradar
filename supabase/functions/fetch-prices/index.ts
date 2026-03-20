@@ -104,6 +104,8 @@ Deno.serve(async (req: Request) => {
       return jsonError('Price service is not configured. Please contact support.', 500)
     }
 
+    const keepaKey = Deno.env.get('KEEPA_API_KEY')
+
     // deno-lint-ignore no-explicit-any
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -128,35 +130,80 @@ Deno.serve(async (req: Request) => {
       if (ageMs < 60 * 60 * 1000) {
         console.log(`[fetch-prices] Cache hit — product_id: ${existing.id}`)
 
-        // If Walmart/BestBuy prices are missing (e.g. Gemini failed on the first run),
-        // fetch them now before returning — product data comes from DB, not Rainforest.
-        const { data: compRetailers } = await supabase
-          .from('retailers')
-          .select('id, slug')
-          .in('slug', ['walmart', 'bestbuy'])
-
-        if (compRetailers?.length) {
-          // deno-lint-ignore no-explicit-any
-          const compIds = compRetailers.map((r: any) => r.id)
-          const { count: priceCount } = await supabase
+        // If this product has no Keepa history yet (e.g. fetched before Keepa migration),
+        // fetch it now so the chart is populated on the first view after migration.
+        if (keepaKey && asin) {
+          const { count: historyCount } = await supabase
             .from('price_points')
             .select('*', { count: 'exact', head: true })
             .eq('product_id', existing.id)
-            .eq('is_current', true)
-            .in('retailer_id', compIds)
+            .eq('is_current', false)
 
+          if ((historyCount ?? 0) < 3) {
+            console.log(`[fetch-prices] Cache hit but history missing — fetching Keepa for ${asin}`)
+            const { data: amazonRetailer } = await supabase
+              .from('retailers').select('id').eq('slug', 'amazon').single()
+
+            if (amazonRetailer) {
+              const keepaHistory = await fetchKeepaHistory(asin, keepaKey)
+              if (keepaHistory.length > 0) {
+                const historyRows = keepaHistory.map(h => ({
+                  product_id: existing.id,
+                  retailer_id: amazonRetailer.id,
+                  price: h.price,
+                  currency: 'USD',
+                  captured_at: h.date,
+                  is_current: false,
+                }))
+                for (let i = 0; i < historyRows.length; i += 100) {
+                  await supabase.from('price_points')
+                    .insert(historyRows.slice(i, i + 100))
+                    .then(null, (e: Error) => console.warn('[keepa] batch insert error:', e.message))
+                }
+
+                // Recompute signal with new history
+                const { data: allPrices } = await supabase
+                  .from('price_points').select('price, captured_at')
+                  .eq('product_id', existing.id).eq('retailer_id', amazonRetailer.id)
+                  .order('captured_at', { ascending: true })
+
+                const { data: currentPriceRow } = await supabase
+                  .from('price_points').select('price')
+                  .eq('product_id', existing.id).eq('retailer_id', amazonRetailer.id)
+                  .eq('is_current', true).order('captured_at', { ascending: false }).limit(1).maybeSingle()
+
+                if (currentPriceRow) {
+                  const signal = computeSignal(
+                    Number(currentPriceRow.price),
+                    // deno-lint-ignore no-explicit-any
+                    (allPrices ?? []).map((p: any) => ({ price: Number(p.price), date: p.captured_at })),
+                  )
+                  await supabase.from('price_signals').upsert(
+                    { product_id: existing.id, ...signal, last_checked_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+                    { onConflict: 'product_id' },
+                  )
+                }
+              }
+            }
+          }
         }
 
         return jsonOk({ product_id: existing.id, cached: true })
       }
     }
 
-    // ── Fetch product data from Rainforest ────────────────────────────────────
-    console.log(`[fetch-prices] Calling Rainforest API for ASIN: ${asin}`)
-    const normalized: NormalizedProduct = await fetchAmazon(canonicalUrl, rainforestKey)
+    // ── Fetch product data from Rainforest + history from Keepa (parallel) ──────
+    console.log(`[fetch-prices] Calling Rainforest + Keepa APIs for ASIN: ${asin}`)
+
+    const [normalized, keepaHistory] = await Promise.all([
+      fetchAmazon(canonicalUrl, rainforestKey),
+      keepaKey ? fetchKeepaHistory(asin, keepaKey) : Promise.resolve([]),
+    ])
+
+    normalized.price_history = keepaHistory
 
     console.log(
-      `[fetch-prices] Rainforest OK — "${normalized.name}" @ $${normalized.current_price}`
+      `[fetch-prices] Rainforest OK — "${normalized.name}" @ $${normalized.current_price} | Keepa: ${keepaHistory.length} points`
     )
 
     // Validate core fields
@@ -227,7 +274,7 @@ Deno.serve(async (req: Request) => {
         await supabase
           .from('price_points')
           .insert(historyRows.slice(i, i + 100))
-          .catch((e: Error) => console.warn('[fetch-prices] history batch insert error:', e.message))
+          .then(null, (e: Error) => console.warn('[fetch-prices] history batch insert error:', e.message))
       }
     } else {
       console.log(`[fetch-prices] No price history returned by API for: ${normalized.name}`)
@@ -287,7 +334,7 @@ Deno.serve(async (req: Request) => {
     // Fire-and-forget — does not block the response or affect price fetch result
     supabase.functions.invoke('send-price-alerts', {
       body: { product_id: product.id, current_price: normalized.current_price },
-    }).catch((e: Error) =>
+    }).then(null, (e: Error) =>
       console.warn('[fetch-prices] alert dispatch error:', e.message),
     )
 
@@ -301,7 +348,109 @@ Deno.serve(async (req: Request) => {
   }
 })
 
-// ─── Rainforest: Amazon (ASIN-based, with Keepa price history) ────────────────
+// ─── Keepa: price history for an ASIN ────────────────────────────────────────
+//
+// Keepa CSV format: flat array [t1, p1, t2, p2, ...]
+//   - time: Keepa minutes (minutes since Jan 21, 2011 00:00 UTC)
+//   - price: integer cents (divide by 100 for USD). -1 = not available.
+//
+// csv[0] = Amazon price (most authoritative)
+// csv[1] = Marketplace New
+// csv[3] = Buy Box (fallback if csv[0] empty)
+
+async function fetchKeepaHistory(
+  asin: string,
+  apiKey: string,
+): Promise<Array<{ date: string; price: number }>> {
+  const params = new URLSearchParams({
+    key: apiKey,
+    domain: '1',  // amazon.com
+    asin,
+  })
+
+  console.log(`[keepa] Fetching history for ASIN: ${asin}`)
+
+  const response = await fetchWithTimeout(
+    `https://api.keepa.com/product?${params.toString()}`,
+    20000,
+  )
+
+  if (!response.ok) {
+    const text = await response.text().catch(() => '')
+    console.warn(`[keepa] API error ${response.status}: ${text.slice(0, 200)}`)
+    return []
+  }
+
+  // deno-lint-ignore no-explicit-any
+  const data: any = await response.json()
+  // deno-lint-ignore no-explicit-any
+  const product = data?.products?.[0] as any
+
+  if (!product) {
+    console.warn('[keepa] No product in response')
+    return []
+  }
+
+  console.log(`[keepa] tokensLeft: ${data.tokensLeft ?? 'unknown'}`)
+
+  // deno-lint-ignore no-explicit-any
+  const csv: any[] | undefined = product.csv
+  if (!csv || !Array.isArray(csv)) {
+    console.warn('[keepa] No csv array in product')
+    return []
+  }
+
+  // Fixed priority: csv[0]=Amazon direct, csv[3]=BuyBox, csv[1]=Marketplace New
+  // NEVER use csv[2] (Marketplace Used) — it contains used-product prices which are wrong.
+  // deno-lint-ignore no-explicit-any
+  function countValid(arr: any[]): number {
+    let n = 0
+    for (let i = 1; i < arr.length; i += 2) if (arr[i] !== -1 && arr[i] > 0) n++
+    return n
+  }
+
+  let bestIdx = -1
+  let bestArr: number[] = []
+  for (const idx of [0, 3, 1]) {
+    const arr = csv[idx]
+    if (Array.isArray(arr) && countValid(arr) >= 3) {
+      bestIdx = idx
+      bestArr = arr as number[]
+      break
+    }
+  }
+
+  if (bestIdx === -1) {
+    console.warn('[keepa] No usable CSV series with ≥3 valid entries')
+    return []
+  }
+
+  console.log(`[keepa] Using csv[${bestIdx}] — ${countValid(bestArr)} valid entries`)
+
+  const history: Array<{ date: string; price: number }> = []
+  const nowMs = Date.now()
+
+  for (let i = 0; i + 1 < bestArr.length; i += 2) {
+    const keepaMinutes = bestArr[i]
+    const cents = bestArr[i + 1]
+
+    if (cents === -1 || cents <= 0) continue
+
+    // Keepa epoch: Jan 21, 2011 00:00 UTC = Unix minute 21564000
+    const ms = (keepaMinutes + 21564000) * 60 * 1000
+
+    // Sanity check: must be a past date within the last 10 years
+    const year = new Date(ms).getFullYear()
+    if (year < 2010 || ms > nowMs + 86400000) continue
+
+    history.push({ date: new Date(ms).toISOString(), price: cents / 100 })
+  }
+
+  console.log(`[keepa] Parsed ${history.length} price points for ASIN ${asin}`)
+  return history
+}
+
+// ─── Rainforest: Amazon (ASIN-based, current price + product data) ────────────
 
 async function fetchAmazon(url: string, apiKey: string): Promise<NormalizedProduct> {
   const asin = extractAsin(url)
@@ -314,7 +463,6 @@ async function fetchAmazon(url: string, apiKey: string): Promise<NormalizedProdu
     type: 'product',
     asin: asin,
     amazon_domain: 'amazon.com',
-    include_history: 'true',   // instructs Rainforest to surface Keepa price history
   })
 
   console.log(`[fetch-prices] Amazon request → ASIN: ${asin}`)
@@ -338,8 +486,6 @@ async function fetchAmazon(url: string, apiKey: string): Promise<NormalizedProdu
   const data = await response.json()
   const p = data.product
 
-  console.log(`[fetch-prices] Amazon response keys: ${p ? Object.keys(p).join(', ') : 'no product'}`)
-
   if (!p) throw new Error('Product not found on Amazon — check the URL is a valid product page')
   if (!p.title) throw new Error('Amazon returned incomplete product data (missing title)')
 
@@ -359,64 +505,6 @@ async function fetchAmazon(url: string, apiKey: string): Promise<NormalizedProdu
     )
   }
 
-  // ── Extract price history — Rainforest surfaces Keepa historical data ──────
-  // Rainforest may return price_history under different field names depending
-  // on the product and API tier. We try multiple paths and handle both
-  // {date, price} objects and [timestamp, price] array pairs.
-  const priceHistory: Array<{ date: string; price: number }> = []
-
-  // deno-lint-ignore no-explicit-any
-  const rawHistory: any[] =
-    p.price_history ??
-    p.buybox_history ??
-    // deno-lint-ignore no-explicit-any
-    (p.product_information as any)?.price_history ??
-    []
-
-  if (Array.isArray(rawHistory)) {
-    for (const entry of rawHistory) {
-      if (!entry) continue
-
-      let ts: number | null = null
-      let price: number | null = null
-
-      if (Array.isArray(entry) && entry.length >= 2) {
-        // Format: [timestamp, price]
-        ts = Number(entry[0]) || null
-        price = Number(entry[1]) || null
-      } else if (typeof entry === 'object') {
-        // Format: { date, price } / { timestamp, value } / { t, v }
-        // deno-lint-ignore no-explicit-any
-        const obj = entry as Record<string, any>
-        ts = Number(obj.date ?? obj.timestamp ?? obj.t ?? 0) || null
-        price = Number(obj.price ?? obj.value ?? obj.v ?? 0) || null
-      }
-
-      if (!ts || !price || price <= 0) continue
-
-      // Normalize timestamp — Keepa uses minutes since Jan 21, 2011
-      // Rainforest may normalize to Unix seconds or milliseconds
-      let ms: number
-      if (ts > 1e12) {
-        ms = ts // already milliseconds
-      } else if (ts > 1e9) {
-        ms = ts * 1000 // Unix seconds → ms
-      } else {
-        // Keepa minutes offset from Jan 21, 2011 00:00 UTC
-        ms = (ts + 21564000) * 60 * 1000
-      }
-
-      // Sanity check: must be a realistic date (2010–present+1)
-      const year = new Date(ms).getFullYear()
-      const currentYear = new Date().getFullYear()
-      if (year < 2010 || year > currentYear + 1) continue
-
-      priceHistory.push({ date: new Date(ms).toISOString(), price })
-    }
-  }
-
-  console.log(`[fetch-prices] Amazon history entries parsed: ${priceHistory.length}`)
-
   return {
     name: p.title,
     image_url: p.main_image?.link ?? p.images?.[0]?.link ?? null,
@@ -427,7 +515,7 @@ async function fetchAmazon(url: string, apiKey: string): Promise<NormalizedProdu
     currency: p.buybox_winner?.price?.currency ?? 'USD',
     retailer_slug: 'amazon',
     source_url: url,
-    price_history: priceHistory,
+    price_history: [], // populated separately via Keepa API
   }
 }
 

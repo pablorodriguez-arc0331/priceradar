@@ -12,27 +12,27 @@ const TOAST_CONFIG: Record<ToastVariant, {
 }> = {
   success: {
     icon: CheckCircle,
-    bg: 'bg-signal-low-bg',
-    border: 'border-signal-low-border',
+    bg: 'bg-[#0D2818]',
+    border: 'border-[#10B981]/40',
     iconColor: 'text-signal-low',
   },
   error: {
     icon: AlertCircle,
-    bg: 'bg-signal-high-bg',
-    border: 'border-signal-high-border',
+    bg: 'bg-[#2A0D12]',
+    border: 'border-[#F43F5E]/40',
     iconColor: 'text-signal-high',
   },
   info: {
     icon: Info,
-    bg: 'bg-accent-subtle',
-    border: 'border-blue-100',
+    bg: 'bg-[#071E2E]',
+    border: 'border-[#06B6D4]/40',
     iconColor: 'text-accent',
   },
   warning: {
     icon: AlertTriangle,
-    bg: 'bg-amber-50',
-    border: 'border-amber-100',
-    iconColor: 'text-amber-600',
+    bg: 'bg-[#231A06]',
+    border: 'border-amber-500/40',
+    iconColor: 'text-amber-400',
   },
 }
 
@@ -48,7 +48,8 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
       exit={{ opacity: 0, x: 64, scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 350, damping: 28 }}
       className={cn(
-        'flex items-start gap-3 rounded-lg border p-4 shadow-md',
+        'flex items-start gap-3 rounded-lg border p-4',
+        'shadow-[0_8px_32px_rgba(0,0,0,0.5)]',
         'w-full max-w-sm',
         config.bg,
         config.border,

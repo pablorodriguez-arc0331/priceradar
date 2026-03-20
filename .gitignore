@@ -26,6 +26,7 @@ npm-debug.log*
 # Supabase
 supabase/.branches/
 supabase/.temp/
+supabase/functions/.env
 
 # Git worktrees
 .worktrees/
