@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { faTrashCan, faClock, faFire } from '@fortawesome/free-solid-svg-icons'
-import { FaIcon } from '@/components/ui/FaIcon'
+import { Radar, Clock, Trash2 } from 'lucide-react'
 import { Page } from '@/components/layout'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
@@ -11,11 +10,11 @@ import { useAuthStore } from '@/store'
 import { ProductImage } from '@/components/product/ProductImage'
 
 const RETAILER_COLORS: Record<string, string> = {
-  Amazon: 'bg-[#FF9900]',
-  Walmart: 'bg-[#0071CE]',
-  eBay: 'bg-[#E53238]',
-  'Best Buy': 'bg-[#1D3557]',
-  Target: 'bg-[#CC0000]',
+  Amazon: 'bg-[#1C1C1C]',
+  Walmart: 'bg-[#1C1C1C]',
+  eBay: 'bg-[#1C1C1C]',
+  'Best Buy': 'bg-[#1C1C1C]',
+  Target: 'bg-[#1C1C1C]',
 }
 
 function getRetailerName(url: string): string {
@@ -59,16 +58,16 @@ function SwipeToDismiss({
     <div ref={constraintsRef} className="relative overflow-hidden rounded-xl">
       {/* Delete zone */}
       <motion.div
-        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-signal-high rounded-r-xl"
+        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#1C1C1C] rounded-r-xl"
         style={{ width: DELETE_WIDTH, opacity: deleteOpacity }}
       >
         <button
           onClick={handleDelete}
-          className="flex flex-col items-center gap-1 text-white"
+          className="flex flex-col items-center gap-1 text-[#FFFEFD]"
           aria-label="Remove from recently checked"
           type="button"
         >
-          <FaIcon icon={faTrashCan} className="h-5 w-5" aria-hidden="true" />
+          <Trash2 className="h-5 w-5" aria-hidden="true" />
           <span className="text-[10px] font-medium">Remove</span>
         </button>
       </motion.div>
@@ -109,7 +108,7 @@ export function SearchPage() {
   return (
     <Page className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-display text-2xl font-bold text-foreground">Check a price</h1>
+        <h1 className="font-display text-3xl font-bold text-foreground">Search a product</h1>
         <p className="text-xs text-muted-foreground">
           Paste an Amazon link to see price history and compare retailers
         </p>
@@ -127,8 +126,8 @@ export function SearchPage() {
           className="space-y-3"
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <FaIcon icon={faFire} className="h-4 w-4 text-orange-400" aria-hidden="true" />
+            <div className="flex items-center gap-2">
+              <img src="/assets/hot.png" alt="" aria-hidden="true" className="h-4 w-4 object-contain" />
               <h2 id="hot-heading" className="text-sm font-semibold text-foreground">
                 Hot right now
               </h2>
@@ -141,7 +140,7 @@ export function SearchPage() {
                 aria-label="Dismiss hot products section"
                 type="button"
               >
-                <FaIcon icon={faTrashCan} className="h-3.5 w-3.5" aria-hidden="true" />
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -151,14 +150,14 @@ export function SearchPage() {
               ? Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 animate-pulse"
+                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5"
                   >
-                    <div className="h-10 w-10 shrink-0 rounded-lg bg-muted" />
+                    <div className="skeleton h-11 w-11 shrink-0 rounded-lg" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 w-3/4 rounded bg-muted" />
-                      <div className="h-2.5 w-1/3 rounded bg-muted" />
+                      <div className="skeleton h-3 w-3/4 rounded" />
+                      <div className="skeleton h-2.5 w-1/3 rounded" />
                     </div>
-                    <div className="h-4 w-14 rounded bg-muted" />
+                    <div className="skeleton h-4 w-14 rounded" />
                   </div>
                 ))
               : hotProducts.map((product, i) => {
@@ -173,10 +172,10 @@ export function SearchPage() {
                     <motion.div key={product.id} variants={itemVariants}>
                       <a
                         href={`/product/${product.id}`}
-                        className="glass-card flex items-center gap-3 rounded-xl p-3 hover:brightness-105 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="glass-card-interactive flex items-center gap-3 rounded-xl p-3.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         aria-label={`${product.name}${signal ? ` — ${signal.label}` : ''}`}
                       >
-                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/20">
+                        <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/20">
                           <ProductImage
                             src={product.image_url}
                             alt={product.name}
@@ -236,8 +235,8 @@ export function SearchPage() {
           className="space-y-3"
         >
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <FaIcon icon={faClock} className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <div className="flex items-center gap-2">
+              <Clock className="h-4 w-4 text-accent" aria-hidden="true" />
               <h2 id="recent-heading" className="text-sm font-semibold text-foreground">
                 {isAuthenticated ? 'Your recently checked' : 'Recently checked on this device'}
               </h2>
@@ -250,14 +249,14 @@ export function SearchPage() {
               ? Array.from({ length: 3 }).map((_, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 animate-pulse"
+                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5"
                   >
-                    <div className="h-10 w-10 shrink-0 rounded-lg bg-muted" />
+                    <div className="skeleton h-11 w-11 shrink-0 rounded-lg" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 w-3/4 rounded bg-muted" />
-                      <div className="h-2.5 w-1/3 rounded bg-muted" />
+                      <div className="skeleton h-3 w-3/4 rounded" />
+                      <div className="skeleton h-2.5 w-1/3 rounded" />
                     </div>
-                    <div className="h-4 w-14 rounded bg-muted" />
+                    <div className="skeleton h-4 w-14 rounded" />
                   </div>
                 ))
               : recentProducts.map((product, i) => {
@@ -275,10 +274,10 @@ export function SearchPage() {
                       <SwipeToDismiss onDismiss={() => dismiss(product.id)}>
                         <a
                           href={`/product/${product.id}`}
-                          className="glass-card flex items-center gap-3 rounded-xl p-3 hover:brightness-105 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className="glass-card-interactive flex items-center gap-3 rounded-xl p-3.5 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={`${product.name}${signal ? ` — ${signal.label}` : ''}`}
                         >
-                          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/20">
+                          <div className="h-11 w-11 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/20">
                             <ProductImage
                               src={product.image_url}
                               alt={product.name}
@@ -337,10 +336,13 @@ export function SearchPage() {
       )}
 
       {/* How to paste */}
-      <div className="glass-card rounded-xl px-4 py-4 space-y-2">
-        <p className="text-xs font-semibold text-foreground">
-          How to check a price
-        </p>
+      <div className="glass-card rounded-xl px-4 py-4 space-y-3">
+        <div className="flex items-center gap-2">
+          <Radar className="h-4 w-4 text-accent" aria-hidden="true" />
+          <p className="text-sm font-semibold text-foreground">
+            How to check a price
+          </p>
+        </div>
         <ol className="space-y-1.5 list-none">
           {[
             'Find a product on Amazon',
@@ -348,7 +350,7 @@ export function SearchPage() {
             'Paste it above — we\'ll show price history and compare retailers',
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10 border border-accent/25 font-display text-[10px] font-bold text-accent mt-0.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1C1C1C] font-display text-[10px] font-bold text-[#FFFEFD] mt-0.5">
                 {i + 1}
               </span>
               <span className="text-xs text-muted-foreground">{step}</span>

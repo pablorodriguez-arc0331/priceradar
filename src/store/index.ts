@@ -317,35 +317,17 @@ export const useTrackedStore = create<TrackedStore>((set, get) => ({
   },
 }))
 
-// ─── Theme Store ───────────────────────────────────────────────────────────────
-type Theme = 'dark' | 'light'
+// ─── Theme Store — light only ───────────────────────────────────────────────────
+type Theme = 'light'
 
 interface ThemeStore {
   theme: Theme
-  userOverride: boolean   // true = user manually picked; false = follow system
   toggleTheme: () => void
-  setSystemTheme: (t: Theme) => void
+  setSystemTheme: () => void
 }
 
-function getSystemTheme(): Theme {
-  if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches) {
-    return 'light'
-  }
-  return 'dark'
-}
-
-export const useThemeStore = create<ThemeStore>()(
-  persist(
-    (set, get) => ({
-      theme: getSystemTheme(),
-      userOverride: false,
-      toggleTheme: () => set({ theme: get().theme === 'dark' ? 'light' : 'dark', userOverride: true }),
-      setSystemTheme: (t: Theme) => { if (!get().userOverride) set({ theme: t }) },
-    }),
-    {
-      name: 'price-radar-theme',
-      // Only persist the manual override and chosen theme, not the setter functions
-      partialize: (s) => ({ theme: s.theme, userOverride: s.userOverride }),
-    },
-  ),
-)
+export const useThemeStore = create<ThemeStore>()(() => ({
+  theme: 'light' as const,
+  toggleTheme: () => {},
+  setSystemTheme: () => {},
+}))

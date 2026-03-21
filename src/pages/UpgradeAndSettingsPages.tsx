@@ -1,9 +1,10 @@
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useDocumentTitle } from '@/hooks'
 import {
   Check, Lock, Sparkles, Bell, TrendingDown, LayoutDashboard, Zap,
-  User, LogOut, Mail, Shield, ChevronRight, AlertTriangle,
+  User, LogOut, Mail, Shield, ChevronRight, AlertTriangle, Pencil, X,
 } from 'lucide-react'
 import { Page } from '@/components/layout'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +13,7 @@ import { usePushNotifications } from '@/hooks/usePushNotifications'
 import type { UsePushNotificationsReturn } from '@/hooks/usePushNotifications'
 import { cn } from '@/lib/utils'
 import type { AppUser } from '@/types'
+import { updateProfile } from '@/services/supabase'
 
 // ────────────────────────────────────────────────────────────────────────────
 // Upgrade Page
@@ -193,7 +195,47 @@ export function SettingsPage() {
   const { user, setUser, signOut, isAuthenticated } = useAuthStore()
   const toast = useToast()
   const push = usePushNotifications(user?.id)
+  const [editingName, setEditingName] = useState(false)
+  const [nameValue, setNameValue] = useState(user?.name ?? '')
+  const [savingName, setSavingName] = useState(false)
+  const nameInputRef = useRef<HTMLInputElement>(null)
   useDocumentTitle('Account Settings — PriceRadar')
+
+  useEffect(() => {
+    if (editingName) nameInputRef.current?.focus()
+  }, [editingName])
+
+  const handleStartEdit = () => {
+    setNameValue(user?.name ?? '')
+    setEditingName(true)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingName(false)
+    setNameValue(user?.name ?? '')
+  }
+
+  const handleSaveName = async () => {
+    const trimmed = nameValue.trim()
+    if (!trimmed || trimmed === user?.name) { setEditingName(false); return }
+    if (!user) return
+    setSavingName(true)
+    try {
+      await updateProfile(user.id, { name: trimmed })
+      setUser({ ...user, name: trimmed })
+      toast('success', 'Name updated')
+      setEditingName(false)
+    } catch {
+      toast('error', 'Could not save name', 'Please try again.')
+    } finally {
+      setSavingName(false)
+    }
+  }
+
+  const handleNameKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSaveName()
+    if (e.key === 'Escape') handleCancelEdit()
+  }
 
   const handleSignOut = async () => {
     await signOut()
@@ -229,19 +271,64 @@ export function SettingsPage() {
       >
         <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full border-2 border-border">
           {user?.avatar_url ? (
-            <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" />
+            <img src={user.avatar_url} alt={user?.name} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-accent-subtle">
               <User className="h-5 w-5 text-accent" />
             </div>
           )}
         </div>
+
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
-          <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+          {editingName ? (
+            <div className="flex items-center gap-1.5">
+              <input
+                ref={nameInputRef}
+                value={nameValue}
+                onChange={e => setNameValue(e.target.value)}
+                onKeyDown={handleNameKeyDown}
+                disabled={savingName}
+                maxLength={60}
+                className={cn(
+                  'flex-1 min-w-0 rounded-md border border-[rgba(28,28,28,0.28)]',
+                  'bg-transparent px-2 py-0.5 text-sm font-semibold text-foreground',
+                  'focus:outline-none focus:border-[#1C1C1C]',
+                  'disabled:opacity-50',
+                )}
+                aria-label="Display name"
+              />
+              <button
+                onClick={handleSaveName}
+                disabled={savingName || !nameValue.trim()}
+                className="shrink-0 rounded-md bg-[#1C1C1C] px-2 py-1 text-[11px] font-semibold text-[#FFFEFD] disabled:opacity-40 hover:bg-[#1C1C1C]/85 transition-colors"
+                aria-label="Save name"
+              >
+                {savingName ? '…' : 'Save'}
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                disabled={savingName}
+                className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-[rgba(28,28,28,0.06)] transition-colors"
+                aria-label="Cancel"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleStartEdit}
+              className="group flex items-center gap-1.5 text-left focus-visible:outline-none"
+              aria-label="Edit display name"
+            >
+              <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
+              <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
+            </button>
+          )}
+          <p className="text-xs text-muted-foreground truncate mt-0.5">{user?.email}</p>
         </div>
+
         <div className={cn(
-          'rounded-full px-2.5 py-1 text-xs font-semibold',
+          'rounded-full px-2.5 py-1 text-xs font-semibold shrink-0',
           user?.plan === 'paid'
             ? 'bg-signal-low-bg text-signal-low'
             : 'bg-muted text-muted-foreground',
@@ -398,7 +485,7 @@ function PushNotificationRow({
     >
       <span
         className={cn(
-          'block h-4 w-4 rounded-full bg-white shadow-sm transition-transform duration-200',
+          'block h-4 w-4 rounded-full bg-[#FFFEFD] shadow-sm transition-transform duration-200',
           push.isSubscribed ? 'translate-x-4' : 'translate-x-0.5',
         )}
       />

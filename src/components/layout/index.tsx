@@ -1,19 +1,17 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Radar } from 'lucide-react'
-import { faHouse, faMagnifyingGlass, faTableCells, faUser, faWifi, faMoon, faSun } from '@fortawesome/free-solid-svg-icons'
-import { FaIcon } from '@/components/ui/FaIcon'
-import { useThemeStore, useAuthStore } from '@/store'
+import { Radar, Search, User } from 'lucide-react'
+import { useAuthStore } from '@/store'
 import { cn } from '@/lib/utils'
 import { useOnlineStatus } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 
 // ─── Nav config (shared) ──────────────────────────────────────────────────────
 const NAV_TABS = [
-  { path: '/', label: 'Home', icon: faHouse, exactMatch: true },
-  { path: '/search', label: 'Search', icon: faMagnifyingGlass },
-  { path: '/dashboard', label: 'Watchlist', icon: faTableCells, requiresAuth: true },
-  { path: '/settings', label: 'Account', icon: faUser },
+  { path: '/', label: 'Home', img: '/assets/home.png', exactMatch: true },
+  { path: '/search', label: 'Search', img: '/assets/search.png' },
+  { path: '/dashboard', label: 'Watchlist', img: '/assets/dashboard.png', requiresAuth: true },
+  { path: '/settings', label: 'Account', img: '/assets/user.png' },
 ]
 
 // ─── Desktop Nav (shown inside Header on md+) ─────────────────────────────────
@@ -49,10 +47,15 @@ function DesktopNav() {
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               active
                 ? 'bg-accent/10 text-accent'
-                : 'text-muted-foreground hover:text-foreground hover:bg-white/5',
+                : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5',
             )}
           >
-            <FaIcon icon={tab.icon} className="h-3.5 w-3.5" aria-hidden="true" />
+            <img
+              src={tab.img}
+              alt=""
+              aria-hidden="true"
+              className={cn('h-3.5 w-3.5 object-contain', active ? 'opacity-100' : 'opacity-40')}
+            />
             {tab.label}
           </button>
         )
@@ -101,16 +104,15 @@ export function Header() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center gap-1 rounded-full bg-amber-950/60 border border-amber-700/40 px-2 py-1"
+              className="flex items-center gap-1 rounded-full bg-[rgba(28,28,28,0.06)] border border-[rgba(28,28,28,0.20)] px-2 py-1"
               role="status"
               aria-label="You are offline"
             >
-              <FaIcon icon={faWifi} className="h-3 w-3 text-amber-400 opacity-50" aria-hidden="true" />
-              <span className="text-xs font-medium text-amber-400">Offline</span>
+              <Search className="h-3 w-3 text-[#1C1C1C] opacity-60" aria-hidden="true" />
+              <span className="text-xs font-medium text-[#1C1C1C]">Offline</span>
             </motion.div>
           )}
         </AnimatePresence>
-        <ThemeToggleButton />
         <UserMenuButton />
       </div>
     </header>
@@ -148,27 +150,10 @@ function UserMenuButton() {
         <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" />
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-accent/10">
-          <FaIcon icon={faUser} className="h-4 w-4 text-accent" aria-hidden="true" />
+          <User className="h-4 w-4 text-accent" aria-hidden="true" />
         </div>
       )}
     </Link>
-  )
-}
-
-function ThemeToggleButton() {
-  const { theme, toggleTheme } = useThemeStore()
-  return (
-    <button
-      onClick={toggleTheme}
-      className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-    >
-      <FaIcon
-        icon={theme === 'dark' ? faSun : faMoon}
-        className="h-4 w-4"
-        aria-hidden="true"
-      />
-    </button>
   )
 }
 
@@ -213,22 +198,23 @@ export function BottomNav() {
               'min-h-[44px] min-w-[44px]',
               'transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
-              active ? 'text-accent' : 'text-muted-foreground hover:text-foreground',
             )}
             aria-current={active ? 'page' : undefined}
             aria-label={tab.label}
           >
-            <div className="relative">
-              <FaIcon
-                icon={tab.icon}
-                className={cn('h-5 w-5 transition-transform', active && 'scale-110')}
-                aria-hidden="true"
-              />
-            </div>
+            <img
+              src={tab.img}
+              alt=""
+              aria-hidden="true"
+              className={cn(
+                'h-6 w-6 object-contain transition-all',
+                active ? 'opacity-100 scale-110' : 'opacity-35',
+              )}
+            />
             <span
               className={cn(
                 'text-[11px] font-medium',
-                active ? 'text-accent' : 'text-muted-foreground',
+                active ? 'text-[#1C1C1C]' : 'text-muted-foreground',
               )}
             >
               {tab.label}

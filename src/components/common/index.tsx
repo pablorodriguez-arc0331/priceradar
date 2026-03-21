@@ -4,9 +4,7 @@ export { ThemeProvider } from './ThemeProvider'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Radar, WifiOff, Download, X } from 'lucide-react'
-import { faBell, faWifi } from '@fortawesome/free-solid-svg-icons'
-import { FaIcon } from '@/components/ui/FaIcon'
+import { Search, Radar, WifiOff, Download, X, Bell, Wifi } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -140,7 +138,7 @@ export function AlertSetupSheet({
         <>
           <motion.div
             key="alert-overlay"
-            className="fixed inset-0 z-40 bg-black/40"
+            className="fixed inset-0 z-40 bg-[rgba(28,28,28,0.40)]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -201,7 +199,7 @@ export function AlertSetupSheet({
                   fullWidth
                   onClick={handleSubmit}
                   loading={isSubmitting}
-                  leftIcon={<FaIcon icon={faBell} className="h-4 w-4" />}
+                  leftIcon={<Bell className="h-4 w-4" />}
                 >
                   Set Alert
                 </Button>
@@ -231,9 +229,9 @@ export function OfflineBanner() {
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center gap-2 bg-amber-50 border-b border-amber-100 px-4 py-2">
-            <FaIcon icon={faWifi} className="h-3.5 w-3.5 text-amber-600 shrink-0 opacity-50" aria-hidden="true" />
-            <p className="text-xs font-medium text-amber-700">
+          <div className="flex items-center gap-2 bg-[rgba(28,28,28,0.04)] border-b border-[rgba(28,28,28,0.10)] px-4 py-2">
+            <Wifi className="h-3.5 w-3.5 text-[#1C1C1C] shrink-0 opacity-50" aria-hidden="true" />
+            <p className="text-xs font-medium text-[#1C1C1C]">
               You're offline — showing cached data
             </p>
           </div>
@@ -261,7 +259,7 @@ export function InstallBanner() {
           aria-label="Install Price Radar app"
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent">
-            <Radar className="h-4 w-4 text-white" aria-hidden="true" />
+            <Radar className="h-4 w-4 text-[#FFFEFD]" aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-foreground">Add to Home Screen</p>

@@ -1,10 +1,7 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { ChevronRight } from 'lucide-react'
-import type { IconDefinition } from '@fortawesome/fontawesome-svg-core'
-import { faBell, faBellSlash, faTrashCan, faClock } from '@fortawesome/free-solid-svg-icons'
-import { FaIcon } from '@/components/ui/FaIcon'
+import { ChevronRight, Bell, BellOff, Trash2, Clock, type LucideIcon } from 'lucide-react'
 import { cn, formatPrice, formatRelativeTime } from '@/lib/utils'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { ProductImage } from '@/components/product/ProductImage'
@@ -96,22 +93,19 @@ function SwipeToDelete({
   onDelete: (e: React.MouseEvent) => void
   disabled?: boolean
 }) {
-  const DELETE_THRESHOLD = -72   // px — how far left to drag to reveal
-  const DELETE_WIDTH = 72        // px — width of the revealed delete zone
+  const DELETE_THRESHOLD = -72
+  const DELETE_WIDTH = 72
 
   const x = useMotionValue(0)
   const constraintsRef = useRef(null)
 
-  // Opacity of delete button fades in as user drags left
   const deleteOpacity = useTransform(x, [0, -DELETE_WIDTH], [0, 1])
 
   const handleDragEnd = () => {
     const current = x.get()
     if (current < DELETE_THRESHOLD / 2) {
-      // Snap open to reveal delete
       animate(x, DELETE_THRESHOLD, { type: 'spring', stiffness: 400, damping: 35 })
     } else {
-      // Snap closed
       animate(x, 0, { type: 'spring', stiffness: 400, damping: 35 })
     }
   }
@@ -124,17 +118,17 @@ function SwipeToDelete({
     <div ref={constraintsRef} className="relative overflow-hidden rounded-xl">
       {/* Delete button revealed beneath */}
       <motion.div
-        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-signal-high"
+        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#1C1C1C]"
         style={{ width: DELETE_WIDTH, opacity: deleteOpacity }}
       >
         <button
           onClick={(e) => { handleClose(); onDelete(e) }}
           disabled={disabled}
-          className="flex flex-col items-center gap-1 text-white"
+          className="flex flex-col items-center gap-1 text-[#FFFEFD]"
           aria-label="Delete from watchlist"
           type="button"
         >
-          <FaIcon icon={faTrashCan} className="h-5 w-5" aria-hidden="true" />
+          <Trash2 className="h-5 w-5" aria-hidden="true" />
           <span className="text-[10px] font-medium">Delete</span>
         </button>
       </motion.div>
@@ -227,18 +221,18 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
         {/* Footer */}
         <div className="mt-auto flex items-center justify-between border-t border-border pt-2">
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <FaIcon icon={faClock} className="h-3 w-3" aria-hidden="true" />
+            <Clock className="h-3 w-3" aria-hidden="true" />
             {formatRelativeTime(item.last_checked_at)}
           </span>
           <div className="flex items-center gap-1">
             <CardAction
-              icon={item.alert_enabled ? faBell : faBellSlash}
+              icon={item.alert_enabled ? Bell : BellOff}
               label={item.alert_enabled ? 'Pause alert' : 'Enable alert'}
               onClick={onAlertToggle}
               active={item.alert_enabled}
             />
             <CardAction
-              icon={faTrashCan}
+              icon={Trash2}
               label="Remove from watchlist"
               onClick={onRemove}
               danger
@@ -310,7 +304,7 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
         </div>
         <div className="flex items-center gap-1">
           <CardAction
-            icon={item.alert_enabled ? faBell : faBellSlash}
+            icon={item.alert_enabled ? Bell : BellOff}
             label={item.alert_enabled ? 'Pause alert' : 'Enable alert'}
             onClick={onAlertToggle}
             active={item.alert_enabled}
@@ -324,13 +318,13 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
 
 // ─── Card action button ────────────────────────────────────────────────────────
 function CardAction({
-  icon,
+  icon: Icon,
   label,
   onClick,
   active,
   danger,
 }: {
-  icon: IconDefinition
+  icon: LucideIcon
   label: string
   onClick: (e: React.MouseEvent) => void
   active?: boolean
@@ -345,13 +339,13 @@ function CardAction({
         'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         danger && 'text-muted-foreground hover:bg-signal-high-bg hover:text-signal-high',
-        active && !danger && 'text-accent hover:bg-accent-subtle',
+        active && !danger && 'text-accent hover:bg-accent/10',
         !active && !danger && 'text-muted-foreground hover:bg-muted hover:text-foreground',
       )}
       aria-label={label}
       type="button"
     >
-      <FaIcon icon={icon} className="h-3.5 w-3.5" aria-hidden="true" />
+      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
     </motion.button>
   )
 }

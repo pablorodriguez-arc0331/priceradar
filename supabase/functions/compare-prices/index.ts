@@ -97,8 +97,8 @@ Tu objetivo es encontrar el producto en el país especificado y devolver una com
 Reglas estrictas:
 1. Solo devuelves coincidencias EXACTAS (mismo modelo, mismas especificaciones, producto nuevo).
 2. NUNCA incluyas Amazon en los resultados.
-3. Para United States: busca en EXACTAMENTE estas 3 tiendas: Walmart (walmart.com), Best Buy (bestbuy.com) y Target (target.com).
-4. Para otros países: identifica los 3 retailers más relevantes excluyendo Amazon.
+3. Para United States: busca en HASTA estas 5 tiendas: Walmart (walmart.com), Best Buy (bestbuy.com), Target (target.com), eBay (ebay.com) y Costco (costco.com). Incluye todas las que tengan el producto disponible.
+4. Para otros países: identifica hasta 5 retailers más relevantes excluyendo Amazon.
 5. Las URLs DEBEN ser URLs reales y funcionales que el usuario pueda abrir en su navegador.
    Usa Google Search para encontrar la URL real de cada producto en cada tienda.
    Formatos válidos por tienda:
@@ -108,6 +108,8 @@ Reglas estrictas:
    - Best Buy USA (búsqueda):         https://www.bestbuy.com/site/searchpage.jsp?st=TERMINOS
    - Target USA (producto directo):   https://www.target.com/p/PRODUCT-SLUG/-/A-DPCI
    - Target USA (búsqueda):           https://www.target.com/s?searchTerm=TERMINOS
+   - eBay USA (búsqueda):             https://www.ebay.com/sch/i.html?_nkw=TERMINOS
+   - Costco USA (búsqueda):           https://www.costco.com/CatalogSearch?keyword=TERMINOS
    CRÍTICO: NUNCA inventes ni supongas IDs de producto, SKUs ni DPCIs. Si Google Search no te devuelve la URL exacta del producto, usa SIEMPRE la URL de búsqueda de la tienda con los términos del producto. Es mejor una URL de búsqueda real que una URL de producto inventada.
 6. Extrae precio actual usando Google Search. Si el producto no está disponible en esa tienda, omite ese resultado.
 7. Si la moneda de la tienda no es ${currency}, realiza la conversión al tipo de cambio actual.
@@ -121,7 +123,7 @@ País: ${country}
 Moneda de salida: ${currency}
 
 Usa Google Search para encontrar el precio actual y la URL real del producto en cada tienda.
-Para United States busca en: Walmart, Best Buy y Target.
+Para United States busca en: Walmart, Best Buy, Target, eBay y Costco (hasta 5 tiendas).
 
 Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional):
 {
@@ -140,7 +142,7 @@ Formato de respuesta obligatorio (JSON puro, sin backticks, sin texto adicional)
   "global_avg_price": precio_promedio_numerico
 }
 
-Entre 2 y 3 resultados (omite una tienda si el producto definitivamente no está disponible). Solo un resultado puede tener is_best_deal: true.`
+Entre 3 y 5 resultados (omite una tienda si el producto definitivamente no está disponible). Solo un resultado puede tener is_best_deal: true.`
 
   // Attempt 1: gemini-2.5-flash with google_search
   // Attempt 2: gemini-2.5-flash-lite with google_search

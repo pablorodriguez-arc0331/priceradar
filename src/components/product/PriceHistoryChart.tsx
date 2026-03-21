@@ -10,8 +10,7 @@ import {
   ReferenceLine,
   CartesianGrid,
 } from 'recharts'
-import { faLock } from '@fortawesome/free-solid-svg-icons'
-import { FaIcon } from '@/components/ui/FaIcon'
+import { Lock } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { cn, formatPrice } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
@@ -79,18 +78,18 @@ export function PriceHistoryChart({ product, isPaid }: PriceHistoryChartProps) {
             <LineChart data={chartData} margin={{ top: 16, right: 16, left: 0, bottom: 4 }}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="hsl(214 32% 91%)"
+                stroke="rgba(28,28,28,0.08)"
                 vertical={false}
               />
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 11, fill: '#64748B' }}
+                tick={{ fontSize: 11, fill: 'rgba(28,28,28,0.50)' }}
                 tickLine={false}
                 axisLine={false}
                 interval={tickInterval}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#64748B' }}
+                tick={{ fontSize: 11, fill: 'rgba(28,28,28,0.50)' }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v) => `$${v}`}
@@ -105,29 +104,29 @@ export function PriceHistoryChart({ product, isPaid }: PriceHistoryChartProps) {
               {/* Historical low reference line */}
               <ReferenceLine
                 y={low}
-                stroke="#16A34A"
+                stroke="rgba(28,28,28,0.50)"
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
-                label={{ value: 'Low', position: 'right', fill: '#16A34A', fontSize: 10 }}
+                label={{ value: 'Low', position: 'right', fill: 'rgba(28,28,28,0.50)', fontSize: 10 }}
               />
 
               {/* Historical high reference line */}
               <ReferenceLine
                 y={high}
-                stroke="#DC2626"
-                strokeDasharray="4 4"
+                stroke="rgba(28,28,28,0.30)"
+                strokeDasharray="2 4"
                 strokeWidth={1.5}
-                label={{ value: 'High', position: 'right', fill: '#DC2626', fontSize: 10 }}
+                label={{ value: 'High', position: 'right', fill: 'rgba(28,28,28,0.30)', fontSize: 10 }}
               />
 
               {/* Main price line */}
               <Line
                 type="monotone"
                 dataKey="price"
-                stroke="#2563EB"
+                stroke="#1C1C1C"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: '#2563EB', stroke: '#fff', strokeWidth: 2 }}
+                activeDot={{ r: 4, fill: '#1C1C1C', stroke: '#FFFEFD', strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -143,9 +142,9 @@ export function PriceHistoryChart({ product, isPaid }: PriceHistoryChartProps) {
       {/* Legend — paid only */}
       {isPaid && (
         <div className="flex items-center gap-4 px-1">
-          <LegendItem color="#2563EB" label="Price" />
-          <LegendItem color="#16A34A" label={`Low · ${formatPrice(low)}`} dashed />
-          <LegendItem color="#DC2626" label={`High · ${formatPrice(high)}`} dashed />
+          <LegendItem color="#1C1C1C" label="Price" />
+          <LegendItem color="rgba(28,28,28,0.50)" label={`Low · ${formatPrice(low)}`} dashed />
+          <LegendItem color="rgba(28,28,28,0.30)" label={`High · ${formatPrice(high)}`} dashed />
         </div>
       )}
     </div>
@@ -222,7 +221,7 @@ function PaywallOverlay({ onUpgrade }: { onUpgrade: () => void }) {
     >
       <div className="flex flex-col items-center gap-2 text-center px-6">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted border border-border">
-          <FaIcon icon={faLock} className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+          <Lock className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
         </div>
         <p className="text-sm font-semibold text-foreground">See the full price story</p>
         <p className="text-xs text-muted-foreground max-w-[200px]">
