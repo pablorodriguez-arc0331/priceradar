@@ -85,24 +85,31 @@ export function useProduct(productId: string | undefined): ApiResponse<ProductWi
             setIsLoadingComparison(false)
             const geminiPrices = results
               .filter(r => r.price > 0 && !r.store.toLowerCase().includes('amazon'))
-              .map((r) => ({
-                retailer: {
-                  id: '',
-                  name: r.store,
-                  slug: r.store.toLowerCase().includes('walmart') ? 'walmart' as const
-                    : r.store.toLowerCase().includes('best buy') ? 'bestbuy' as const
-                    : r.store.toLowerCase().includes('target') ? 'target' as const
-                    : 'amazon' as const,
-                  logo_url: '',
-                  affiliate_url_template: '',
-                },
-                price: r.price,
-                product_title: undefined,
-                is_available: true,
-                affiliate_url: r.url,
-                last_updated: new Date().toISOString(),
-                is_best_price: r.is_best_deal,
-              }))
+              .map((r) => {
+                const storeLower = r.store.toLowerCase()
+                const slug = storeLower.includes('walmart') ? 'walmart' as const
+                  : storeLower.includes('best buy') ? 'bestbuy' as const
+                  : storeLower.includes('target') ? 'target' as const
+                  : storeLower.includes('ebay') ? 'ebay' as const
+                  : storeLower.includes('costco') ? 'costco' as const
+                  : 'walmart' as const
+                return {
+                  retailer: {
+                    id: '',
+                    name: r.store,
+                    slug,
+                    logo_url: '',
+                    affiliate_url_template: '',
+                  },
+                  price: r.price,
+                  product_title: undefined,
+                  is_available: true,
+                  affiliate_url: r.url,
+                  last_updated: new Date().toISOString(),
+                  is_best_price: r.is_best_deal,
+                  source: 'gemini' as const,
+                }
+              })
 
             if (geminiPrices.length === 0) return
 
@@ -299,17 +306,8 @@ export function usePersonalHistory(limit = 6) {
             })
             if (!cancelled) { setAllData(enriched); setIsLoading(false) }
           } else {
-            // No personal history yet — fall back to global recent products
-            const fallback = await getRecentProducts(limit)
-            if (cancelled) return
-            const { priceMap } = await enrichWithPrices(fallback, 'id')
-            if (cancelled) return
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const enriched = (fallback as any[]).map(r => {
-              const live = priceMap.get(r.id)
-              return { ...r, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
-            })
-            if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+            // No personal history yet — show nothing (don't fall back to global)
+            if (!cancelled) setIsLoading(false)
           }
         } else {
           // ── Anonymous: read from localStorage ─────────────────────────────
@@ -344,17 +342,8 @@ export function usePersonalHistory(limit = 6) {
               })
             if (!cancelled) { setAllData(enriched); setIsLoading(false) }
           } else {
-            // No personal history yet — fall back to global recent products
-            const fallback = await getRecentProducts(limit)
-            if (cancelled) return
-            const { priceMap } = await enrichWithPrices(fallback, 'id')
-            if (cancelled) return
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const enriched = (fallback as any[]).map(r => {
-              const live = priceMap.get(r.id)
-              return { ...r, live_price: live?.price ?? null, live_retailer: live?.retailer ?? null }
-            })
-            if (!cancelled) { setAllData(enriched); setIsLoading(false) }
+            // No history on this device yet — show nothing (don't fall back to global)
+            if (!cancelled) setIsLoading(false)
           }
         }
       } catch {

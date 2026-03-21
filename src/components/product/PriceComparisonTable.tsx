@@ -1,14 +1,15 @@
+import { useState } from 'react'
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react'
-import { faLock, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons'
-import { FaIcon } from '@/components/ui/FaIcon'
+import { Lock } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { cn, formatPrice, formatPriceDelta } from '@/lib/utils'
+import { cn, formatPrice, formatPriceDelta, extractAsinFromUrl } from '@/lib/utils'
 import type { RetailerPrice } from '@/types'
 import { appendAffiliateTag } from '@/lib/affiliate'
+import { RetailerSheet } from './RetailerSheet'
 
-// Retailers whose Buy button requires a paid account
+// Retailers whose Buy button requires a paid account (DB-sourced rows only)
 const GATED_RETAILER_SLUGS = new Set(['walmart', 'bestbuy'])
-// Retailers whose Buy button requires at least being signed in
+// Retailers whose Buy button requires at least being signed in (DB-sourced rows only)
 const AUTH_GATED_SLUGS = new Set(['target'])
 
 interface PriceComparisonTableProps {
@@ -30,6 +31,24 @@ export function PriceComparisonTable({
   onUpgrade,
   onSignIn,
 }: PriceComparisonTableProps) {
+  const [sheet, setSheet] = useState<{ url: string; retailerName: string; price: string } | null>(null)
+
+  const openRetailer = (item: RetailerPrice) => {
+    const url = appendAffiliateTag(item.affiliate_url)
+    if (item.retailer.slug === 'amazon') {
+      // Try the Amazon app scheme first; fall back to browser after 1.5s if not installed
+      const asin = extractAsinFromUrl(url)
+      if (asin) {
+        window.location.href = `amzn://dp/${asin}`
+        setTimeout(() => window.open(url, '_blank', 'noopener,noreferrer'), 1500)
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer')
+      }
+      return
+    }
+    setSheet({ url, retailerName: item.retailer.name, price: formatPrice(item.price) })
+  }
+
   if (isLoading) return <PriceTableSkeleton />
 
   if (prices.length === 0 && !isLoadingComparison) return null
@@ -48,7 +67,7 @@ export function PriceComparisonTable({
       <table className="w-full" role="table">
         <caption className="sr-only">Current prices across retailers</caption>
         <thead>
-          <tr className="border-b border-[var(--glass-border)] bg-white/[0.03]">
+          <tr className="border-b border-[var(--glass-border)] bg-[rgba(28,28,28,0.02)]">
             <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
               Retailer
             </th>
@@ -71,9 +90,10 @@ export function PriceComparisonTable({
           {prices.map((item, index) => {
             const isCheapest = index === 0 && prices.length > 1
             const isMostExpensive = index === prices.length - 1 && prices.length > 1
-            const isBuyLocked = GATED_RETAILER_SLUGS.has(item.retailer.slug) && (!isAuthenticated || !isPaid)
-            const isAuthLocked = AUTH_GATED_SLUGS.has(item.retailer.slug) && !isAuthenticated
-            const isAmazon = item.retailer.slug === 'amazon'
+            // All Gemini-sourced rows are locked until user signs in
+            const isGeminiLocked = item.source === 'gemini' && !isAuthenticated
+            const isBuyLocked = !isGeminiLocked && GATED_RETAILER_SLUGS.has(item.retailer.slug) && (!isAuthenticated || !isPaid)
+            const isAuthLocked = !isGeminiLocked && AUTH_GATED_SLUGS.has(item.retailer.slug) && !isAuthenticated
             return (
             <motion.tr
               key={item.retailer.slug}
@@ -141,7 +161,7 @@ export function PriceComparisonTable({
 
               {/* Buy CTA */}
               <td className="px-4 py-3 text-right">
-                {isBuyLocked || isAuthLocked ? (
+                {isGeminiLocked || isBuyLocked || isAuthLocked ? (
                   <button
                     onClick={!isAuthenticated ? onSignIn : onUpgrade}
                     className={cn(
@@ -155,28 +175,24 @@ export function PriceComparisonTable({
                     )}
                     aria-label={!isAuthenticated ? 'Sign in to buy' : 'Upgrade to buy'}
                   >
-                    <FaIcon icon={faLock} className="h-3 w-3" aria-hidden="true" />
+                    <Lock className="h-3 w-3" aria-hidden="true" />
                     {!isAuthenticated ? 'Sign in' : 'Upgrade'}
                   </button>
                 ) : item.is_available ? (
-                  <a
-                    href={appendAffiliateTag(item.affiliate_url)}
-                    target="_blank"
-                    rel="noopener noreferrer sponsored"
+                  <button
+                    onClick={() => openRetailer(item)}
                     className={cn(
                       'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5',
                       'text-xs font-semibold',
-                      'bg-accent text-white hover:bg-accent-hover',
+                      'bg-[#1C1C1C] text-[#FFFEFD] hover:bg-[#1C1C1C]/85',
                       'transition-colors',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       'min-h-[32px]',
-                      isAmazon && 'shadow-[0_0_12px_rgba(6,182,212,0.5)] hover:shadow-[0_0_20px_rgba(6,182,212,0.7)]',
                     )}
-                    aria-label={`Buy on ${item.retailer.name} for ${formatPrice(item.price)} — opens in new tab`}
+                    aria-label={`Buy on ${item.retailer.name} for ${formatPrice(item.price)}`}
                   >
                     Buy
-                    <FaIcon icon={faArrowUpRightFromSquare} className="h-3 w-3" aria-hidden="true" />
-                  </a>
+                  </button>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
                 )}
@@ -186,6 +202,15 @@ export function PriceComparisonTable({
           })}
         </motion.tbody>
       </table>
+
+      {/* Retailer in-app browser sheet */}
+      <RetailerSheet
+        isOpen={sheet !== null}
+        url={sheet?.url ?? ''}
+        retailerName={sheet?.retailerName ?? ''}
+        price={sheet?.price ?? ''}
+        onClose={() => setSheet(null)}
+      />
 
       {/* AI search indicator while Gemini comparison is loading */}
       {isLoadingComparison && (
@@ -234,20 +259,9 @@ function DeltaBadge({ delta }: { delta: number }) {
 }
 
 function RetailerLogo({ retailer }: { retailer: RetailerPrice['retailer'] }) {
-  const COLORS: Record<string, string> = {
-    amazon:  'bg-[#FF9900] text-black',
-    walmart: 'bg-[#0071CE]',
-    ebay:    'bg-[#E53238]',
-    bestbuy: 'bg-[#003B64]',
-    target:  'bg-[#CC0000]',
-  }
-
   return (
     <div
-      className={cn(
-        'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white text-[11px] font-bold font-display',
-        COLORS[retailer.slug] ?? 'bg-surface border border-[rgba(6,182,212,0.20)] text-muted-foreground',
-      )}
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold font-display bg-[#1C1C1C] text-[#FFFEFD]"
       aria-hidden="true"
     >
       {retailer.name.charAt(0)}
@@ -259,7 +273,7 @@ function RetailerLogo({ retailer }: { retailer: RetailerPrice['retailer'] }) {
 function PriceTableSkeleton() {
   return (
     <div className="glass overflow-hidden rounded-xl">
-      <div className="border-b border-[var(--glass-border)] bg-white/[0.03] px-4 py-3">
+      <div className="border-b border-[var(--glass-border)] bg-[rgba(28,28,28,0.02)] px-4 py-3">
         <div className="skeleton h-4 w-32" />
       </div>
       {[...Array(3)].map((_, i) => (

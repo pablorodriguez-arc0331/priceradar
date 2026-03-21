@@ -10,7 +10,7 @@ export type NotificationMethod = 'email' | 'push' | 'both'
 export interface Retailer {
   id: string
   name: string
-  slug: 'amazon' | 'walmart' | 'ebay' | 'bestbuy' | 'target'
+  slug: 'amazon' | 'walmart' | 'ebay' | 'bestbuy' | 'target' | 'costco'
   logo_url: string
   affiliate_url_template: string
 }
@@ -70,6 +70,7 @@ export interface RetailerPrice {
   last_updated: string
   delta_vs_avg?: number          // percentage vs historical average, e.g. -12 means 12% below avg
   is_best_price: boolean
+  source?: 'gemini' | 'db'       // where this price row came from
 }
 
 // ─── Product with full pricing data ──────────────────────────────────────────

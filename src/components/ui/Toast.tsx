@@ -1,41 +1,34 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useToastStore, useThemeStore } from '@/store'
+import { useToastStore } from '@/store'
 import type { Toast, ToastVariant } from '@/types'
 
 const TOAST_CONFIG: Record<ToastVariant, {
   icon: React.ElementType
-  dark: { bg: string; border: string; iconColor: string; titleColor: string; descColor: string }
-  light: { bg: string; border: string; iconColor: string; titleColor: string; descColor: string }
+  bg: string; border: string; iconColor: string; titleColor: string; descColor: string
 }> = {
   success: {
     icon: CheckCircle,
-    dark:  { bg: 'bg-[#0D2818]', border: 'border-[#10B981]/40', iconColor: 'text-[#10B981]', titleColor: 'text-white',        descColor: 'text-white/60' },
-    light: { bg: 'bg-[#ECFDF5]', border: 'border-[#10B981]/50', iconColor: 'text-[#059669]', titleColor: 'text-[#065F46]',    descColor: 'text-[#065F46]/70' },
+    bg: 'bg-[#1C1C1C]', border: 'border-[rgba(255,254,253,0.15)]', iconColor: 'text-[#FFFEFD]', titleColor: 'text-[#FFFEFD]', descColor: 'text-[rgba(255,254,253,0.65)]',
   },
   error: {
     icon: AlertCircle,
-    dark:  { bg: 'bg-[#2A0D12]', border: 'border-[#F43F5E]/40', iconColor: 'text-[#F43F5E]', titleColor: 'text-white',        descColor: 'text-white/60' },
-    light: { bg: 'bg-[#FFF1F2]', border: 'border-[#F43F5E]/50', iconColor: 'text-[#E11D48]', titleColor: 'text-[#9F1239]',    descColor: 'text-[#9F1239]/70' },
+    bg: 'bg-[#1C1C1C]', border: 'border-[rgba(255,254,253,0.15)]', iconColor: 'text-[#FFFEFD]', titleColor: 'text-[#FFFEFD]', descColor: 'text-[rgba(255,254,253,0.65)]',
   },
   info: {
     icon: Info,
-    dark:  { bg: 'bg-[#071E2E]', border: 'border-[#06B6D4]/40', iconColor: 'text-[#06B6D4]', titleColor: 'text-white',        descColor: 'text-white/60' },
-    light: { bg: 'bg-[#ECFEFF]', border: 'border-[#06B6D4]/50', iconColor: 'text-[#0891B2]', titleColor: 'text-[#164E63]',    descColor: 'text-[#164E63]/70' },
+    bg: 'bg-[#FFFEFD]', border: 'border-[rgba(28,28,28,0.15)]', iconColor: 'text-[#1C1C1C]', titleColor: 'text-[#1C1C1C]', descColor: 'text-[rgba(28,28,28,0.55)]',
   },
   warning: {
     icon: AlertTriangle,
-    dark:  { bg: 'bg-[#231A06]', border: 'border-amber-500/40', iconColor: 'text-amber-400',  titleColor: 'text-white',        descColor: 'text-white/60' },
-    light: { bg: 'bg-[#FFFBEB]', border: 'border-amber-400/50', iconColor: 'text-amber-600',  titleColor: 'text-amber-900',    descColor: 'text-amber-800/70' },
+    bg: 'bg-[#FFFEFD]', border: 'border-[rgba(28,28,28,0.25)]', iconColor: 'text-[#1C1C1C]', titleColor: 'text-[#1C1C1C]', descColor: 'text-[rgba(28,28,28,0.55)]',
   },
 }
 
 function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) {
-  const config = TOAST_CONFIG[toast.variant]
-  const theme = useThemeStore(s => s.theme)
-  const t = theme === 'light' ? config.light : config.dark
-  const Icon = config.icon
+  const t = TOAST_CONFIG[toast.variant]
+  const Icon = t.icon
 
   return (
     <motion.div
@@ -64,7 +57,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         onClick={onRemove}
         className={cn(
           'shrink-0 rounded p-0.5 transition-colors',
-          'hover:bg-black/10',
+          'hover:bg-[rgba(28,28,28,0.08)]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         )}
         aria-label="Dismiss notification"

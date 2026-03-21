@@ -17,17 +17,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-accent text-[#050D1A] font-semibold hover:bg-accent-hover active:bg-accent shadow-[0_0_16px_rgba(6,182,212,0.35)] hover:shadow-[0_0_24px_rgba(6,182,212,0.50)]',
+          'bg-[#1C1C1C] text-[#FFFEFD] font-semibold hover:bg-[#1C1C1C]/85 active:bg-[#1C1C1C]',
         secondary:
-          'bg-surface text-foreground border border-[rgba(6,182,212,0.20)] hover:border-accent/40 hover:bg-surface-raised',
+          'bg-[#FFFEFD] text-[#1C1C1C] border border-[rgba(28,28,28,0.20)] hover:border-[rgba(28,28,28,0.40)] hover:bg-[rgba(28,28,28,0.04)]',
         outline:
-          'border border-accent/25 bg-transparent text-accent hover:bg-accent/10 hover:border-accent/50',
+          'border border-[rgba(28,28,28,0.28)] bg-transparent text-[#1C1C1C] hover:bg-[rgba(28,28,28,0.05)] hover:border-[rgba(28,28,28,0.50)]',
         ghost:
-          'hover:bg-accent/10 hover:text-accent text-muted-foreground',
+          'text-[#1C1C1C] hover:bg-[rgba(28,28,28,0.06)]',
         destructive:
-          'bg-destructive text-destructive-foreground hover:bg-destructive/90',
+          'bg-[#1C1C1C] text-[#FFFEFD] hover:bg-[#1C1C1C]/85',
         link:
-          'text-accent underline-offset-4 hover:underline p-0 h-auto',
+          'text-[#1C1C1C] underline-offset-4 hover:underline p-0 h-auto',
       },
       size: {
         sm:      'h-9 px-3 text-xs rounded-md min-h-[36px]',

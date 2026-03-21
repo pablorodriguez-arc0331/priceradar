@@ -9,10 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Alpha-carrying tokens use static rgba() to preserve Tailwind opacity modifier compatibility
-        border: 'rgba(6, 182, 212, 0.12)',
-        'border-strong': 'rgba(6, 182, 212, 0.24)',
-        input: 'rgba(6, 182, 212, 0.12)',
+        border: 'rgba(28, 28, 28, 0.12)',
+        'border-strong': 'rgba(28, 28, 28, 0.28)',
+        input: 'rgba(28, 28, 28, 0.12)',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         surface: 'hsl(var(--surface))',
@@ -37,7 +36,7 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
-          subtle: 'rgba(6, 182, 212, 0.10)',
+          subtle: 'rgba(28, 28, 28, 0.06)',
           hover: 'hsl(var(--accent-hover))',
         },
         card: {
@@ -49,15 +48,15 @@ const config: Config = {
           foreground: 'hsl(var(--popover-foreground))',
         },
         signal: {
-          low:              'hsl(var(--signal-low))',
-          'low-bg':         'rgba(16, 185, 129, 0.12)',
-          'low-border':     'rgba(16, 185, 129, 0.30)',
-          high:             'hsl(var(--signal-high))',
-          'high-bg':        'rgba(244, 63, 94, 0.12)',
-          'high-border':    'rgba(244, 63, 94, 0.30)',
-          neutral:          'hsl(var(--signal-neutral))',
-          'neutral-bg':     'rgba(107, 127, 163, 0.12)',
-          'neutral-border': 'rgba(107, 127, 163, 0.25)',
+          low:              '#1C1C1C',
+          'low-bg':         'rgba(28, 28, 28, 0.06)',
+          'low-border':     'rgba(28, 28, 28, 0.20)',
+          high:             '#1C1C1C',
+          'high-bg':        'rgba(28, 28, 28, 0.06)',
+          'high-border':    'rgba(28, 28, 28, 0.20)',
+          neutral:          '#1C1C1C',
+          'neutral-bg':     'rgba(28, 28, 28, 0.04)',
+          'neutral-border': 'rgba(28, 28, 28, 0.14)',
         },
       },
       borderRadius: {
@@ -68,10 +67,10 @@ const config: Config = {
         '2xl': 'calc(var(--radius) + 8px)',
       },
       fontFamily: {
-        // DM Sans — body, labels, UI text
-        sans: ['DM Sans', 'system-ui', 'sans-serif'],
-        // Space Grotesk — headings, prices, stats
-        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
+        // Work Sans — body, labels, UI text
+        sans: ['Work Sans', 'system-ui', 'sans-serif'],
+        // Josefin Sans — headings, prices, stats
+        display: ['Josefin Sans', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'monospace'],
       },
       fontSize: {

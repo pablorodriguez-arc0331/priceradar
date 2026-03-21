@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, X, AlertCircle, Clipboard } from 'lucide-react'
+import { X, AlertCircle, Clipboard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProductLookup } from '@/hooks'
 import { Button, Spinner } from '@/components/ui/Button'
@@ -83,12 +83,14 @@ export function URLSearchInput({
         <div className="relative flex items-center rounded-[calc(0.75rem-1px)] bg-background overflow-hidden">
 
           {/* Left search icon */}
-          <Search
-            className={cn(
-              'pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 transition-colors duration-300',
-              isFocused ? 'text-accent' : 'text-muted-foreground',
-            )}
+          <img
+            src="/assets/search.png"
+            alt=""
             aria-hidden="true"
+            className={cn(
+              'pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 object-contain transition-opacity duration-300',
+              isFocused ? 'opacity-100' : 'opacity-40',
+            )}
           />
 
           <input

@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
 import { ArrowRight, TrendingDown, Radar, Package } from 'lucide-react'
-import { faShieldHalved, faBell } from '@fortawesome/free-solid-svg-icons'
-import { FaIcon } from '@/components/ui/FaIcon'
+import { ShieldCheck, Bell } from 'lucide-react'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { Page } from '@/components/layout'
@@ -23,7 +22,7 @@ const STEPS = [
     body: "We compare the current price to its history and tell you: is this a good deal right now?",
   },
   {
-    icon: <FaIcon icon={faBell} className="h-4 w-4 text-accent" aria-hidden="true" />,
+    icon: <Bell className="h-4 w-4 text-accent" aria-hidden="true" />,
     step: '03',
     title: 'Set an alert, buy at the right time',
     body: "We'll notify you when the price drops to where you want it. You come back, you buy.",
@@ -54,27 +53,33 @@ export function LandingPage() {
         >
           <motion.div variants={itemVariants} className="space-y-2">
             <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
+              <span className="relative flex h-2 w-2" aria-hidden="true">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+              </span>
               <Radar className="h-3.5 w-3.5" aria-hidden="true" />
               Amazon price intelligence
             </div>
             <h1
               id="hero-heading"
-              className="font-display text-4xl font-bold tracking-tight text-foreground leading-tight"
+              className="font-display text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-[1.1]"
             >
               Is this price actually
               <br />
-              <span className="text-accent">a good deal?</span>
+              <span className="text-[#1C1C1C]">
+                a good deal?
+              </span>
             </h1>
             <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
-              Paste an Amazon link and we'll show you the full price history and compare it against Walmart and Best Buy — so you always know if now is the right time to buy.
+              Paste any Amazon link — we'll show full price history and compare retailers instantly.
             </p>
           </motion.div>
 
           {/* URL input — the primary CTA */}
           <motion.div variants={itemVariants} className="mx-auto max-w-lg">
             <URLSearchInput size="large" autoFocus={false} />
-            <p className="mt-2 text-xs text-muted-foreground">
-              No account needed to check prices
+            <p className="mt-2 text-[11px] text-muted-foreground/60 text-center">
+              50K+ prices tracked · Updated hourly · Free forever
             </p>
           </motion.div>
         </motion.section>
@@ -109,7 +114,7 @@ export function LandingPage() {
           </h2>
           <div className="space-y-3">
             {STEPS.map((step, i) => (
-              <StepCard key={i} {...step} delay={i * 0.08} />
+              <StepCard key={i} {...step} delay={i * 0.08} active={i === 0} />
             ))}
           </div>
         </motion.section>
@@ -122,7 +127,10 @@ export function LandingPage() {
           className="glass-card rounded-xl px-5 py-5 space-y-3"
         >
           <div className="flex items-center gap-2">
-            <FaIcon icon={faShieldHalved} className="h-4 w-4 text-signal-low shrink-0" aria-hidden="true" />
+            <ShieldCheck
+              className="h-4 w-4 text-signal-low shrink-0"
+              aria-hidden="true"
+            />
             <p className="text-sm font-semibold text-foreground">Designed for smart buyers</p>
           </div>
           <ul className="space-y-2" role="list">
@@ -131,6 +139,7 @@ export function LandingPage() {
               'Multi-retailer comparison in one view',
               'Historical high/low signal — not just today\'s price',
               'Free price checks, no account required',
+              'Price alert notifications when your target is hit',
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
                 <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
@@ -165,7 +174,7 @@ function SampleProductCard() {
         </div>
         <div className="flex-1 min-w-0 space-y-1">
           <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
-            Wireless Noise-Canceling Headphones
+            Sony WH-1000XM5 Headphones
           </p>
           <SignalBadge
             verdict="low"
@@ -181,16 +190,16 @@ function SampleProductCard() {
         {DEMO_PRICES.map((rp) => (
           <div key={rp.retailer} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <RetailerDot slug={rp.slug} />
+              <RetailerDot />
               <span className="text-xs text-muted-foreground">{rp.retailer}</span>
               {rp.best && (
-                <span className="rounded-full bg-signal-low-bg px-1.5 py-0.5 text-[10px] font-semibold text-signal-low">
+                <span className="rounded-full bg-[rgba(28,28,28,0.06)] px-1.5 py-0.5 text-[10px] font-semibold text-[#1C1C1C]">
                   Best
                 </span>
               )}
             </div>
             <span className={cn(
-              'price text-xs font-bold',
+              'price text-sm font-bold',
               rp.best ? 'text-signal-low' : 'text-foreground',
             )}>
               {formatPrice(rp.price)}
@@ -200,21 +209,16 @@ function SampleProductCard() {
       </div>
 
       <p className="text-center text-xs text-muted-foreground">
-        ↑ This is what you'll see for any product you search
+        ↑ This is what you'll see for any product
       </p>
     </div>
   )
 }
 
-function RetailerDot({ slug }: { slug: string }) {
-  const COLORS: Record<string, string> = {
-    amazon: 'bg-[#FF9900]',
-    walmart: 'bg-[#0071CE]',
-    bestbuy: 'bg-[#1D3557]',
-  }
+function RetailerDot() {
   return (
     <div
-      className={cn('h-2 w-2 rounded-full', COLORS[slug] ?? 'bg-muted-foreground')}
+      className="h-2 w-2 rounded-full bg-[#1C1C1C]"
       aria-hidden="true"
     />
   )
@@ -227,22 +231,31 @@ function StepCard({
   title,
   body,
   delay,
+  active,
 }: {
   icon: React.ReactNode
   step: string
   title: string
   body: string
   delay: number
+  active?: boolean
 }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28, delay }}
-      className="glass-card flex items-start gap-3 rounded-xl px-4 py-3.5 border-l-2 border-l-accent/30"
+      className="glass-card flex items-start gap-3 rounded-xl px-4 py-3.5 border-l-2 border-l-accent/30 hover:border-l-accent/70 transition-colors duration-200"
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent/10 border border-accent/20">
-        {icon}
+      <div className={cn(
+        'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border',
+        active
+          ? 'bg-[#1C1C1C] border-[#1C1C1C]'
+          : 'bg-[rgba(28,28,28,0.06)] border-[rgba(28,28,28,0.15)]',
+      )}>
+        {active
+          ? <span className="[&_svg]:text-[#FFFEFD]">{icon}</span>
+          : icon}
       </div>
       <div className="space-y-0.5">
         <p className="font-display text-sm font-semibold text-foreground">{title}</p>

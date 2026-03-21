@@ -28,29 +28,32 @@ export const SIGNAL_CONFIG: Record<
   PriceVerdict,
   { bg: string; text: string; border: string; badgeBg: string }
 > = {
+  // low = good price = inverted (black pill, cream text) — visually prominent
   low: {
-    bg: 'bg-signal-low-bg',
-    text: 'text-signal-low',
-    border: 'border-signal-low-border',
-    badgeBg: 'bg-signal-low-bg text-signal-low border-signal-low-border',
+    bg: 'bg-[rgba(28,28,28,0.06)]',
+    text: 'text-[#1C1C1C]',
+    border: 'border-[rgba(28,28,28,0.20)]',
+    badgeBg: 'bg-[#1C1C1C] text-[#FFFEFD] border-[#1C1C1C]',
   },
+  // high = expensive = outlined (cream bg, black border) — stands out as a warning
   high: {
-    bg: 'bg-signal-high-bg',
-    text: 'text-signal-high',
-    border: 'border-signal-high-border',
-    badgeBg: 'bg-signal-high-bg text-signal-high border-signal-high-border',
+    bg: 'bg-[rgba(28,28,28,0.04)]',
+    text: 'text-[#1C1C1C]',
+    border: 'border-[rgba(28,28,28,0.35)]',
+    badgeBg: 'bg-[#FFFEFD] text-[#1C1C1C] border-[rgba(28,28,28,0.35)]',
   },
+  // neutral = mid-range = subtle
   neutral: {
-    bg: 'bg-signal-neutral-bg',
-    text: 'text-signal-neutral',
-    border: 'border-signal-neutral-border',
-    badgeBg: 'bg-signal-neutral-bg text-signal-neutral border-signal-neutral-border',
+    bg: 'bg-[rgba(28,28,28,0.04)]',
+    text: 'text-[#1C1C1C]',
+    border: 'border-[rgba(28,28,28,0.15)]',
+    badgeBg: 'bg-[rgba(28,28,28,0.06)] text-[#1C1C1C] border-[rgba(28,28,28,0.15)]',
   },
   no_data: {
-    bg: 'bg-muted',
-    text: 'text-muted-foreground',
-    border: 'border-border',
-    badgeBg: 'bg-muted text-muted-foreground border-border',
+    bg: 'bg-[rgba(28,28,28,0.03)]',
+    text: 'text-[rgba(28,28,28,0.50)]',
+    border: 'border-[rgba(28,28,28,0.10)]',
+    badgeBg: 'bg-[rgba(28,28,28,0.04)] text-[rgba(28,28,28,0.50)] border-[rgba(28,28,28,0.10)]',
   },
 }
 
