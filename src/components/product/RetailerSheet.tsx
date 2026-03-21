@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, ExternalLink, Globe, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -20,6 +21,16 @@ const BLOCK_TIMEOUT_MS = 3500
 export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: RetailerSheetProps) {
   const [loadState, setLoadState] = useState<LoadState>('loading')
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Lock body scroll while sheet is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
 
   // Reset state each time the sheet opens with a new URL
   useEffect(() => {
@@ -47,7 +58,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
     onClose()
   }
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -198,6 +209,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

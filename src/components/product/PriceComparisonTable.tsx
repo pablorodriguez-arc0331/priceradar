@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { TrendingDown, TrendingUp, Minus } from 'lucide-react'
 import { Lock } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { cn, formatPrice, formatPriceDelta, extractAsinFromUrl } from '@/lib/utils'
+import { cn, formatPrice, formatPriceDelta } from '@/lib/utils'
 import type { RetailerPrice } from '@/types'
 import { appendAffiliateTag } from '@/lib/affiliate'
 import { RetailerSheet } from './RetailerSheet'
@@ -36,14 +36,7 @@ export function PriceComparisonTable({
   const openRetailer = (item: RetailerPrice) => {
     const url = appendAffiliateTag(item.affiliate_url)
     if (item.retailer.slug === 'amazon') {
-      // Try the Amazon app scheme first; fall back to browser after 1.5s if not installed
-      const asin = extractAsinFromUrl(url)
-      if (asin) {
-        window.location.href = `amzn://dp/${asin}`
-        setTimeout(() => window.open(url, '_blank', 'noopener,noreferrer'), 1500)
-      } else {
-        window.open(url, '_blank', 'noopener,noreferrer')
-      }
+      window.open(url, '_blank', 'noopener,noreferrer')
       return
     }
     setSheet({ url, retailerName: item.retailer.name, price: formatPrice(item.price) })
