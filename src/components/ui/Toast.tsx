@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
+import { CheckCircle, Info, X } from 'lucide-react'
+import { IconAlert } from '@/components/ui/Icons'
 import { cn } from '@/lib/utils'
 import { useToastStore } from '@/store'
 import type { Toast, ToastVariant } from '@/types'
@@ -13,7 +14,7 @@ const TOAST_CONFIG: Record<ToastVariant, {
     bg: 'bg-[#1C1C1C]', border: 'border-[rgba(255,254,253,0.15)]', iconColor: 'text-[#FFFEFD]', titleColor: 'text-[#FFFEFD]', descColor: 'text-[rgba(255,254,253,0.65)]',
   },
   error: {
-    icon: AlertCircle,
+    icon: IconAlert,
     bg: 'bg-[#1C1C1C]', border: 'border-[rgba(255,254,253,0.15)]', iconColor: 'text-[#FFFEFD]', titleColor: 'text-[#FFFEFD]', descColor: 'text-[rgba(255,254,253,0.65)]',
   },
   info: {
@@ -21,7 +22,7 @@ const TOAST_CONFIG: Record<ToastVariant, {
     bg: 'bg-[#FFFEFD]', border: 'border-[rgba(28,28,28,0.15)]', iconColor: 'text-[#1C1C1C]', titleColor: 'text-[#1C1C1C]', descColor: 'text-[rgba(28,28,28,0.55)]',
   },
   warning: {
-    icon: AlertTriangle,
+    icon: IconAlert,
     bg: 'bg-[#FFFEFD]', border: 'border-[rgba(28,28,28,0.25)]', iconColor: 'text-[#1C1C1C]', titleColor: 'text-[#1C1C1C]', descColor: 'text-[rgba(28,28,28,0.55)]',
   },
 }

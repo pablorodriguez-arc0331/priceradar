@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Radar, Search, User } from 'lucide-react'
+import { Radar } from 'lucide-react'
+import { IconSearch, IconUser } from '@/components/ui/Icons'
 import { useAuthStore } from '@/store'
 import { cn } from '@/lib/utils'
 import { useOnlineStatus } from '@/hooks'
@@ -108,7 +109,7 @@ export function Header() {
               role="status"
               aria-label="You are offline"
             >
-              <Search className="h-3 w-3 text-[#1C1C1C] opacity-60" aria-hidden="true" />
+              <IconSearch className="h-3 w-3 text-[#1C1C1C] opacity-60" aria-hidden="true" />
               <span className="text-xs font-medium text-[#1C1C1C]">Offline</span>
             </motion.div>
           )}
@@ -150,7 +151,7 @@ function UserMenuButton() {
         <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" />
       ) : (
         <div className="flex h-full w-full items-center justify-center bg-accent/10">
-          <User className="h-4 w-4 text-accent" aria-hidden="true" />
+          <IconUser className="h-4 w-4 text-accent" aria-hidden="true" />
         </div>
       )}
     </Link>

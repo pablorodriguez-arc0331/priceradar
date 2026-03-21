@@ -4,7 +4,8 @@ export { ThemeProvider } from './ThemeProvider'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Radar, WifiOff, Download, X, Bell, Wifi } from 'lucide-react'
+import { Radar, WifiOff, Download, X, Wifi } from 'lucide-react'
+import { IconSearch, IconBell } from '@/components/ui/Icons'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -21,13 +22,13 @@ interface EmptyStateProps {
 
 const EMPTY_CONFIGS = {
   dashboard: {
-    icon: Search,
+    icon: IconSearch,
     title: "You're not watching anything yet",
     body: "Find a product and add it to your watchlist. We'll track the price and alert you when it drops.",
     cta: 'Find a product',
   },
   search: {
-    icon: Search,
+    icon: IconSearch,
     title: 'No results found',
     body: 'Try pasting a direct product URL from Amazon, Walmart, eBay, Best Buy, or Target.',
     cta: null,
@@ -199,7 +200,7 @@ export function AlertSetupSheet({
                   fullWidth
                   onClick={handleSubmit}
                   loading={isSubmitting}
-                  leftIcon={<Bell className="h-4 w-4" />}
+                  leftIcon={<IconBell className="h-4 w-4" />}
                 >
                   Set Alert
                 </Button>

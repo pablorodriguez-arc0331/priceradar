@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, AlertCircle, Clipboard } from 'lucide-react'
+import { X } from 'lucide-react'
+import { IconAlert, IconClipboard } from '@/components/ui/Icons'
 import { cn } from '@/lib/utils'
 import { useProductLookup } from '@/hooks'
 import { Button, Spinner } from '@/components/ui/Button'
@@ -167,7 +168,7 @@ export function URLSearchInput({
                     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                   )}
                 >
-                  <Clipboard className="h-4 w-4" />
+                  <IconClipboard className="h-4 w-4" />
                 </motion.button>
               )}
             </AnimatePresence>
@@ -188,7 +189,7 @@ export function URLSearchInput({
             transition={{ duration: 0.18 }}
             className="flex items-start gap-1.5 text-xs text-destructive overflow-hidden"
           >
-            <AlertCircle className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
+            <IconAlert className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
             {error}
           </motion.p>
         )}

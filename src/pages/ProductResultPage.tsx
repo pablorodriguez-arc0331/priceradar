@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Bell, BellOff, Share2, ChevronLeft, Clock } from 'lucide-react'
+import { BellOff, ChevronLeft } from 'lucide-react'
+import { IconBell, IconClock, IconShare } from '@/components/ui/Icons'
 import { Page } from '@/components/layout'
 import { SignalBadge, SignalBadgeSkeleton } from '@/components/product/SignalBadge'
 import { ProductImage } from '@/components/product/ProductImage'
@@ -174,7 +175,7 @@ export function ProductResultPage() {
               loading={isTracking}
               leftIcon={isTracked
                 ? <BellOff className="h-4 w-4" />
-                : <Bell className="h-4 w-4" />
+                : <IconBell className="h-4 w-4" />
               }
             >
               {isTracked ? 'Remove from watchlist' : 'Track this product'}
@@ -187,12 +188,12 @@ export function ProductResultPage() {
                 onClick={() => setAlertSheetOpen(true)}
                 aria-label="Set price alert"
               >
-                <Bell className="h-4 w-4" />
+                <IconBell className="h-4 w-4" />
               </Button>
             )}
 
             <Button variant="ghost" size="icon" onClick={handleShare} aria-label="Share this price check">
-              <Share2 className="h-4 w-4" />
+              <IconShare className="h-4 w-4" />
             </Button>
           </div>
         )}
@@ -297,7 +298,7 @@ function ProductHeader({ product }: { product: { name: string; image_url?: strin
           {product.name}
         </h1>
         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          <Clock className="h-3 w-3" aria-hidden="true" />
+          <IconClock className="h-3 w-3" aria-hidden="true" />
           Updated {formatRelativeTime(product.signal.last_checked_at)}
         </p>
       </div>

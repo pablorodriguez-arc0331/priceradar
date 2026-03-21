@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Radar } from 'lucide-react'
-import { Eye, EyeOff, Mail } from 'lucide-react'
+import { Radar, Eye, EyeOff } from 'lucide-react'
+import { IconMail } from '@/components/ui/Icons'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import {
@@ -210,7 +210,7 @@ export function AuthPage() {
               onChange={updateField('email')}
               error={errors.email}
               placeholder="you@example.com"
-              leftIcon={<Mail className="h-4 w-4" aria-hidden="true" />}
+              leftIcon={<IconMail className="h-4 w-4" aria-hidden="true" />}
               required
             />
 

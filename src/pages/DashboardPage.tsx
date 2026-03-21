@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, RefreshCw, LayoutGrid, List } from 'lucide-react'
+import { Plus } from 'lucide-react'
+import { IconGrid, IconRefresh, IconList } from '@/components/ui/Icons'
 import { Page } from '@/components/layout'
 import { TrackedProductCard, TrackedProductCardSkeleton } from '@/components/dashboard/TrackedProductCard'
 import { EmptyState } from '@/components/common'
@@ -93,7 +94,7 @@ export function DashboardPage() {
 
         <div className="flex items-center gap-1.5">
           <Button variant="ghost" size="icon" onClick={handleRefresh} aria-label="Refresh all prices" disabled={isRefreshing}>
-            <RefreshCw className={cn('h-4 w-4', isRefreshing && 'animate-spin')} aria-hidden="true" />
+            <IconRefresh className={cn('h-4 w-4', isRefreshing && 'animate-spin')} aria-hidden="true" />
           </Button>
 
           {/* View toggle */}
@@ -117,8 +118,8 @@ export function DashboardPage() {
                 aria-label={`${view} view`}
               >
                 {view === 'grid'
-                  ? <LayoutGrid className="h-3.5 w-3.5" aria-hidden="true" />
-                  : <List className="h-3.5 w-3.5" aria-hidden="true" />
+                  ? <IconGrid className="h-3.5 w-3.5" aria-hidden="true" />
+                  : <IconList className="h-3.5 w-3.5" aria-hidden="true" />
                 }
               </button>
             ))}

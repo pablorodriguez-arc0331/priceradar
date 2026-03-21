@@ -2,10 +2,11 @@ import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useDocumentTitle } from '@/hooks'
+import { Check, Lock, Zap, Pencil, X } from 'lucide-react'
 import {
-  Check, Lock, Sparkles, Bell, TrendingDown, LayoutDashboard, Zap,
-  User, LogOut, Mail, Shield, ChevronRight, AlertTriangle, Pencil, X,
-} from 'lucide-react'
+  IconBell, IconChart, IconGrid, IconUser, IconLogOut,
+  IconMail, IconShield, IconArrowRight, IconAlert, IconFire,
+} from '@/components/ui/Icons'
 import { Page } from '@/components/layout'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore, useToast } from '@/store'
@@ -31,10 +32,10 @@ const FREE_FEATURES = [
 
 const PAID_FEATURES = [
   { text: 'Everything in Free', icon: Check },
-  { text: 'Full price history — up to 1 year', icon: TrendingDown },
-  { text: 'Unlimited product tracking', icon: LayoutDashboard },
+  { text: 'Full price history — up to 1 year', icon: IconChart },
+  { text: 'Unlimited product tracking', icon: IconGrid },
   { text: 'Faster price refresh (every hour)', icon: Zap },
-  { text: 'Priority email + push alerts', icon: Bell },
+  { text: 'Priority email + push alerts', icon: IconBell },
 ]
 
 export function UpgradePage() {
@@ -78,7 +79,7 @@ export function UpgradePage() {
         className="text-center space-y-2 pt-4"
       >
         <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/20 bg-accent-subtle px-3 py-1 text-xs font-medium text-accent">
-          <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+          <IconFire className="h-3.5 w-3.5" aria-hidden="true" />
           Price Radar Pro
         </div>
         <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
@@ -246,7 +247,7 @@ export function SettingsPage() {
   if (!isAuthenticated) {
     return (
       <Page className="flex flex-col items-center justify-center gap-4 py-16 text-center">
-        <User className="h-10 w-10 text-muted-foreground" />
+        <IconUser className="h-10 w-10 text-muted-foreground" />
         <div>
           <p className="text-sm font-semibold text-foreground">No account yet</p>
           <p className="text-xs text-muted-foreground mt-1">
@@ -274,7 +275,7 @@ export function SettingsPage() {
             <img src={user.avatar_url} alt={user?.name} className="h-full w-full object-cover" />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-accent-subtle">
-              <User className="h-5 w-5 text-accent" />
+              <IconUser className="h-5 w-5 text-accent" />
             </div>
           )}
         </div>
@@ -348,7 +349,7 @@ export function SettingsPage() {
         <SettingsSection title="Subscription">
           {user?.plan === 'free' ? (
             <SettingsRow
-              icon={Sparkles}
+              icon={IconFire}
               label="Upgrade to Pro"
               sublabel="Unlock full price history and unlimited tracking"
               onClick={() => navigate('/upgrade')}
@@ -356,7 +357,7 @@ export function SettingsPage() {
             />
           ) : (
             <SettingsRow
-              icon={Shield}
+              icon={IconShield}
               label="Manage subscription"
               sublabel="Cancel or update billing"
               onClick={() => toast('info', 'Opens Stripe billing portal')}
@@ -367,7 +368,7 @@ export function SettingsPage() {
         {/* Notifications */}
         <SettingsSection title="Notifications">
           <SettingsRow
-            icon={Mail}
+            icon={IconMail}
             label="Email alerts"
             sublabel={user?.alert_preferences.email_enabled ? 'Enabled' : 'Disabled'}
             onClick={() => toast('info', 'Alert preferences coming soon')}
@@ -391,7 +392,7 @@ export function SettingsPage() {
         {/* Account */}
         <SettingsSection title="Account">
           <SettingsRow
-            icon={LogOut}
+            icon={IconLogOut}
             label="Sign out"
             sublabel="You'll need to sign in again to access your watchlist"
             onClick={handleSignOut}
@@ -462,12 +463,12 @@ function PushNotificationRow({
     sublabel = 'Pro feature — tap to upgrade'
   } else if (push.needsHomeScreenInstall) {
     sublabel = 'Add to Home Screen to enable'
-    sublabelIcon = <AlertTriangle className="h-3 w-3 text-signal-high mr-1 inline" />
+    sublabelIcon = <IconAlert className="h-3 w-3 text-signal-high mr-1 inline" />
   } else if (!push.isSupported) {
     sublabel = 'Not supported in this browser'
   } else if (push.permission === 'denied') {
     sublabel = 'Blocked — update browser settings'
-    sublabelIcon = <AlertTriangle className="h-3 w-3 text-signal-high mr-1 inline" />
+    sublabelIcon = <IconAlert className="h-3 w-3 text-signal-high mr-1 inline" />
   } else if (push.isSubscribed) {
     sublabel = 'On — price changes will notify you'
   } else {
@@ -494,7 +495,7 @@ function PushNotificationRow({
 
   return (
     <SettingsRow
-      icon={Bell}
+      icon={IconBell}
       label="Push notifications"
       sublabel={sublabel}
       sublabelPrefix={sublabelIcon}
@@ -578,7 +579,7 @@ function SettingsRow({
           </p>
         )}
       </div>
-      {rightElement ?? <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />}
+      {rightElement ?? <IconArrowRight className="h-4 w-4 text-muted-foreground shrink-0" aria-hidden="true" />}
     </button>
   )
 }

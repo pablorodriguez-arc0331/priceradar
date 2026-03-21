@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { ChevronRight, Bell, BellOff, Trash2, Clock, type LucideIcon } from 'lucide-react'
+import { BellOff } from 'lucide-react'
+import { IconArrowRight, IconBell, IconTrash, IconClock } from '@/components/ui/Icons'
 import { cn, formatPrice, formatRelativeTime } from '@/lib/utils'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { ProductImage } from '@/components/product/ProductImage'
@@ -128,7 +129,7 @@ function SwipeToDelete({
           aria-label="Delete from watchlist"
           type="button"
         >
-          <Trash2 className="h-5 w-5" aria-hidden="true" />
+          <IconTrash className="h-5 w-5" aria-hidden="true" />
           <span className="text-[10px] font-medium">Delete</span>
         </button>
       </motion.div>
@@ -221,18 +222,18 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
         {/* Footer */}
         <div className="mt-auto flex items-center justify-between border-t border-border pt-2">
           <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" aria-hidden="true" />
+            <IconClock className="h-3 w-3" aria-hidden="true" />
             {formatRelativeTime(item.last_checked_at)}
           </span>
           <div className="flex items-center gap-1">
             <CardAction
-              icon={item.alert_enabled ? Bell : BellOff}
+              icon={item.alert_enabled ? IconBell : BellOff}
               label={item.alert_enabled ? 'Pause alert' : 'Enable alert'}
               onClick={onAlertToggle}
               active={item.alert_enabled}
             />
             <CardAction
-              icon={Trash2}
+              icon={IconTrash}
               label="Remove from watchlist"
               onClick={onRemove}
               danger
@@ -304,13 +305,13 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
         </div>
         <div className="flex items-center gap-1">
           <CardAction
-            icon={item.alert_enabled ? Bell : BellOff}
+            icon={item.alert_enabled ? IconBell : BellOff}
             label={item.alert_enabled ? 'Pause alert' : 'Enable alert'}
             onClick={onAlertToggle}
             active={item.alert_enabled}
           />
         </div>
-        <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        <IconArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
       </div>
     </motion.article>
   )
@@ -324,7 +325,7 @@ function CardAction({
   active,
   danger,
 }: {
-  icon: LucideIcon
+  icon: React.ElementType
   label: string
   onClick: (e: React.MouseEvent) => void
   active?: boolean

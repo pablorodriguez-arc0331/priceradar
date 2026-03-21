@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ExternalLink, Globe, RefreshCw } from 'lucide-react'
+import { X, ExternalLink, Globe } from 'lucide-react'
+import { IconRefresh } from '@/components/ui/Icons'
 import { cn } from '@/lib/utils'
 
 interface RetailerSheetProps {
@@ -14,9 +15,11 @@ interface RetailerSheetProps {
 
 type LoadState = 'loading' | 'loaded' | 'blocked'
 
-// Most major retailers (Amazon, Walmart, Best Buy) block iframes via X-Frame-Options.
-// We attempt the iframe and fall back after a timeout if it never signals ready.
-const BLOCK_TIMEOUT_MS = 3500
+// All major retailers (Target, Walmart, Best Buy) block iframes via X-Frame-Options /
+// CSP frame-ancestors. The onLoad event fires even for blocked iframes (the browser
+// received a response, just an empty one). We can't detect the block cross-origin, so
+// we rely solely on the timeout to show the fallback CTA.
+const BLOCK_TIMEOUT_MS = 1200
 
 export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: RetailerSheetProps) {
   const [loadState, setLoadState] = useState<LoadState>('loading')
@@ -46,11 +49,9 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
   }, [isOpen, url])
 
   const handleIframeLoad = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    // The load event fires even for X-Frame-Options blocks, but the iframe body
-    // is empty cross-origin — we can't distinguish, so we optimistically show the
-    // iframe. If blank, the user sees the fallback anyway after a moment.
-    setLoadState('loaded')
+    // Do NOT cancel the timeout here. onLoad fires even when the retailer blocks
+    // the iframe via X-Frame-Options — the iframe body will be empty cross-origin
+    // and we have no way to detect it. Let the timeout drive the blocked fallback.
   }
 
   const openExternal = () => {
@@ -114,7 +115,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                   {retailerName} · {price}
                 </span>
                 {loadState === 'loading' && (
-                  <RefreshCw className="h-3 w-3 shrink-0 animate-spin text-[rgba(28,28,28,0.40)] ml-auto" aria-label="Loading" />
+                  <IconRefresh className="h-3 w-3 shrink-0 animate-spin text-[rgba(28,28,28,0.40)] ml-auto" aria-label="Loading" />
                 )}
               </div>
 
@@ -146,7 +147,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <RefreshCw className="h-5 w-5 animate-spin text-[rgba(28,28,28,0.35)]" aria-hidden="true" />
+                    <IconRefresh className="h-5 w-5 animate-spin text-[rgba(28,28,28,0.35)]" aria-hidden="true" />
                     <p className="text-xs text-[rgba(28,28,28,0.50)]">Loading {retailerName}…</p>
                   </motion.div>
                 )}

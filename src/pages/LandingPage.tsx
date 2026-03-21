@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, TrendingDown, Radar, Package } from 'lucide-react'
-import { ShieldCheck, Bell } from 'lucide-react'
+import { Radar } from 'lucide-react'
+import { IconArrowRight, IconChart, IconTag, IconShield, IconBell } from '@/components/ui/Icons'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
 import { Page } from '@/components/layout'
@@ -10,19 +10,19 @@ import { useDocumentTitle } from '@/hooks'
 
 const STEPS = [
   {
-    icon: <ArrowRight className="h-4 w-4 text-accent" aria-hidden="true" />,
+    icon: <IconArrowRight className="h-4 w-4 text-accent" aria-hidden="true" />,
     step: '01',
     title: 'Paste an Amazon product link',
     body: 'Copy any Amazon product URL and paste it here. No extension needed.',
   },
   {
-    icon: <TrendingDown className="h-4 w-4 text-accent" aria-hidden="true" />,
+    icon: <IconChart className="h-4 w-4 text-accent" aria-hidden="true" />,
     step: '02',
     title: 'Get the verdict instantly',
     body: "We compare the current price to its history and tell you: is this a good deal right now?",
   },
   {
-    icon: <Bell className="h-4 w-4 text-accent" aria-hidden="true" />,
+    icon: <IconBell className="h-4 w-4 text-accent" aria-hidden="true" />,
     step: '03',
     title: 'Set an alert, buy at the right time',
     body: "We'll notify you when the price drops to where you want it. You come back, you buy.",
@@ -127,7 +127,7 @@ export function LandingPage() {
           className="glass-card rounded-xl px-5 py-5 space-y-3"
         >
           <div className="flex items-center gap-2">
-            <ShieldCheck
+            <IconShield
               className="h-4 w-4 text-signal-low shrink-0"
               aria-hidden="true"
             />
@@ -170,7 +170,7 @@ function SampleProductCard() {
     <div className="glass-card rounded-xl p-4 space-y-3">
       <div className="flex items-start gap-3">
         <div className="h-14 w-14 shrink-0 rounded-lg border border-border bg-muted/20 flex items-center justify-center">
-          <Package className="h-7 w-7 text-muted-foreground/40" aria-hidden="true" />
+          <IconTag className="h-7 w-7 text-muted-foreground/40" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0 space-y-1">
           <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">

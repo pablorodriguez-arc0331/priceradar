@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
-import { Radar, Clock, Trash2 } from 'lucide-react'
+import { Radar } from 'lucide-react'
+import { IconClock, IconTrash } from '@/components/ui/Icons'
 import { Page } from '@/components/layout'
 import { URLSearchInput } from '@/components/product/URLSearchInput'
 import { SignalBadge } from '@/components/product/SignalBadge'
@@ -67,7 +68,7 @@ function SwipeToDismiss({
           aria-label="Remove from recently checked"
           type="button"
         >
-          <Trash2 className="h-5 w-5" aria-hidden="true" />
+          <IconTrash className="h-5 w-5" aria-hidden="true" />
           <span className="text-[10px] font-medium">Remove</span>
         </button>
       </motion.div>
@@ -140,7 +141,7 @@ export function SearchPage() {
                 aria-label="Dismiss hot products section"
                 type="button"
               >
-                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                <IconTrash className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -236,7 +237,7 @@ export function SearchPage() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-accent" aria-hidden="true" />
+              <IconClock className="h-4 w-4 text-accent" aria-hidden="true" />
               <h2 id="recent-heading" className="text-sm font-semibold text-foreground">
                 {isAuthenticated ? 'Your recently checked' : 'Recently checked on this device'}
               </h2>
