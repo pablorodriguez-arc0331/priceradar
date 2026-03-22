@@ -85,7 +85,7 @@ export function URLSearchInput({
 
           {/* Left search icon */}
           <img
-            src="/assets/search.png"
+            src="/assets/magnifying-glass-graphite-thin-full.svg"
             alt=""
             aria-hidden="true"
             className={cn(

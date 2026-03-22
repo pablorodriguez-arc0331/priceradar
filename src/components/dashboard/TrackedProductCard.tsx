@@ -119,13 +119,13 @@ function SwipeToDelete({
     <div ref={constraintsRef} className="relative overflow-hidden rounded-xl">
       {/* Delete button revealed beneath */}
       <motion.div
-        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#1C1C1C]"
+        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#DC2626]"
         style={{ width: DELETE_WIDTH, opacity: deleteOpacity }}
       >
         <button
           onClick={(e) => { handleClose(); onDelete(e) }}
           disabled={disabled}
-          className="flex flex-col items-center gap-1 text-[#FFFEFD]"
+          className="flex flex-col items-center gap-1 text-white"
           aria-label="Delete from watchlist"
           type="button"
         >

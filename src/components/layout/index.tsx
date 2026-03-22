@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/Button'
 
 // ─── Nav config (shared) ──────────────────────────────────────────────────────
 const NAV_TABS = [
-  { path: '/', label: 'Home', img: '/assets/home.png', exactMatch: true },
-  { path: '/search', label: 'Search', img: '/assets/search.png' },
-  { path: '/dashboard', label: 'Watchlist', img: '/assets/dashboard.png', requiresAuth: true },
-  { path: '/settings', label: 'Account', img: '/assets/user.png' },
+  { path: '/', label: 'Home', img: '/assets/house-graphite-thin-full.svg', exactMatch: true },
+  { path: '/search', label: 'Search', img: '/assets/magnifying-glass-graphite-thin-full.svg' },
+  { path: '/dashboard', label: 'Watchlist', img: '/assets/grid-graphite-thin-full.svg', requiresAuth: true },
+  { path: '/settings', label: 'Account', img: '/assets/circle-user-graphite-thin-full.svg' },
 ]
 
 // ─── Desktop Nav (shown inside Header on md+) ─────────────────────────────────
@@ -88,7 +88,7 @@ export function Header() {
         className="flex shrink-0 items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
         aria-label="PriceRadar — Home"
       >
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 glow-cyan">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 border border-accent/20">
           <Radar className="h-4 w-4 text-accent" aria-hidden="true" />
         </div>
         <span className="font-display text-base font-bold tracking-tight text-foreground">
@@ -105,12 +105,12 @@ export function Header() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center gap-1 rounded-full bg-[rgba(28,28,28,0.06)] border border-[rgba(28,28,28,0.20)] px-2 py-1"
+              className="flex items-center gap-1 rounded-full bg-[#F3F4F6] border border-[#E5E7EB] px-2 py-1"
               role="status"
               aria-label="You are offline"
             >
-              <IconSearch className="h-3 w-3 text-[#1C1C1C] opacity-60" aria-hidden="true" />
-              <span className="text-xs font-medium text-[#1C1C1C]">Offline</span>
+              <IconSearch className="h-3 w-3 text-[#6B7280]" aria-hidden="true" />
+              <span className="text-xs font-medium text-[#6B7280]">Offline</span>
             </motion.div>
           )}
         </AnimatePresence>

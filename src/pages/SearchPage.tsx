@@ -128,7 +128,7 @@ export function SearchPage() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src="/assets/hot.png" alt="" aria-hidden="true" className="h-4 w-4 object-contain" />
+              <img src="/assets/fire-graphite-thin-full.svg" alt="" aria-hidden="true" className="h-4 w-4 object-contain" />
               <h2 id="hot-heading" className="text-sm font-semibold text-foreground">
                 Hot right now
               </h2>

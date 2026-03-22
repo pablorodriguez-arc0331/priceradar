@@ -177,7 +177,7 @@ export function PriceComparisonTable({
                     className={cn(
                       'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5',
                       'text-xs font-semibold',
-                      'bg-[#1C1C1C] text-[#FFFEFD] hover:bg-[#1C1C1C]/85',
+                      'bg-[#0D99FF] text-white hover:bg-[#0088EE]',
                       'transition-colors',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       'min-h-[32px]',
@@ -254,7 +254,7 @@ function DeltaBadge({ delta }: { delta: number }) {
 function RetailerLogo({ retailer }: { retailer: RetailerPrice['retailer'] }) {
   return (
     <div
-      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold font-display bg-[#1C1C1C] text-[#FFFEFD]"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[11px] font-bold font-display bg-[#F3F4F6] text-[#111827] border border-[#E5E7EB]"
       aria-hidden="true"
     >
       {retailer.name.charAt(0)}

@@ -9,9 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        border: 'rgba(28, 28, 28, 0.12)',
-        'border-strong': 'rgba(28, 28, 28, 0.28)',
-        input: 'rgba(28, 28, 28, 0.12)',
+        border: '#E5E7EB',
+        'border-strong': '#D1D5DB',
+        input: '#E5E7EB',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         surface: 'hsl(var(--surface))',
@@ -36,7 +36,7 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
-          subtle: 'rgba(28, 28, 28, 0.06)',
+          subtle: 'rgba(13, 153, 255, 0.08)',
           hover: 'hsl(var(--accent-hover))',
         },
         card: {
@@ -48,15 +48,15 @@ const config: Config = {
           foreground: 'hsl(var(--popover-foreground))',
         },
         signal: {
-          low:              '#1C1C1C',
-          'low-bg':         'rgba(28, 28, 28, 0.06)',
-          'low-border':     'rgba(28, 28, 28, 0.20)',
-          high:             '#1C1C1C',
-          'high-bg':        'rgba(28, 28, 28, 0.06)',
-          'high-border':    'rgba(28, 28, 28, 0.20)',
-          neutral:          '#1C1C1C',
-          'neutral-bg':     'rgba(28, 28, 28, 0.04)',
-          'neutral-border': 'rgba(28, 28, 28, 0.14)',
+          low:              '#16A34A',
+          'low-bg':         'rgba(22, 163, 74, 0.08)',
+          'low-border':     'rgba(22, 163, 74, 0.30)',
+          high:             '#DC2626',
+          'high-bg':        'rgba(220, 38, 38, 0.08)',
+          'high-border':    'rgba(220, 38, 38, 0.30)',
+          neutral:          '#6B7280',
+          'neutral-bg':     'rgba(107, 114, 128, 0.08)',
+          'neutral-border': 'rgba(107, 114, 128, 0.25)',
         },
       },
       borderRadius: {

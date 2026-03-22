@@ -17,17 +17,17 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-[#1C1C1C] text-[#FFFEFD] font-semibold hover:bg-[#1C1C1C]/85 active:bg-[#1C1C1C]',
+          'bg-[#0D99FF] text-white font-semibold hover:bg-[#0088EE] active:bg-[#0077DD]',
         secondary:
-          'bg-[#FFFEFD] text-[#1C1C1C] border border-[rgba(28,28,28,0.20)] hover:border-[rgba(28,28,28,0.40)] hover:bg-[rgba(28,28,28,0.04)]',
+          'bg-white text-[#111827] border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]',
         outline:
-          'border border-[rgba(28,28,28,0.28)] bg-transparent text-[#1C1C1C] hover:bg-[rgba(28,28,28,0.05)] hover:border-[rgba(28,28,28,0.50)]',
+          'border border-[#E5E7EB] bg-transparent text-[#111827] hover:bg-[#F9FAFB] hover:border-[#D1D5DB]',
         ghost:
-          'text-[#1C1C1C] hover:bg-[rgba(28,28,28,0.06)]',
+          'text-[#111827] hover:bg-[#F3F4F6]',
         destructive:
-          'bg-[#1C1C1C] text-[#FFFEFD] hover:bg-[#1C1C1C]/85',
+          'bg-[#DC2626] text-white hover:bg-[#B91C1C]',
         link:
-          'text-[#1C1C1C] underline-offset-4 hover:underline p-0 h-auto',
+          'text-[#0D99FF] underline-offset-4 hover:underline p-0 h-auto',
       },
       size: {
         sm:      'h-9 px-3 text-xs rounded-md min-h-[36px]',

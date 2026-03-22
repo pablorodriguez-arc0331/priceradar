@@ -28,32 +28,32 @@ export const SIGNAL_CONFIG: Record<
   PriceVerdict,
   { bg: string; text: string; border: string; badgeBg: string }
 > = {
-  // low = good price = inverted (black pill, cream text) — visually prominent
+  // low = good price = green — deal signal
   low: {
-    bg: 'bg-[rgba(28,28,28,0.06)]',
-    text: 'text-[#1C1C1C]',
-    border: 'border-[rgba(28,28,28,0.20)]',
-    badgeBg: 'bg-[#1C1C1C] text-[#FFFEFD] border-[#1C1C1C]',
+    bg: 'bg-[rgba(22,163,74,0.08)]',
+    text: 'text-[#16A34A]',
+    border: 'border-[rgba(22,163,74,0.30)]',
+    badgeBg: 'bg-[rgba(22,163,74,0.10)] text-[#16A34A] border-[rgba(22,163,74,0.30)]',
   },
-  // high = expensive = outlined (cream bg, black border) — stands out as a warning
+  // high = expensive = red — warning signal
   high: {
-    bg: 'bg-[rgba(28,28,28,0.04)]',
-    text: 'text-[#1C1C1C]',
-    border: 'border-[rgba(28,28,28,0.35)]',
-    badgeBg: 'bg-[#FFFEFD] text-[#1C1C1C] border-[rgba(28,28,28,0.35)]',
+    bg: 'bg-[rgba(220,38,38,0.08)]',
+    text: 'text-[#DC2626]',
+    border: 'border-[rgba(220,38,38,0.30)]',
+    badgeBg: 'bg-[rgba(220,38,38,0.08)] text-[#DC2626] border-[rgba(220,38,38,0.30)]',
   },
-  // neutral = mid-range = subtle
+  // neutral = mid-range = gray
   neutral: {
-    bg: 'bg-[rgba(28,28,28,0.04)]',
-    text: 'text-[#1C1C1C]',
-    border: 'border-[rgba(28,28,28,0.15)]',
-    badgeBg: 'bg-[rgba(28,28,28,0.06)] text-[#1C1C1C] border-[rgba(28,28,28,0.15)]',
+    bg: 'bg-[rgba(107,114,128,0.08)]',
+    text: 'text-[#6B7280]',
+    border: 'border-[rgba(107,114,128,0.20)]',
+    badgeBg: 'bg-[rgba(107,114,128,0.08)] text-[#6B7280] border-[rgba(107,114,128,0.20)]',
   },
   no_data: {
-    bg: 'bg-[rgba(28,28,28,0.03)]',
-    text: 'text-[rgba(28,28,28,0.50)]',
-    border: 'border-[rgba(28,28,28,0.10)]',
-    badgeBg: 'bg-[rgba(28,28,28,0.04)] text-[rgba(28,28,28,0.50)] border-[rgba(28,28,28,0.10)]',
+    bg: 'bg-[rgba(107,114,128,0.05)]',
+    text: 'text-[#9CA3AF]',
+    border: 'border-[rgba(107,114,128,0.15)]',
+    badgeBg: 'bg-[rgba(107,114,128,0.05)] text-[#9CA3AF] border-[rgba(107,114,128,0.15)]',
   },
 }
 

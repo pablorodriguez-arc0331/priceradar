@@ -66,7 +66,7 @@ export function LandingPage() {
             >
               Is this price actually
               <br />
-              <span className="text-[#1C1C1C]">
+              <span className="text-[#111827]">
                 a good deal?
               </span>
             </h1>
@@ -193,7 +193,7 @@ function SampleProductCard() {
               <RetailerDot />
               <span className="text-xs text-muted-foreground">{rp.retailer}</span>
               {rp.best && (
-                <span className="rounded-full bg-[rgba(28,28,28,0.06)] px-1.5 py-0.5 text-[10px] font-semibold text-[#1C1C1C]">
+                <span className="rounded-full bg-[rgba(22,163,74,0.10)] px-1.5 py-0.5 text-[10px] font-semibold text-[#16A34A]">
                   Best
                 </span>
               )}
@@ -218,7 +218,7 @@ function SampleProductCard() {
 function RetailerDot() {
   return (
     <div
-      className="h-2 w-2 rounded-full bg-[#1C1C1C]"
+      className="h-2 w-2 rounded-full bg-[#111827]"
       aria-hidden="true"
     />
   )
@@ -250,11 +250,11 @@ function StepCard({
       <div className={cn(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border',
         active
-          ? 'bg-[#1C1C1C] border-[#1C1C1C]'
-          : 'bg-[rgba(28,28,28,0.06)] border-[rgba(28,28,28,0.15)]',
+          ? 'bg-[#0D99FF] border-[#0D99FF]'
+          : 'bg-[#F3F4F6] border-[#E5E7EB]',
       )}>
         {active
-          ? <span className="[&_svg]:text-[#FFFEFD]">{icon}</span>
+          ? <span className="[&_svg]:text-white">{icon}</span>
           : icon}
       </div>
       <div className="space-y-0.5">
