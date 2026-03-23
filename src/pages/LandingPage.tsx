@@ -250,11 +250,11 @@ function StepCard({
       <div className={cn(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border',
         active
-          ? 'bg-[#0D99FF] border-[#0D99FF]'
+          ? 'bg-[#1C1C1C] border-[#1C1C1C]'
           : 'bg-[#F3F4F6] border-[#E5E7EB]',
       )}>
         {active
-          ? <span className="[&_svg]:text-white">{icon}</span>
+          ? <span className="[&_svg]:text-[#FFFEFD]">{icon}</span>
           : icon}
       </div>
       <div className="space-y-0.5">

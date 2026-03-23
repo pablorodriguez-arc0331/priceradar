@@ -151,9 +151,9 @@ export function PricingPage() {
           animate="visible"
           className="relative rounded-2xl p-5 space-y-5 overflow-hidden"
           style={{
-            background: 'linear-gradient(135deg, rgba(6,182,212,0.12) 0%, rgba(6,182,212,0.04) 100%)',
-            border: '1px solid rgba(6,182,212,0.30)',
-            boxShadow: '0 0 32px rgba(6,182,212,0.10)',
+            background: 'linear-gradient(135deg, rgba(28,28,28,0.06) 0%, rgba(28,28,28,0.02) 100%)',
+            border: '1px solid rgba(28,28,28,0.18)',
+            boxShadow: '0 0 32px rgba(28,28,28,0.06)',
           }}
         >
           {/* Badge */}

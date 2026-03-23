@@ -177,7 +177,7 @@ export function PriceComparisonTable({
                     className={cn(
                       'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5',
                       'text-xs font-semibold',
-                      'bg-[#0D99FF] text-white hover:bg-[#0088EE]',
+                      'bg-[#1C1C1C] text-white hover:bg-[#1C1C1C]/85',
                       'transition-colors',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       'min-h-[32px]',

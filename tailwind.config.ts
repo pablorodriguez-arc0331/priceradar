@@ -36,7 +36,7 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
-          subtle: 'rgba(13, 153, 255, 0.08)',
+          subtle: 'rgba(28, 28, 28, 0.08)',
           hover: 'hsl(var(--accent-hover))',
         },
         card: {

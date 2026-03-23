@@ -76,12 +76,12 @@ export function URLSearchInput({
 
       {/* ── Input field ─────────────────────────────────────────────────── */}
       <div
-        className="search-border-wrap relative rounded-xl p-px"
+        className="search-border-wrap relative rounded-lg p-px"
         data-focused={isFocused ? 'true' : undefined}
         data-error={error ? 'true' : undefined}
       >
         {/* Inner container — clips to rounded and provides the background that "cuts" the border */}
-        <div className="relative flex items-center rounded-[calc(0.75rem-1px)] bg-background overflow-hidden">
+        <div className="relative flex items-center rounded-[calc(0.375rem-1px)] bg-background overflow-hidden">
 
           {/* Left search icon */}
           <img
@@ -105,7 +105,7 @@ export function URLSearchInput({
             onBlur={() => setIsFocused(false)}
             placeholder={placeholder}
             className={cn(
-              'w-full h-14 rounded-[calc(0.75rem-1px)] bg-transparent',
+              'w-full h-14 rounded-[calc(0.375rem-1px)] bg-transparent',
               'pl-11 pr-12 text-base text-foreground placeholder:text-muted-foreground',
               'transition-colors duration-200',
               'focus-visible:outline-none',
