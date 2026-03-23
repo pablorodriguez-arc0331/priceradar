@@ -9,6 +9,7 @@ import { ProductImage } from '@/components/product/ProductImage'
 import { PriceComparisonTable } from '@/components/product/PriceComparisonTable'
 import { PriceHistoryChart, PriceHistoryChartSkeleton } from '@/components/product/PriceHistoryChart'
 import { AlertSetupSheet, EmptyState } from '@/components/common'
+import { ProductLoadingOverlay } from '@/components/product/ProductLoadingOverlay'
 import { Button } from '@/components/ui/Button'
 import { useProduct, useDocumentTitle } from '@/hooks'
 import { recordSearchHistory } from '@/services/supabase'
@@ -119,6 +120,7 @@ export function ProductResultPage() {
 
   return (
     <>
+      <ProductLoadingOverlay isLoading={isLoading} isLoadingComparison={isLoadingComparison} />
       <Page className="space-y-5 pb-[calc(5rem+env(safe-area-inset-bottom,0px))]">
         {/* Back */}
         <button
@@ -284,7 +286,7 @@ function ProductHeader({ product }: { product: { name: string; image_url?: strin
           src={product.image_url}
           alt={product.name}
           category={product.category}
-          className="h-full w-full p-2"
+          className="h-full w-full object-cover"
           iconClassName="h-7 w-7"
           loading="eager"
           fetchpriority="high"

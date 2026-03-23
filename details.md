@@ -1,4 +1,5 @@
 # PriceRadar — Product & Brand Guide
+**v2.0 · 2026-03-23** — UI Overhaul: Deep Navy + Electric Cyan
 
 ---
 
@@ -70,26 +71,46 @@ In the logo lockup it reads `Price` (regular weight) + `Radar` (accented/bold).
 
 ### Color Palette
 
-PriceRadar uses a strict two-color system. No gradients, no brand accent colors.
+PriceRadar is **always dark** — no light mode. Deep navy base with electric cyan as the single accent color.
+
+#### Core Tokens
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| **Light** | `#FFFEFD` | Background, surfaces, cards, primary foreground-on-dark |
-| **Dark** | `#1C1C1C` | Text, borders, buttons, icons, foreground |
+| `--background` | `#050D1A` | Page background — deep navy void |
+| `--surface` | `#0A1628` | Card / panel surface |
+| `--surface-raised` | `#0D1E36` | Elevated elements (dropdowns, sheets) |
+| `--foreground` | `#F0F4FF` | Primary text — cool near-white |
+| `--muted-foreground` | `#6B7FA3` | Secondary / helper text |
+| `--accent` | `#06B6D4` | Electric cyan — CTAs, active states, highlights |
+| `--accent-hover` | `#22D3EE` | Cyan hover |
+| `--accent-subtle` | `rgba(6,182,212,0.10)` | Tinted fills, ghost states |
+| `--border` | `rgba(6,182,212,0.12)` | Default hairline border |
+| `--border-strong` | `rgba(6,182,212,0.24)` | Hover / focus border |
+| `--destructive` | `#F43F5E` | Rose red — errors, destructive actions |
 
-All other values are opacity variants of these two:
+#### Signal Colors
+
+| Signal | Hex | Meaning |
+|--------|-----|---------|
+| `signal-low` | `#10B981` | Price is below average — good time to buy |
+| `signal-high` | `#F43F5E` | Price is above average — consider waiting |
+| `signal-neutral` | `#6B7FA3` | Price is at average |
+
+Each signal has a tinted background (`rgba(..., 0.10)`) and border (`rgba(..., 0.25)`) variant.
+
+#### Glass & Surface Tokens
 
 | Usage | Value |
 |-------|-------|
-| Card border | `rgba(28, 28, 28, 0.12)` |
-| Strong border | `rgba(28, 28, 28, 0.28)` |
-| Subtle background | `rgba(28, 28, 28, 0.06)` |
-| Glass background | `rgba(255, 254, 253, 0.94)` |
-| Glass border | `rgba(28, 28, 28, 0.10)` |
-| Skeleton / shimmer | `rgba(28, 28, 28, 0.07)` |
-| Backdrop scrim | `rgba(28, 28, 28, 0.40)` |
-
-There is no dark mode. The app is light-only with a warm near-white background.
+| Card background | `rgba(10, 22, 40, 0.55)` |
+| Card border | `rgba(6, 182, 212, 0.10)` |
+| Card shadow | `0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(6,182,212,0.06)` |
+| Glass (header/modal) | `rgba(10, 22, 40, 0.65)` |
+| Glass border | `rgba(6, 182, 212, 0.12)` |
+| Glass shadow | `0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(6,182,212,0.08)` |
+| Skeleton shimmer | `rgba(6, 182, 212, 0.04–0.08)` |
+| Backdrop scrim | `rgba(5, 13, 26, 0.70)` |
 
 ---
 
@@ -97,24 +118,28 @@ There is no dark mode. The app is light-only with a warm near-white background.
 
 Two typefaces. Both from Google Fonts.
 
-#### Josefin Sans — Display
-- Used for: headings, product names, prices, stat labels, logo
-- Weights: 300, 400, 500, 600, 700
+#### Space Grotesk — Display / Headings
+- Used for: `h1`–`h3`, price values, stat numbers, signal badge labels, logo wordmark
+- Weights: 400, 500, 600, 700
 - Class: `font-display`
-- Feature: tabular numerals enabled on price figures (`font-variant-numeric: tabular-nums`)
+- Feature: tabular numerals on price figures (`font-variant-numeric: tabular-nums`)
 
-#### Work Sans — Body
-- Used for: all body copy, labels, UI text, navigation
-- Weights: 300, 400, 500, 600 (italic 400)
+#### DM Sans — Body / UI
+- Used for: all body copy, helper text, nav labels, buttons, table data, everything else
+- Weights: 400, 500, 600
 - Class: `font-sans` (default)
+
+#### JetBrains Mono — Prices
+- Used for: `.price` class — monetary values, timestamps
+- Class: `font-mono`
 
 #### Type Scale
 
 | Token | Size | Line height |
 |-------|------|-------------|
-| `xs` | 0.875rem (12.25px) | 1.25rem |
-| `sm` | 0.9375rem (13px) | 1.375rem |
-| `base` | 1rem (14px) | 1.5rem |
+| `xs` | 0.875rem | 1.25rem |
+| `sm` | 0.9375rem | 1.375rem |
+| `base` | 1rem | 1.5rem |
 | `lg` | 1.125rem | 1.75rem |
 | `xl` | 1.25rem | 1.75rem |
 | `2xl` | 1.5rem | 2rem |
@@ -141,7 +166,9 @@ Built on a 4pt grid (Tailwind default). Key layout constants:
 
 ### Texture
 
-A subtle paper grain is applied globally via a `body::after` pseudo-element — SVG `feTurbulence` fractalNoise at 3.8% opacity, tiling at 250×250px. It adds tactile depth without any external asset. `pointer-events: none`, `z-index: 9999`.
+A subtle noise grain is applied globally via a `body::after` pseudo-element — SVG `feTurbulence` fractalNoise at ~3.5% opacity, tiling at 250×250px. On a dark navy base it adds tactile depth without competing with content. `pointer-events: none`, `z-index: 9999`.
+
+Animated radial gradient blobs (cyan + violet) float slowly behind all content via the `GlassBackground` component — `pointer-events: none`, `aria-hidden="true"`.
 
 ---
 
@@ -149,60 +176,74 @@ A subtle paper grain is applied globally via a `body::after` pseudo-element — 
 
 #### Glass (header, modals, sheets)
 ```
-background: rgba(255, 254, 253, 0.94)
-backdrop-filter: blur(20px)
-border: 1px solid rgba(28, 28, 28, 0.10)
-box-shadow: 0 8px 32px rgba(28, 28, 28, 0.08)
+background: rgba(10, 22, 40, 0.65)
+backdrop-filter: blur(24px)
+border: 1px solid rgba(6, 182, 212, 0.12)
+box-shadow: 0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(6,182,212,0.08)
 ```
 
-#### Card
+#### Card (`.glass-card`)
 ```
-background: #FFFEFD
-border: 1px solid rgba(28, 28, 28, 0.12)
-box-shadow: 0 1px 3px rgba(28,28,28,0.06), 0 2px 10px rgba(28,28,28,0.04)
+background: rgba(10, 22, 40, 0.55)
+backdrop-filter: blur(20px)
+border: 1px solid rgba(6, 182, 212, 0.10)
+box-shadow: 0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(6,182,212,0.06)
 ```
+The `inset 0 1px 0` top-edge glow is the signature craft detail — gives cards a luminous "lifted" feel.
 
 #### Interactive Card (hover lift)
 Same as card + on hover:
 ```
 transform: translateY(-2px)
-border-color: rgba(28, 28, 28, 0.28)
-box-shadow: 0 4px 20px rgba(28,28,28,0.10), 0 1px 4px rgba(28,28,28,0.06)
+border-color: rgba(6, 182, 212, 0.24)
+box-shadow: 0 0 30px -5px rgba(6,182,212,0.12), 0 4px 20px rgba(0,0,0,0.40)
+transition: transform 200ms cubic-bezier(0.16,1,0.3,1), box-shadow 200ms ease, border-color 200ms ease
 ```
 
 #### Bottom Navigation (liquid glass)
 ```
 border-radius: 32px
-background: rgba(255, 254, 253, 0.96)
-border: 1px solid rgba(28, 28, 28, 0.10)
-box-shadow: 0 4px 20px rgba(28,28,28,0.08), 0 1px 4px rgba(28,28,28,0.04)
+background: rgba(10, 22, 40, 0.90)
+border: 1px solid rgba(6, 182, 212, 0.10)
+box-shadow: 0 4px 24px rgba(0,0,0,0.50), 0 1px 4px rgba(0,0,0,0.30)
+backdrop-filter: blur(20px)
 position: fixed, 12px + safe-area above bottom edge
 ```
 
-#### Primary Button
+Active tab: cyan text + icon + 2px underline glow `box-shadow: 0 2px 8px rgba(6,182,212,0.40)`
+Inactive tab: `color: #6B7FA3`
+
+#### Primary Button (cyan solid)
 ```
-background: #1C1C1C
-color: #FFFEFD
-hover: #1C1C1C at 85% opacity
+background: #06B6D4
+color: #050D1A
+hover box-shadow: 0 0 16px rgba(6,182,212,0.35)
 border-radius: 0.75rem
 min-height: 44px (touch target)
+```
+
+#### Outline Button
+```
+border: 1px solid rgba(6,182,212,0.24)
+color: #06B6D4
+hover background: rgba(6,182,212,0.10)
+```
+
+#### Focus Ring
+```
+outline: 2px solid rgba(6, 182, 212, 0.80)
+outline-offset: 2px
 ```
 
 ---
 
 ### Icons & Assets
 
-Navigation and key UI icons use PNG assets at 2048×2048px source, rendered at small sizes:
+All icons use **Lucide React** — outline style, `strokeWidth={1.5}`. No PNG icon assets, no inline SVGs.
 
-| Asset | Usage |
-|-------|-------|
-| `home.png` | Home tab |
-| `search.png` | Search tab + search input field |
-| `dashboard.png` | Watchlist tab |
-| `user.png` | Account tab |
-| `hot.png` | "Hot right now" section heading |
-
-All other icons use **Lucide React** (outline style, consistent 1.5px stroke).
+- Decorative icons: `aria-hidden="true"`
+- Functional icon-only buttons: `aria-label` required
+- Size scale: `h-4 w-4` (inline), `h-5 w-5` (nav/toolbar), `h-6 w-6` (prominent), `h-8 w-8` (hero)
 
 ---
 

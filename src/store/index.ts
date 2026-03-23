@@ -145,7 +145,7 @@ interface ToastStore {
   toasts: Toast[]
   addToast: (toast: Omit<Toast, 'id'>) => void
   removeToast: (id: string) => void
-  toast: (variant: ToastVariant, title: string, description?: string) => void
+  toast: (variant: ToastVariant, title: string, description?: string, action?: Toast['action']) => void
 }
 
 export const useToastStore = create<ToastStore>((set, get) => ({
@@ -157,13 +157,14 @@ export const useToastStore = create<ToastStore>((set, get) => ({
   },
   removeToast: (id) =>
     set(state => ({ toasts: state.toasts.filter(t => t.id !== id) })),
-  toast: (variant, title, description) => {
-    get().addToast({ variant, title, description })
+  toast: (variant, title, description, action) => {
+    get().addToast({ variant, title, description, action })
   },
 }))
 
 // Convenient hook
 export const useToast = () => useToastStore(s => s.toast)
+export type ToastFn = (variant: ToastVariant, title: string, description?: string, action?: Toast['action']) => void
 
 // ─── UI State Store (persisted) ────────────────────────────────────────────────
 interface UIStore {

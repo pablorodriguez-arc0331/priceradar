@@ -158,7 +158,7 @@ export function PricingPage() {
         >
           {/* Badge */}
           <div className="absolute top-3 right-3">
-            <span className="rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold text-[#FFFEFD] uppercase tracking-wide">
+            <span className="rounded-full bg-blue-500/10 border border-blue-500/20 px-2.5 py-0.5 text-[10px] font-bold text-blue-400 uppercase tracking-wide">
               Popular
             </span>
           </div>

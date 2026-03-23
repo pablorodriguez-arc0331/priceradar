@@ -22,7 +22,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-sm font-medium text-foreground"
+            className="text-sm font-medium text-zinc-300"
           >
             {label}
             {required && (
@@ -36,7 +36,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           {leftIcon && (
             <div
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
               aria-hidden="true"
             >
               {leftIcon}
@@ -50,15 +50,15 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={!!error}
             aria-required={required}
             className={cn(
-              'flex h-10 w-full rounded-md border border-input bg-background/80 px-3 py-2',
-              'text-[16px] placeholder:text-muted-foreground',
+              'flex h-10 w-full rounded-md border border-white/[0.08] bg-zinc-900/80 px-3 py-2',
+              'text-[16px] text-zinc-50 placeholder:text-zinc-500',
               'transition-all duration-200',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0',
-              'focus-visible:border-ring focus-visible:shadow-[0_0_0_4px_hsl(var(--ring)/0.12)]',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-0',
+              'focus-visible:border-white/20',
               'disabled:cursor-not-allowed disabled:opacity-50',
               leftIcon && 'pl-9',
               rightElement && 'pr-10',
-              error && 'border-destructive focus-visible:ring-destructive focus-visible:shadow-[0_0_0_4px_hsl(var(--destructive)/0.12)]',
+              error && 'border-red-500/40 focus-visible:ring-red-500/30',
               className,
             )}
             {...props}
@@ -72,12 +72,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </div>
 
         {error && (
-          <p id={errorId} role="alert" className="text-xs text-destructive">
+          <p id={errorId} role="alert" className="text-xs text-red-400">
             {error}
           </p>
         )}
         {hint && !error && (
-          <p id={hintId} className="text-xs text-muted-foreground">
+          <p id={hintId} className="text-xs text-zinc-500">
             {hint}
           </p>
         )}

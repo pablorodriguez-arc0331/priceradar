@@ -123,10 +123,10 @@ export function PriceHistoryChart({ product, isPaid }: PriceHistoryChartProps) {
               <Line
                 type="monotone"
                 dataKey="price"
-                stroke="#1C1C1C"
+                stroke="#A1A1AA"
                 strokeWidth={2}
                 dot={false}
-                activeDot={{ r: 4, fill: '#1C1C1C', stroke: '#FFFEFD', strokeWidth: 2 }}
+                activeDot={{ r: 4, fill: '#3B82F6', stroke: '#18181B', strokeWidth: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -142,7 +142,7 @@ export function PriceHistoryChart({ product, isPaid }: PriceHistoryChartProps) {
       {/* Legend — paid only */}
       {isPaid && (
         <div className="flex items-center gap-4 px-1">
-          <LegendItem color="#1C1C1C" label="Price" />
+          <LegendItem color="#3B82F6" label="Price" />
           <LegendItem color="rgba(28,28,28,0.50)" label={`Low · ${formatPrice(low)}`} dashed />
           <LegendItem color="rgba(28,28,28,0.30)" label={`High · ${formatPrice(high)}`} dashed />
         </div>

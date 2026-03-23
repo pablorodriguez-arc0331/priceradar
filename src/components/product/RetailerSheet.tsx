@@ -81,7 +81,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
             role="dialog"
             aria-modal="true"
             aria-label={`${retailerName} product page`}
-            className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-[#FFFEFD] overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-2xl bg-zinc-900/95 border-t border-x border-white/[0.08] overflow-hidden"
             style={{ height: '88dvh' }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
@@ -99,7 +99,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                 onClick={onClose}
                 className={cn(
                   'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                  'bg-[rgba(28,28,28,0.06)] text-[#1C1C1C]',
+                  'bg-zinc-800/60 text-zinc-100',
                   'hover:bg-[rgba(28,28,28,0.12)] transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 )}
@@ -124,7 +124,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                 onClick={openExternal}
                 className={cn(
                   'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-                  'bg-[rgba(28,28,28,0.06)] text-[#1C1C1C]',
+                  'bg-zinc-800/60 text-zinc-100',
                   'hover:bg-[rgba(28,28,28,0.12)] transition-colors',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                 )}
@@ -142,7 +142,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                 {loadState === 'loading' && (
                   <motion.div
                     key="loading"
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#FFFEFD]"
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-zinc-900/95"
                     initial={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
@@ -158,7 +158,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                 {loadState === 'blocked' && (
                   <motion.div
                     key="blocked"
-                    className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-[#FFFEFD] px-8 text-center"
+                    className="absolute inset-0 flex flex-col items-center justify-center gap-5 bg-zinc-900/95 px-8 text-center"
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0 }}
@@ -169,7 +169,7 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                     </div>
 
                     <div className="space-y-1.5 max-w-[260px]">
-                      <p className="font-display text-base font-semibold text-[#1C1C1C]">
+                      <p className="font-display text-base font-semibold text-zinc-100">
                         {retailerName} blocks in-app browsing
                       </p>
                       <p className="text-xs text-[rgba(28,28,28,0.55)] leading-relaxed">
@@ -181,9 +181,9 @@ export function RetailerSheet({ url, retailerName, price, isOpen, onClose }: Ret
                       onClick={openExternal}
                       className={cn(
                         'inline-flex items-center gap-2 rounded-xl',
-                        'bg-[#1C1C1C] text-[#FFFEFD]',
+                        'bg-white text-zinc-950',
                         'px-6 py-3 text-sm font-semibold',
-                        'hover:bg-[#1C1C1C]/85 active:scale-95 transition-all',
+                        'hover:bg-white/90 active:scale-95 transition-all',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
                       )}
                     >
