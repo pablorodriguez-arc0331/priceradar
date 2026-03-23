@@ -1,5 +1,5 @@
 # PriceRadar — Brand Book
-**Version 1.0 · 2026**
+**Version 2.0 · 2026-03-23** — UI Overhaul: Deep Navy + Electric Cyan
 
 ---
 
@@ -39,18 +39,18 @@ PriceRadar helps shoppers make better purchasing decisions by surfacing Amazon p
 A **Radar icon** (`lucide-react → Radar`) enclosed in a square with `border-radius: 10px`.
 
 ```
-Background:  rgba(59, 130, 246, 0.10)   — blue-500 at 10%
-Border:      rgba(59, 130, 246, 0.20)   — blue-500 at 20%
-Icon color:  #60A5FA                     — blue-400
+Background:  rgba(6, 182, 212, 0.10)    — cyan-500 at 10%
+Border:      rgba(6, 182, 212, 0.20)    — cyan-500 at 20%
+Icon color:  #06B6D4                     — cyan accent
 Icon size:   60% of container
-Glow:        box-shadow: 0 0 12px rgba(59, 130, 246, 0.20)
+Glow:        box-shadow: 0 0 12px rgba(6, 182, 212, 0.30)
 ```
 
 ### 2.2 Wordmark
 ```
-Price  →  font-weight: 700, color: #FAFAFA
-Radar  →  font-weight: 700, color: #60A5FA  (blue-400)
-Font:      Plus Jakarta Sans
+Price  →  font-weight: 700, color: #F0F4FF
+Radar  →  font-weight: 700, color: #06B6D4  (cyan accent)
+Font:      Space Grotesk
 Size:      1rem (nav), 1.5rem (auth/landing hero)
 ```
 
@@ -58,7 +58,7 @@ Size:      1rem (nav), 1.5rem (auth/landing hero)
 Minimum clear space around the logo equals the height of the `R` in "Radar" on all sides.
 
 ### 2.4 Don'ts
-- Do not change the blue accent to any other color
+- Do not change the cyan accent to any other color
 - Do not use the wordmark on light backgrounds
 - Do not use the icon without the wordmark in product surfaces (exception: browser favicon, PWA icon)
 - Do not distort proportions
@@ -67,66 +67,81 @@ Minimum clear space around the logo equals the height of the `R` in "Radar" on a
 
 ## 3. Color System
 
+> **Always-dark.** `prefers-color-scheme` is ignored. The app is always in dark mode.
+
 ### 3.1 Core Palette
 
-| Token | Hex | HSL | Usage |
-|---|---|---|---|
-| `--background` | `#09090B` | `240 10% 4%` | Page background |
-| `--surface` | `#18181B` | `240 4% 10%` | Card base, popover |
-| `--surface-elevated` | `#27272A` | `240 4% 16%` | Elevated cards, inputs, modals |
-| `--foreground` | `#FAFAFA` | `0 0% 98%` | Primary text |
-| `--muted-foreground` | `#A1A1AA` | `240 5% 64%` | Secondary text, placeholders |
-| `--border` | `rgba(255,255,255,0.06)` | — | Default border |
-| `--border-strong` | `rgba(255,255,255,0.12)` | — | Hover/active border |
-| `--primary` | `#FFFFFF` | `0 0% 100%` | CTA buttons, active state fills |
-| `--ring` | `#FFFFFF` | `0 0% 100%` | Focus ring (80% opacity) |
-| `--destructive` | `#EF4444` | `0 84% 60%` | Delete, error, destructive actions |
-
-### 3.2 Accent Blue
-The brand's interactive color. Used for the logo, waveform bars, active nav indicators, focus highlights, and progress bars.
-
-| Shade | Hex | Usage |
+| Token | Hex | Usage |
 |---|---|---|
-| `blue-400` | `#60A5FA` | Logo accent, active nav dot |
-| `blue-500` | `#3B82F6` | Waveform, progress bar, glow effects |
-| `blue-500/10` | `rgba(59,130,246,0.10)` | Logo badge background |
-| `blue-500/08` | `rgba(59,130,246,0.08)` | Background glow blob |
+| `--background` | `#050D1A` | Page background — deep navy void |
+| `--surface` | `#0A1628` | Card / panel surface |
+| `--surface-raised` | `#0D1E36` | Elevated elements (dropdowns, sheets) |
+| `--foreground` | `#F0F4FF` | Primary text — cool near-white |
+| `--muted-foreground` | `#6B7FA3` | Secondary / helper text |
+| `--destructive` | `#F43F5E` | Rose red — delete, error actions |
+| `--ring` | `rgba(6,182,212,0.80)` | Focus ring (cyan) |
 
-### 3.3 Signal Colors
+### 3.2 Accent — Electric Cyan
+The brand's primary interactive color. Used for CTAs, active states, icons, borders, and focus rings.
+
+| Token | Hex | Usage |
+|---|---|---|
+| `--accent` | `#06B6D4` | Primary cyan (buttons, active nav, highlights) |
+| `--accent-hover` | `#22D3EE` | Cyan hover state |
+| `--accent-subtle` | `rgba(6,182,212,0.10)` | Tinted backgrounds, ghost fills |
+
+### 3.3 Borders
+
+| Token | Value | Usage |
+|---|---|---|
+| `--border` | `rgba(6,182,212,0.12)` | Default hairline border |
+| `--border-strong` | `rgba(6,182,212,0.24)` | Emphasized borders (focus, hover) |
+
+### 3.4 Signal Colors
 Price signals are the core output of PriceRadar. They have their own semantic palette, never to be reused for non-signal UI.
 
 | Signal | Color | Hex | Meaning |
 |---|---|---|---|
 | `low` (Buy now) | Emerald | `#10B981` | Price is below average — good time to buy |
-| `high` (Wait) | Red | `#EF4444` | Price is above average — consider waiting |
-| `neutral` (Average) | Zinc | `#A1A1AA` | Price is at average — neither good nor bad |
-| `no_data` | Zinc-600 | `#52525B` | Insufficient data to form a signal |
+| `high` (Wait) | Rose red | `#F43F5E` | Price is above average — consider waiting |
+| `neutral` (Average) | Slate | `#6B7FA3` | Price is at average — neither good nor bad |
+| `no_data` | Muted | `#6B7FA3` | Insufficient data to form a signal |
 
-Each signal color has a background and border variant:
+Each signal color has background and border variants:
 ```
-signal.low-bg:          rgba(16, 185, 129, 0.10)
-signal.low-border:      rgba(16, 185, 129, 0.25)
-signal.high-bg:         rgba(239, 68, 68, 0.10)
-signal.high-border:     rgba(239, 68, 68, 0.25)
-signal.neutral-bg:      rgba(161, 161, 170, 0.08)
-signal.neutral-border:  rgba(161, 161, 170, 0.18)
+signal.low-bg:           rgba(16, 185, 129, 0.10)
+signal.low-border:       rgba(16, 185, 129, 0.25)
+signal.high-bg:          rgba(244, 63, 94, 0.10)
+signal.high-border:      rgba(244, 63, 94, 0.25)
+signal.neutral-bg:       rgba(107, 127, 163, 0.10)
+signal.neutral-border:   rgba(107, 127, 163, 0.18)
 ```
 
-### 3.4 Glass & Surface Tokens
+### 3.5 Glass & Surface Tokens
 ```css
---card-bg:      rgba(24, 24, 27, 0.80)    /* 80% opacity zinc-900 */
---card-border:  rgba(255, 255, 255, 0.06) /* 6% white */
---card-shadow:  0 1px 3px rgba(0,0,0,0.40), 0 2px 10px rgba(0,0,0,0.25)
+--card-bg:      rgba(10, 22, 40, 0.55)            /* navy glass card */
+--card-border:  rgba(6, 182, 212, 0.10)            /* cyan hairline */
+--card-shadow:  0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(6,182,212,0.06)
 
---glass-bg:     rgba(9, 9, 11, 0.85)      /* 85% background for header/modals */
---glass-border: rgba(255, 255, 255, 0.06)
---glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.40)
+--glass-bg:     rgba(10, 22, 40, 0.65)             /* darker glass for header/modals */
+--glass-border: rgba(6, 182, 212, 0.12)
+--glass-shadow: 0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(6,182,212,0.08)
 ```
 
-### 3.5 Color Rules
-- **Dark mode is the only mode.** There is no light mode implementation.
-- Never use saturated gradients (no purple-to-blue hero gradients, no rainbow fills).
-- Gradients must be dark-on-dark or a very subtle blue radial glow.
+### 3.6 Contrast Ratios (WCAG 2.1 AA)
+
+| Pair | Ratio | Result |
+|---|---|---|
+| `#F0F4FF` on `#050D1A` | 16.8:1 | ✅ AAA |
+| `#06B6D4` on `#050D1A` | 4.6:1 | ✅ AA |
+| `#10B981` (signal-low) on `#0A1628` | ≥ 4.5:1 | ✅ AA |
+| Cyan border on dark bg | ≥ 3:1 | ✅ AA (UI components) |
+
+### 3.7 Color Rules
+- **Always dark.** No light mode. No `prefers-color-scheme` toggle.
+- Never use blue-based accents (`#3B82F6`, `#60A5FA`) — the accent is electric cyan `#06B6D4`.
+- Never use purple-to-blue hero gradients or rainbow fills.
+- Gradients must be dark-on-dark or subtle cyan/violet radial glows.
 - Never hardcode hex values in components — always use CSS variables or Tailwind tokens.
 - The grain overlay (`opacity: 0.035`) sits permanently over all surfaces via `body::after`.
 
@@ -138,22 +153,38 @@ signal.neutral-border:  rgba(161, 161, 170, 0.18)
 
 | Role | Family | Weights | Usage |
 |---|---|---|---|
-| **Display / Body** | Plus Jakarta Sans | 300, 400, 500, 600, 700 | All UI text, headings, labels |
-| **Monospace** | JetBrains Mono | 400, 500 | Prices, timestamps, numeric data |
+| **Display / Headings** | Space Grotesk | 400, 500, 600, 700 | `h1`–`h3`, price values, stat numbers, signal badge labels, logo |
+| **Body / UI** | DM Sans | 400, 500, 600 | Body copy, helper text, nav labels, buttons, table data, everything else |
+| **Monospace** | JetBrains Mono | 400, 500 | Prices (`.price` class), timestamps, numeric data |
 
-Both fonts are loaded from Google Fonts with `display=swap`.
+Fonts loaded from Google Fonts with preconnect + preload + stylesheet:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preload" as="style"
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" />
+<link rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap" />
+```
+
+```css
+font-display: 'Space Grotesk', system-ui, sans-serif   /* headings, prices, stats */
+font-sans:    'DM Sans', system-ui, sans-serif           /* body default */
+font-mono:    'JetBrains Mono', monospace               /* tabular prices */
+```
 
 ### 4.2 Type Scale
 
 | Step | Size | Line Height | Weight | Usage |
 |---|---|---|---|---|
-| `display` | `clamp(2rem, 5vw, 3rem)` | tight | 700 | Hero headings (landing page) |
+| `display` | `clamp(2rem, 5vw, 3rem)` | tight | 700 | Hero headings (landing page) — Space Grotesk |
 | `4xl` | `2.25rem` | `2.5rem` | 700 | Best price display on product page |
 | `3xl` | `1.875rem` | `2.25rem` | 700 | Section heroes |
 | `2xl` | `1.5rem` | `2rem` | 600 | Page titles |
 | `xl` | `1.25rem` | `1.75rem` | 600 | Card headings |
 | `lg` | `1.125rem` | `1.75rem` | 700 | Price values in cards |
-| `base` | `1rem` | `1.5rem` | 400 | Body, descriptions |
+| `base` | `1rem` | `1.5rem` | 400 | Body, descriptions — DM Sans |
 | `sm` | `0.9375rem` | `1.375rem` | 500 | Labels, secondary content |
 | `xs` | `0.875rem` | `1.25rem` | 400–500 | Metadata, timestamps, badges |
 
@@ -161,10 +192,12 @@ Both fonts are loaded from Google Fonts with `display=swap`.
 > Form inputs are always `font-size: 16px` to prevent iOS zoom.
 
 ### 4.3 Type Rules
+- **Headings use Space Grotesk.** `h1`, `h2`, `h3`, price values, stat numbers, badge labels.
+- **Body uses DM Sans.** All other text — copy, labels, buttons, nav, table data.
 - **Letter spacing:** `-0.02em` on headings. Normal on body.
-- **Numeric data** (prices, counts, dates) always use the `.price` class which applies `JetBrains Mono` + `font-variant-numeric: tabular-nums`.
+- **Numeric data** (prices, counts, dates) always use the `.price` class — `JetBrains Mono` + `font-variant-numeric: tabular-nums`.
 - **Heading weights:** 700 for hero/display, 600 for section headers, 500 for card titles.
-- **Never use Inter, Roboto, Arial, or `system-ui`** as the primary font.
+- **Never use** Plus Jakarta Sans, Inter, Roboto, Arial, or `system-ui` as the primary font.
 - **Anti-aliasing:** `-webkit-font-smoothing: antialiased` on all text.
 
 ---
@@ -327,32 +360,47 @@ animate={shouldReduce ? {} : { scaleY: [...] }}
 **Standard glass card:**
 ```tsx
 <motion.div
-  className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-zinc-900/80 p-6 backdrop-blur-sm"
+  className="group relative overflow-hidden rounded-xl glass-card p-6"
   whileHover={{ y: -2 }}
   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
 >
   {/* Hover glow overlay */}
-  <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+  <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-br from-cyan-500/[0.04] to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
   {/* Content */}
 </motion.div>
 ```
 
+```css
+.glass-card {
+  background: rgba(10, 22, 40, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(6, 182, 212, 0.10);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(6,182,212,0.06);
+}
+```
+
 **Interactive card (row / list item):**
 ```css
+.glass-card-interactive {
+  /* same as .glass-card + */
+  transition: transform 200ms cubic-bezier(0.16,1,0.3,1), box-shadow 200ms ease, border-color 200ms ease;
+}
 .glass-card-interactive:hover {
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.12);
-  box-shadow: 0 0 30px -5px rgba(255,255,255,0.08), 0 4px 20px rgba(0,0,0,0.40);
+  border-color: rgba(6, 182, 212, 0.24);
+  box-shadow: 0 0 30px -5px rgba(6,182,212,0.12), 0 4px 20px rgba(0,0,0,0.40);
 }
 ```
 
 ### 7.2 Buttons
 
-**Primary (white):**
+**Primary (cyan solid):**
 ```tsx
 <motion.button
-  className="inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-zinc-950 shadow-sm"
-  whileHover={{ scale: 1.03 }}
+  className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-background"
+  style={{ boxShadow: 'none' }}
+  whileHover={{ scale: 1.03, boxShadow: '0 0 16px rgba(6,182,212,0.35)' }}
   whileTap={{ scale: 0.97 }}
   transition={{ type: 'spring', stiffness: 400, damping: 20 }}
 >
@@ -361,36 +409,48 @@ animate={shouldReduce ? {} : { scaleY: [...] }}
 </motion.button>
 ```
 
-**Secondary / Ghost:**
+**Outline (glass border + cyan text):**
 ```tsx
-className="rounded-full border border-white/[0.08] bg-white/[0.04] px-4 py-2 text-sm text-zinc-300 hover:border-white/[0.14] hover:text-white"
+className="rounded-full border border-[rgba(6,182,212,0.24)] bg-transparent px-4 py-2 text-sm text-accent hover:bg-[rgba(6,182,212,0.10)] hover:border-[rgba(6,182,212,0.40)]"
+```
+
+**Ghost:**
+```tsx
+className="rounded-full bg-transparent px-4 py-2 text-sm text-muted-foreground hover:bg-surface hover:text-foreground"
 ```
 
 **Destructive:**
 ```tsx
-className="text-zinc-500 hover:bg-red-500/10 hover:text-red-400"
+className="text-muted-foreground hover:bg-[rgba(244,63,94,0.10)] hover:text-[#F43F5E]"
 ```
+
+All buttons: `min-h-[44px] min-w-[44px]` (WCAG 2.5.5 touch targets).
 
 ### 7.3 Inputs
 ```tsx
-className="w-full h-14 rounded-xl bg-zinc-900/90 border border-white/[0.06] px-4 text-zinc-100 placeholder:text-zinc-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+className="w-full h-14 rounded-xl bg-surface border border-[rgba(6,182,212,0.12)] px-4 text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[rgba(6,182,212,0.80)]"
 ```
-- Focus state uses `ring-2 ring-white/40` — never `outline: none` without a replacement
-- Error state: red border `border-red-500/40`, `aria-invalid="true"`
+- Focus ring: `ring-2` in cyan `rgba(6,182,212,0.80)` — never `outline: none` without a replacement
+- Error state: rose border `border-[rgba(244,63,94,0.40)]`, `aria-invalid="true"`
 - Disabled state: `opacity-50`, `pointer-events-none`
 
 ### 7.4 Skeleton / Loading
-Skeletons use a horizontal shimmer (not opacity pulse):
+Skeletons use a horizontal shimmer with a cyan tint:
 ```css
 .skeleton {
+  border-radius: 0.375rem;
   background: linear-gradient(90deg,
-    rgba(255,255,255,0.05) 0%,
-    rgba(255,255,255,0.10) 40%,
-    rgba(255,255,255,0.05) 80%
+    rgba(6, 182, 212, 0.04) 0%,
+    rgba(6, 182, 212, 0.08) 40%,
+    rgba(6, 182, 212, 0.04) 80%
   );
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.8s ease-in-out infinite;
-  border: 1px solid rgba(255,255,255,0.04);
+  border: 1px solid rgba(6, 182, 212, 0.06);
+}
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; background: rgba(6,182,212,0.06); }
 }
 ```
 Lists of skeletons must be wrapped in a stagger container (see §6.3).
@@ -401,26 +461,30 @@ Four variants: `success`, `error`, `info`, `warning`
 | Variant | Icon | Border |
 |---|---|---|
 | success | `CheckCircle2` — emerald-400 | `border-emerald-500/25` |
-| error | `AlertCircle` — red-400 | `border-red-500/25` |
-| info | `Info` — blue-400 | `border-white/[0.08]` |
+| error | `AlertCircle` — rose-400 | `border-[rgba(244,63,94,0.25)]` |
+| info | `Info` — cyan (`#06B6D4`) | `border-[rgba(6,182,212,0.20)]` |
 | warning | `AlertTriangle` — amber-400 | `border-amber-500/25` |
 
-Toasts support an optional **action button** (e.g. "Undo", "Retry") — displayed as a blue underlined link below the description. Default duration: 4 seconds.
+Toasts support an optional **action button** (e.g. "Undo", "Retry") — displayed as a cyan underlined link below the description. Default duration: 4 seconds.
 
 Entry/exit: `x: 64 → 0`, spring `stiffness: 350, damping: 28`.
 
 ### 7.6 Navigation
 
 **Bottom nav (mobile):**
-- Floating pill: `border-radius: 32px`, `backdrop-blur: 20px`, `bg: rgba(24,24,27,0.90)`
-- Active indicator: `h-0.5 w-5 rounded-full bg-blue-400` sliding with `layoutId="nav-indicator"`
-- Active icon: `strokeWidth: 2`, `text-zinc-50`
-- Inactive icon: `strokeWidth: 1.5`, `text-zinc-500`
+- Floating pill: `border-radius: 32px`, `backdrop-blur: 20px`, `bg: rgba(10,22,40,0.90)`, `border: 1px solid rgba(6,182,212,0.10)`
+- Active state: cyan text + icon + 2px cyan underline glow (no dot indicator)
+  ```css
+  color: #06B6D4;
+  /* underline glow */
+  box-shadow: 0 2px 8px rgba(6,182,212,0.40);
+  ```
+- Inactive: `color: #6B7FA3`
 - Min tap target: `44×44px` on all items
 
 **Desktop nav:**
-- Active: `bg-white/[0.08]`, `text-zinc-50`
-- Inactive: `text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05]`
+- Active: `bg-[rgba(6,182,212,0.10)]`, `text-accent`
+- Inactive: `text-muted-foreground hover:text-foreground hover:bg-surface`
 
 ### 7.7 Signal Badge
 The primary output of a price analysis. Three states:
@@ -428,10 +492,13 @@ The primary output of a price analysis. Three states:
 | Verdict | Label | Color | When to use |
 |---|---|---|---|
 | `low` | "Price Low" | Emerald `#10B981` | Price ≤ 30th percentile |
-| `high` | "Price High" | Red `#EF4444` | Price ≥ 70th percentile |
-| `neutral` | "Average Price" | Zinc `#A1A1AA` | Price between 30th–70th percentile |
+| `high` | "Price High" | Rose `#F43F5E` | Price ≥ 70th percentile |
+| `neutral` | "Average Price" | Slate `#6B7FA3` | Price between 30th–70th percentile |
 
-Hero size badge has animated pulse ring on `low` state.
+- Container: signal-colored glass pill with matching `box-shadow` glow
+- Label: **Space Grotesk** medium weight
+- Subtext: DM Sans `text-xs`
+- Hero size badge has animated pulse ring on `low` state
 
 ---
 
@@ -501,7 +568,7 @@ PriceRadar follows all 10 Nielsen usability heuristics:
 10. **Help and documentation** — Inline hints on the search input explain how to use the product.
 
 ### 9.2 Focus Management
-- Every interactive element has a `focus-visible:ring-2 focus-visible:ring-white/40` style
+- Every interactive element has a `focus-visible:ring-2` with cyan `rgba(6,182,212,0.80)` ring, offset 2px
 - `outline: none` is never used without a ring replacement
 - Skip-to-content link is the first focusable element in the DOM
 - `aria-current="page"` on active nav items
@@ -527,11 +594,11 @@ PriceRadar follows all 10 Nielsen usability heuristics:
 ```
 
 ### 9.4 Color Contrast
-- Primary text `#FAFAFA` on `#09090B`: ratio **17.9:1** ✓
-- Secondary text `#A1A1AA` on `#09090B`: ratio **5.7:1** ✓ (WCAG AA)
-- Signal green `#10B981` on `#18181B`: ratio **4.6:1** ✓ (WCAG AA)
-- Signal red `#EF4444` on `#18181B`: ratio **4.5:1** ✓ (WCAG AA minimum)
-- Blue-400 `#60A5FA` on `#09090B`: ratio **7.2:1** ✓
+- Primary text `#F0F4FF` on `#050D1A`: ratio **16.8:1** ✓ AAA
+- Secondary text `#6B7FA3` on `#050D1A`: ratio **4.5:1** ✓ (WCAG AA)
+- Signal green `#10B981` on `#0A1628`: ratio **4.6:1** ✓ (WCAG AA)
+- Signal rose `#F43F5E` on `#0A1628`: ratio **4.5:1** ✓ (WCAG AA minimum)
+- Cyan `#06B6D4` on `#050D1A`: ratio **4.6:1** ✓ (WCAG AA)
 
 ### 9.5 Touch Targets
 All interactive elements have a minimum touch target of `44×44px` on mobile. Icon-only buttons use `h-9 w-9` (36px) with sufficient surrounding whitespace.
@@ -544,28 +611,67 @@ All interactive elements have a minimum touch target of `44×44px` on mobile. Ic
 A permanent film-grain overlay sits over the entire app at `opacity: 0.035`. It adds perceived depth and prevents the dark backgrounds from feeling flat. It is implemented via `body::after` using an SVG `feTurbulence` filter, and is always `pointer-events: none` and `z-index: 9999`.
 
 ### 10.2 Glass Morphism
-Used **only** on elevated surfaces: the sticky header, bottom sheet modals, and the floating nav. Not used on cards in the main content flow (glass is reserved for layers above content).
+Used on all elevated surfaces: sticky header, cards, bottom sheet modals, floating nav. Medium intensity.
 
 ```css
-backdrop-filter: blur(20px);
--webkit-backdrop-filter: blur(20px);
-background: rgba(9, 9, 11, 0.85);
-border: 1px solid rgba(255, 255, 255, 0.06);
+/* Header / modals / sheets */
+.glass {
+  background: rgba(10, 22, 40, 0.65);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(6, 182, 212, 0.12);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.40), inset 0 1px 0 rgba(6,182,212,0.08);
+}
+
+/* Cards */
+.glass-card {
+  background: rgba(10, 22, 40, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(6, 182, 212, 0.10);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(6,182,212,0.06);
+}
+
+/* Bottom nav pill */
+.liquid-glass-nav {
+  border-radius: 32px;
+  background: rgba(10, 22, 40, 0.90);
+  border: 1px solid rgba(6, 182, 212, 0.10);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.50), 0 1px 4px rgba(0,0,0,0.30);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
 ```
+
+The `inset 0 1px 0` top-edge glow gives cards a luminous "lifted" feel — this is the signature craft detail of the design system.
 
 ### 10.3 Glow Effects
 Soft radial gradients are used behind key UI elements to create depth:
 
 ```css
-/* Blue glow — brand elements, waveforms */
-box-shadow: 0 0 12px rgba(59, 130, 246, 0.20);
+/* Cyan glow — brand elements, active states */
+box-shadow: 0 0 12px rgba(6, 182, 212, 0.30);
 
-/* White glow — card hover state */
-box-shadow: 0 0 30px -5px rgba(255,255,255,0.08);
+/* Button hover glow */
+box-shadow: 0 0 16px rgba(6, 182, 212, 0.35);
 
-/* Radial background glow (loading overlay) */
-background: radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%);
+/* Card hover glow */
+box-shadow: 0 0 30px -5px rgba(6,182,212,0.12);
+
+/* Radial background glow (loading overlay, GlassBackground) */
+background: radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 70%);
 ```
+
+### 10.3b Animated Background Blobs (GlassBackground)
+Floating blobs behind all content — deep navy base with cyan + violet accents:
+
+| Blob | Color | Opacity | Loop |
+|---|---|---|---|
+| 1 | Cyan `#06B6D4` | 0.15 | 20s |
+| 2 | Violet `rgba(139,92,246)` | 0.10 | 24s + 8s delay |
+| 3 | Deep cyan | 0.08 | 28s + 4s delay |
+
+All blobs: `filter: blur(40px)`, `pointer-events: none`, `aria-hidden="true"`.
 
 ### 10.4 Product Image Thumbnails
 Product images fill their container fully edge-to-edge (`object-cover`). No padding. Category-based Lucide icons are shown as fallback when the image is unavailable.
@@ -661,4 +767,28 @@ Short, confirmatory. No exclamation points unless the achievement is genuinely e
 
 ---
 
-*This brand book reflects the design system as implemented in PriceRadar v2.2+. All tokens, patterns, and rules documented here are enforced in code via `tailwind.config.ts`, `src/index.css`, and the component library in `src/components/`.*
+---
+
+## 14. SEO & PWA
+
+### Document Titles
+Set via `useDocumentTitle(title)` hook in each page component:
+
+| Route | Title |
+|---|---|
+| Landing | `PriceRadar — Is This Amazon Price a Good Deal?` |
+| Search | `Check a Price — PriceRadar` |
+| Product | `{product.name} — Price History & Comparison \| PriceRadar` |
+| Dashboard | `My Watchlist — PriceRadar` |
+| Settings | `Account Settings — PriceRadar` |
+
+### PWA Manifest Colors
+
+| Property | Value |
+|---|---|
+| `theme_color` | `#06B6D4` (cyan) |
+| `background_color` | `#050D1A` (deep navy) |
+
+---
+
+*This brand book reflects the design system as implemented in PriceRadar v2.0+ (UI Overhaul). All tokens, patterns, and rules documented here are enforced in code via `tailwind.config.ts`, `src/index.css`, and the component library in `src/components/`.*
