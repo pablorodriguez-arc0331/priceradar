@@ -1,7 +1,6 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  // Always dark — no media query toggle
   content: [
     './index.html',
     './src/**/*.{ts,tsx}',
@@ -9,13 +8,13 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        border: 'rgba(28, 28, 28, 0.12)',
-        'border-strong': 'rgba(28, 28, 28, 0.28)',
-        input: 'rgba(28, 28, 28, 0.12)',
+        border: 'rgba(255, 255, 255, 0.06)',
+        'border-strong': 'rgba(255, 255, 255, 0.12)',
+        input: 'rgba(255, 255, 255, 0.06)',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
         surface: 'hsl(var(--surface))',
-        'surface-raised': 'hsl(var(--surface-raised))',
+        'surface-raised': 'hsl(var(--surface-elevated))',
         foreground: 'hsl(var(--foreground))',
         primary: {
           DEFAULT: 'hsl(var(--primary))',
@@ -36,7 +35,7 @@ const config: Config = {
         accent: {
           DEFAULT: 'hsl(var(--accent))',
           foreground: 'hsl(var(--accent-foreground))',
-          subtle: 'rgba(28, 28, 28, 0.06)',
+          subtle: 'rgba(255, 255, 255, 0.04)',
           hover: 'hsl(var(--accent-hover))',
         },
         card: {
@@ -48,15 +47,15 @@ const config: Config = {
           foreground: 'hsl(var(--popover-foreground))',
         },
         signal: {
-          low:              '#1C1C1C',
-          'low-bg':         'rgba(28, 28, 28, 0.06)',
-          'low-border':     'rgba(28, 28, 28, 0.20)',
-          high:             '#1C1C1C',
-          'high-bg':        'rgba(28, 28, 28, 0.06)',
-          'high-border':    'rgba(28, 28, 28, 0.20)',
-          neutral:          '#1C1C1C',
-          'neutral-bg':     'rgba(28, 28, 28, 0.04)',
-          'neutral-border': 'rgba(28, 28, 28, 0.14)',
+          low:              '#10B981',
+          'low-bg':         'rgba(16,185,129,0.10)',
+          'low-border':     'rgba(16,185,129,0.25)',
+          high:             '#EF4444',
+          'high-bg':        'rgba(239,68,68,0.10)',
+          'high-border':    'rgba(239,68,68,0.25)',
+          neutral:          '#A1A1AA',
+          'neutral-bg':     'rgba(161,161,170,0.08)',
+          'neutral-border': 'rgba(161,161,170,0.18)',
         },
       },
       borderRadius: {
@@ -67,11 +66,9 @@ const config: Config = {
         '2xl': 'calc(var(--radius) + 8px)',
       },
       fontFamily: {
-        // Work Sans — body, labels, UI text
-        sans: ['Work Sans', 'system-ui', 'sans-serif'],
-        // Josefin Sans — headings, prices, stats
-        display: ['Josefin Sans', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'monospace'],
+        sans:    ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        display: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        mono:    ['JetBrains Mono', 'monospace'],
       },
       fontSize: {
         xs:    ['0.875rem',   { lineHeight: '1.25rem' }],
@@ -90,6 +87,7 @@ const config: Config = {
       },
       animation: {
         'skeleton-pulse': 'skeleton-pulse 1.5s ease-in-out infinite',
+        'skeleton-shimmer': 'skeleton-shimmer 1.8s ease-in-out infinite',
         'fade-in': 'fade-in 0.3s ease-out',
         'slide-up': 'slide-up 0.3s ease-out',
         'float': 'float 20s ease-in-out infinite',
@@ -100,6 +98,10 @@ const config: Config = {
         'skeleton-pulse': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.3' },
+        },
+        'skeleton-shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
         'fade-in': {
           from: { opacity: '0' },

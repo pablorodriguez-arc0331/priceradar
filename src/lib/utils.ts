@@ -28,32 +28,32 @@ export const SIGNAL_CONFIG: Record<
   PriceVerdict,
   { bg: string; text: string; border: string; badgeBg: string }
 > = {
-  // low = good price = inverted (black pill, cream text) — visually prominent
+  // low = good price = emerald — visually positive
   low: {
-    bg: 'bg-[rgba(28,28,28,0.06)]',
-    text: 'text-[#1C1C1C]',
-    border: 'border-[rgba(28,28,28,0.20)]',
-    badgeBg: 'bg-[#1C1C1C] text-[#FFFEFD] border-[#1C1C1C]',
+    bg: 'bg-emerald-500/10',
+    text: 'text-emerald-400',
+    border: 'border-emerald-500/25',
+    badgeBg: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
   },
-  // high = expensive = outlined (cream bg, black border) — stands out as a warning
+  // high = expensive = red — warning
   high: {
-    bg: 'bg-[rgba(28,28,28,0.04)]',
-    text: 'text-[#1C1C1C]',
-    border: 'border-[rgba(28,28,28,0.35)]',
-    badgeBg: 'bg-[#FFFEFD] text-[#1C1C1C] border-[rgba(28,28,28,0.35)]',
+    bg: 'bg-red-500/10',
+    text: 'text-red-400',
+    border: 'border-red-500/25',
+    badgeBg: 'bg-red-500/15 text-red-400 border-red-500/30',
   },
-  // neutral = mid-range = subtle
+  // neutral = mid-range = zinc
   neutral: {
-    bg: 'bg-[rgba(28,28,28,0.04)]',
-    text: 'text-[#1C1C1C]',
-    border: 'border-[rgba(28,28,28,0.15)]',
-    badgeBg: 'bg-[rgba(28,28,28,0.06)] text-[#1C1C1C] border-[rgba(28,28,28,0.15)]',
+    bg: 'bg-zinc-800/60',
+    text: 'text-zinc-400',
+    border: 'border-zinc-700/50',
+    badgeBg: 'bg-zinc-800/60 text-zinc-400 border-zinc-700/50',
   },
   no_data: {
-    bg: 'bg-[rgba(28,28,28,0.03)]',
-    text: 'text-[rgba(28,28,28,0.50)]',
-    border: 'border-[rgba(28,28,28,0.10)]',
-    badgeBg: 'bg-[rgba(28,28,28,0.04)] text-[rgba(28,28,28,0.50)] border-[rgba(28,28,28,0.10)]',
+    bg: 'bg-zinc-900/40',
+    text: 'text-zinc-500',
+    border: 'border-zinc-800/50',
+    badgeBg: 'bg-zinc-900/40 text-zinc-500 border-zinc-800/50',
   },
 }
 

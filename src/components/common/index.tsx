@@ -63,21 +63,21 @@ export function EmptyState({ variant, query, onAction, className }: EmptyStatePr
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       className={cn(
-        'flex flex-col items-center justify-center gap-4 rounded-xl border border-border bg-muted/20 px-6 py-12 text-center',
+        'flex flex-col items-center justify-center gap-4 rounded-xl border border-white/[0.06] bg-zinc-900/60 px-6 py-12 text-center',
         className,
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-border bg-background">
-        <Icon className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-800/60">
+        <Icon className="h-6 w-6 text-zinc-500" strokeWidth={1.5} aria-hidden="true" />
       </div>
       <div className="space-y-1">
-        <p className="text-sm font-semibold text-foreground">{config.title}</p>
+        <p className="text-sm font-semibold text-zinc-100">{config.title}</p>
         {query && (
-          <p className="text-xs font-medium text-muted-foreground">
-            for "<span className="text-foreground">{query}</span>"
+          <p className="text-xs font-medium text-zinc-500">
+            for "<span className="text-zinc-300">{query}</span>"
           </p>
         )}
-        <p className="text-xs text-muted-foreground max-w-[260px] mx-auto leading-relaxed">
+        <p className="text-xs text-zinc-500 max-w-[260px] mx-auto leading-relaxed">
           {config.body}
         </p>
       </div>
@@ -90,7 +90,7 @@ export function EmptyState({ variant, query, onAction, className }: EmptyStatePr
   )
 }
 
-// ─── Alert Setup Sheet (mobile bottom drawer) ─────────────────────────────────
+// ─── Alert Setup Sheet ─────────────────────────────────────────────────────────
 interface AlertSetupSheetProps {
   isOpen: boolean
   onClose: () => void
@@ -139,7 +139,7 @@ export function AlertSetupSheet({
         <>
           <motion.div
             key="alert-overlay"
-            className="fixed inset-0 z-40 bg-[rgba(28,28,28,0.40)]"
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -148,34 +148,36 @@ export function AlertSetupSheet({
           />
           <motion.div
             key="alert-sheet"
-            className="glass fixed bottom-0 inset-x-0 z-50 rounded-t-2xl px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
+            className="fixed bottom-0 inset-x-0 z-50 rounded-t-2xl border-t border-x border-white/[0.08] bg-zinc-900/95 backdrop-blur-xl px-4 pt-4 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))]"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 280, damping: 32 }}
           >
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-border" aria-hidden="true" />
+            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-zinc-700" aria-hidden="true" />
 
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h2 className="text-base font-semibold text-foreground">Set price alert</h2>
-                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1 max-w-[240px]">
+                <h2 className="text-base font-semibold text-zinc-50">Set price alert</h2>
+                <p className="text-xs text-zinc-500 mt-0.5 line-clamp-1 max-w-[240px]">
                   {productName}
                 </p>
               </div>
-              <button
+              <motion.button
                 onClick={onClose}
-                className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="rounded-lg p-1 text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
                 aria-label="Close alert sheet"
               >
-                <X className="h-5 w-5" />
-              </button>
+                <X className="h-5 w-5" strokeWidth={1.5} />
+              </motion.button>
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-lg bg-muted/40 px-3 py-2 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">Current price</span>
-                <span className="price text-sm font-bold text-foreground">
+              <div className="rounded-lg bg-zinc-800/60 border border-white/[0.06] px-3 py-2 flex items-center justify-between">
+                <span className="text-xs text-zinc-500">Current price</span>
+                <span className="price text-sm font-bold text-zinc-100">
                   ${currentPrice.toFixed(2)}
                 </span>
               </div>
@@ -188,7 +190,7 @@ export function AlertSetupSheet({
                 value={targetPrice}
                 onChange={e => { setTargetPrice(e.target.value); setError('') }}
                 error={error}
-                leftIcon={<span className="text-sm font-medium">$</span>}
+                leftIcon={<span className="text-sm font-medium text-zinc-400">$</span>}
                 hint="We'll email you when this price is reached."
               />
 
@@ -200,7 +202,7 @@ export function AlertSetupSheet({
                   fullWidth
                   onClick={handleSubmit}
                   loading={isSubmitting}
-                  leftIcon={<IconBell className="h-4 w-4" />}
+                  leftIcon={<IconBell className="h-4 w-4" strokeWidth={1.5} />}
                 >
                   Set Alert
                 </Button>
@@ -230,9 +232,9 @@ export function OfflineBanner() {
           role="status"
           aria-live="polite"
         >
-          <div className="flex items-center gap-2 bg-[rgba(28,28,28,0.04)] border-b border-[rgba(28,28,28,0.10)] px-4 py-2">
-            <Wifi className="h-3.5 w-3.5 text-[#1C1C1C] shrink-0 opacity-50" aria-hidden="true" />
-            <p className="text-xs font-medium text-[#1C1C1C]">
+          <div className="flex items-center gap-2 bg-zinc-800/60 border-b border-white/[0.06] px-4 py-2">
+            <Wifi className="h-3.5 w-3.5 text-zinc-500 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+            <p className="text-xs font-medium text-zinc-400">
               You're offline — showing cached data
             </p>
           </div>
@@ -255,28 +257,30 @@ export function InstallBanner() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 8 }}
           transition={{ type: 'spring', stiffness: 300, damping: 28 }}
-          className="mx-4 mb-3 flex items-center gap-3 rounded-xl border border-accent/20 bg-accent-subtle px-4 py-3"
+          className="mx-4 mb-3 flex items-center gap-3 rounded-xl border border-white/[0.08] bg-zinc-900/90 backdrop-blur-xl px-4 py-3"
           role="complementary"
           aria-label="Install Price Radar app"
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent">
-            <Radar className="h-4 w-4 text-[#FFFEFD]" aria-hidden="true" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20">
+            <Radar className="h-4 w-4 text-blue-400" strokeWidth={1.5} aria-hidden="true" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-foreground">Add to Home Screen</p>
-            <p className="text-xs text-muted-foreground">Get alerts even when the browser is closed</p>
+            <p className="text-xs font-semibold text-zinc-100">Add to Home Screen</p>
+            <p className="text-xs text-zinc-500">Get alerts even when the browser is closed</p>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <Button size="sm" onClick={promptInstall} leftIcon={<Download className="h-3.5 w-3.5" />}>
+            <Button size="sm" onClick={promptInstall} leftIcon={<Download className="h-3.5 w-3.5" strokeWidth={1.5} />}>
               Install
             </Button>
-            <button
+            <motion.button
               onClick={dismissPrompt}
-              className="p-1.5 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              className="p-1.5 rounded-lg text-zinc-500 hover:bg-white/[0.06] hover:text-zinc-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
               aria-label="Dismiss install prompt"
             >
-              <X className="h-4 w-4" />
-            </button>
+              <X className="h-4 w-4" strokeWidth={1.5} />
+            </motion.button>
           </div>
         </motion.div>
       )}
@@ -296,7 +300,7 @@ export function SectionHeading({
 }) {
   return (
     <div className={cn('flex items-center justify-between', className)}>
-      <h2 className="text-base font-semibold text-foreground">{children}</h2>
+      <h2 className="text-base font-semibold text-zinc-100">{children}</h2>
       {action}
     </div>
   )

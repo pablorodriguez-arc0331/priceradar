@@ -104,7 +104,7 @@ export function AuthPage() {
         <div className="text-center space-y-1">
           <Link to="/" className="inline-flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md" aria-label="Price Radar — Home">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent">
-              <Radar className="h-5 w-5 text-[#FFFEFD]" aria-hidden="true" />
+              <Radar className="h-5 w-5 text-zinc-100" strokeWidth={1.5} aria-hidden="true" />
             </div>
           </Link>
           <h1 className="font-display text-xl font-bold text-foreground">
@@ -255,7 +255,7 @@ export function AuthPage() {
                       : 'bg-transparent border-muted-foreground/40 hover:border-muted-foreground',
                   )}>
                     {rememberMe && (
-                      <svg className="h-2.5 w-2.5 text-[#FFFEFD]" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+                      <svg className="h-2.5 w-2.5 text-zinc-900" viewBox="0 0 10 10" fill="none" aria-hidden="true">
                         <path d="M1.5 5L4 7.5L8.5 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
                     )}

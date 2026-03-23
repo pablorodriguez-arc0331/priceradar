@@ -23,14 +23,14 @@ function PriceDisplay({
   className?: string
 }) {
   if (!price || price <= 0) {
-    return <span className={cn('text-muted-foreground', className)}>Unavailable</span>
+    return <span className={cn('text-zinc-500', className)}>Unavailable</span>
   }
   return <span className={className}>{formatPrice(price)}</span>
 }
 
 export function TrackedProductCard({ item, layout = 'grid' }: TrackedProductCardProps) {
   const navigate = useNavigate()
-  const { removeTracked, updateAlert } = useTrackedStore()
+  const { removeTracked, addTracked, updateAlert } = useTrackedStore()
   const toast = useToast()
   const [isRemoving, setIsRemoving] = useState(false)
 
@@ -38,12 +38,27 @@ export function TrackedProductCard({ item, layout = 'grid' }: TrackedProductCard
     e.stopPropagation()
     setIsRemoving(true)
     await new Promise(r => setTimeout(r, 200))
+    // Snapshot before removal so undo can restore it
+    const snapshot = { ...item }
     try {
       await removeTracked(item.id, item.user_id)
-      toast('success', 'Removed from watchlist', item.product.name)
+      toast(
+        'info',
+        'Removed from watchlist',
+        item.product.name,
+        {
+          label: 'Undo',
+          onClick: () => addTracked(snapshot.user_id, snapshot).catch(() => {
+            toast('error', 'Could not restore product', 'Please add it again manually.')
+          }),
+        },
+      )
     } catch {
       setIsRemoving(false)
-      toast('error', 'Could not remove product', 'Please try again.')
+      toast('error', 'Could not remove product', 'Tap to retry.', {
+        label: 'Retry',
+        onClick: () => handleRemove({ stopPropagation: () => {} } as React.MouseEvent),
+      })
     }
   }
 
@@ -119,17 +134,17 @@ function SwipeToDelete({
     <div ref={constraintsRef} className="relative overflow-hidden rounded-xl">
       {/* Delete button revealed beneath */}
       <motion.div
-        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#1C1C1C]"
+        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-red-500/10 border-l border-red-500/20"
         style={{ width: DELETE_WIDTH, opacity: deleteOpacity }}
       >
         <button
           onClick={(e) => { handleClose(); onDelete(e) }}
           disabled={disabled}
-          className="flex flex-col items-center gap-1 text-[#FFFEFD]"
+          className="flex flex-col items-center gap-1 text-red-400"
           aria-label="Delete from watchlist"
           type="button"
         >
-          <IconTrash className="h-5 w-5" aria-hidden="true" />
+          <IconTrash className="h-5 w-5" strokeWidth={1.5} aria-hidden="true" />
           <span className="text-[10px] font-medium">Delete</span>
         </button>
       </motion.div>
@@ -161,9 +176,9 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
       whileHover={{ y: -2 }}
       onClick={onClick}
       className={cn(
-        'glass-card group relative flex flex-col rounded-xl',
-        'cursor-pointer hover:brightness-105 transition-all',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'group relative flex flex-col rounded-xl overflow-hidden border border-white/[0.06] bg-zinc-900/80 backdrop-blur-sm',
+        'cursor-pointer transition-all duration-200 hover:border-white/[0.12] hover:shadow-[0_0_24px_-4px_rgba(255,255,255,0.08)]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
         'overflow-hidden',
       )}
       role="article"
@@ -172,12 +187,12 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
       {/* Product image */}
-      <div className="relative h-32 w-full overflow-hidden bg-muted/30">
+      <div className="relative h-32 w-full overflow-hidden bg-zinc-800/40">
         <ProductImage
           src={item.product.image_url}
           alt={item.product.name}
           category={item.product.category}
-          className="h-full w-full p-3"
+          className="h-full w-full object-cover"
           iconClassName="h-10 w-10"
           loading="lazy"
         />
@@ -194,7 +209,7 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
 
       {/* Content */}
       <div className="flex flex-1 flex-col gap-2 p-3">
-        <p className="line-clamp-2 text-xs font-medium text-foreground leading-snug">
+        <p className="line-clamp-2 text-xs font-medium text-zinc-100 leading-snug">
           {item.product.name}
         </p>
 
@@ -203,16 +218,16 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
           <div>
             <PriceDisplay
               price={item.current_price}
-              className="price text-lg font-bold text-foreground"
+              className="price text-lg font-bold text-zinc-100"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-zinc-500">
               {item.current_retailer || 'Unknown retailer'}
             </p>
           </div>
           {item.alert_target_price && (
-            <p className="text-right text-xs text-muted-foreground">
+            <p className="text-right text-xs text-zinc-500">
               Alert at<br />
-              <span className="price font-semibold text-foreground">
+              <span className="price font-semibold text-zinc-100">
                 {formatPrice(item.alert_target_price)}
               </span>
             </p>
@@ -220,8 +235,8 @@ function GridCard({ item, isRemoving, onRemove, onAlertToggle, onClick }: CardIn
         </div>
 
         {/* Footer */}
-        <div className="mt-auto flex items-center justify-between border-t border-border pt-2">
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <div className="mt-auto flex items-center justify-between border-t border-white/[0.06] pt-2">
+          <span className="flex items-center gap-1 text-xs text-zinc-500">
             <IconClock className="h-3 w-3" aria-hidden="true" />
             {formatRelativeTime(item.last_checked_at)}
           </span>
@@ -254,21 +269,21 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
       transition={{ type: 'spring', stiffness: 300, damping: 28 }}
       onClick={onClick}
       className={cn(
-        'glass-card flex items-center gap-3 rounded-xl p-3',
-        'cursor-pointer hover:brightness-105 transition-all',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'flex items-center gap-3 rounded-xl p-3 border border-white/[0.06] bg-zinc-900/80 backdrop-blur-sm',
+        'cursor-pointer transition-all duration-200 hover:border-white/[0.12] hover:shadow-[0_0_24px_-4px_rgba(255,255,255,0.08)]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
       )}
       role="article"
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
     >
       {/* Thumbnail */}
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-border bg-muted/30">
+      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-white/[0.06] bg-zinc-800/40">
         <ProductImage
           src={item.product.image_url}
           alt={item.product.name}
           category={item.product.category}
-          className="h-full w-full p-1"
+          className="h-full w-full object-cover"
           iconClassName="h-5 w-5"
           loading="lazy"
         />
@@ -276,7 +291,7 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
 
       {/* Main info */}
       <div className="flex flex-1 flex-col gap-1 min-w-0">
-        <p className="truncate text-sm font-medium text-foreground">
+        <p className="truncate text-sm font-medium text-zinc-100">
           {item.product.name}
         </p>
         <div className="flex items-center gap-2">
@@ -286,7 +301,7 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
             size="inline"
             animated={false}
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-zinc-500">
             {formatRelativeTime(item.last_checked_at)}
           </span>
         </div>
@@ -297,9 +312,9 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
         <div className="text-right">
           <PriceDisplay
             price={item.current_price}
-            className="price text-sm font-bold text-foreground"
+            className="price text-sm font-bold text-zinc-100"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-zinc-500">
             {item.current_retailer || 'Unknown'}
           </p>
         </div>
@@ -311,7 +326,7 @@ function ListCard({ item, isRemoving, onAlertToggle, onClick }: CardInternalProp
             active={item.alert_enabled}
           />
         </div>
-        <IconArrowRight className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        <IconArrowRight className="h-4 w-4 text-zinc-500" aria-hidden="true" />
       </div>
     </motion.article>
   )
@@ -338,10 +353,10 @@ function CardAction({
       onClick={onClick}
       className={cn(
         'flex h-7 w-7 items-center justify-center rounded-md transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        danger && 'text-muted-foreground hover:bg-signal-high-bg hover:text-signal-high',
-        active && !danger && 'text-accent hover:bg-accent/10',
-        !active && !danger && 'text-muted-foreground hover:bg-muted hover:text-foreground',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
+        danger && 'text-zinc-500 hover:bg-red-500/10 hover:text-red-400',
+        active && !danger && 'text-blue-400 hover:bg-blue-500/10',
+        !active && !danger && 'text-zinc-500 hover:bg-muted hover:text-zinc-100',
       )}
       aria-label={label}
       type="button"
@@ -352,10 +367,22 @@ function CardAction({
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
+const skeletonContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } },
+}
+const skeletonItem = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 28 } },
+}
+
 export function TrackedProductCardSkeleton({ layout = 'grid' }: { layout?: 'grid' | 'list' }) {
   if (layout === 'list') {
     return (
-      <div className="glass-card flex items-center gap-3 rounded-xl p-3">
+      <motion.div
+        variants={skeletonItem}
+        className="flex items-center gap-3 rounded-xl p-3 border border-white/[0.06] bg-zinc-900/80"
+      >
         <div className="skeleton h-12 w-12 rounded-lg shrink-0" />
         <div className="flex flex-1 flex-col gap-2">
           <div className="skeleton h-4 w-3/4" />
@@ -365,12 +392,15 @@ export function TrackedProductCardSkeleton({ layout = 'grid' }: { layout?: 'grid
           <div className="skeleton h-5 w-16" />
           <div className="skeleton h-3 w-12" />
         </div>
-      </div>
+      </motion.div>
     )
   }
 
   return (
-    <div className="glass-card flex flex-col rounded-xl overflow-hidden">
+    <motion.div
+      variants={skeletonItem}
+      className="flex flex-col rounded-xl overflow-hidden border border-white/[0.06] bg-zinc-900/80"
+    >
       <div className="skeleton h-32 w-full rounded-none" />
       <div className="flex flex-col gap-2 p-3">
         <div className="skeleton h-4 w-full" />
@@ -380,9 +410,11 @@ export function TrackedProductCardSkeleton({ layout = 'grid' }: { layout?: 'grid
           <div className="skeleton h-5 w-16 rounded-full" />
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
+
+export { skeletonContainer, skeletonItem }
 
 // ─── Internal types ───────────────────────────────────────────────────────────
 interface CardInternalProps {

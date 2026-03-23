@@ -35,7 +35,7 @@ export function SignalBadge({
       className={cn(
         'inline-flex flex-col items-center border',
         config.badgeBg,
-        size === 'hero' && 'rounded-2xl px-6 py-4 gap-1 shadow-[0_0_24px_rgba(6,182,212,0.15)]',
+        size === 'hero' && 'rounded-2xl px-6 py-4 gap-1 shadow-[0_0_32px_rgba(0,0,0,0.40)]',
         size === 'default' && 'rounded-full px-3 py-1.5 flex-row gap-1.5',
         size === 'inline' && 'rounded-full px-2 py-0.5 flex-row gap-1',
         className,
@@ -57,6 +57,7 @@ export function SignalBadge({
             size === 'default' && 'h-4 w-4',
             size === 'inline' && 'h-3 w-3',
           )}
+          strokeWidth={1.5}
           aria-hidden="true"
         />
         {label}

@@ -293,7 +293,7 @@ export function SettingsPage() {
                 className={cn(
                   'flex-1 min-w-0 rounded-md border border-[rgba(28,28,28,0.28)]',
                   'bg-transparent px-2 py-0.5 text-sm font-semibold text-foreground',
-                  'focus:outline-none focus:border-[#1C1C1C]',
+                  'focus:outline-none focus:border-white/40',
                   'disabled:opacity-50',
                 )}
                 aria-label="Display name"
@@ -301,7 +301,7 @@ export function SettingsPage() {
               <button
                 onClick={handleSaveName}
                 disabled={savingName || !nameValue.trim()}
-                className="shrink-0 rounded-md bg-[#1C1C1C] px-2 py-1 text-[11px] font-semibold text-[#FFFEFD] disabled:opacity-40 hover:bg-[#1C1C1C]/85 transition-colors"
+                className="shrink-0 rounded-md bg-white px-2 py-1 text-[11px] font-semibold text-zinc-950 disabled:opacity-40 hover:bg-white/90 transition-colors"
                 aria-label="Save name"
               >
                 {savingName ? '…' : 'Save'}
@@ -486,7 +486,7 @@ function PushNotificationRow({
     >
       <span
         className={cn(
-          'block h-4 w-4 rounded-full bg-[#FFFEFD] shadow-sm transition-transform duration-200',
+          'block h-4 w-4 rounded-full bg-zinc-900 shadow-sm transition-transform duration-200',
           push.isSubscribed ? 'translate-x-4' : 'translate-x-0.5',
         )}
       />

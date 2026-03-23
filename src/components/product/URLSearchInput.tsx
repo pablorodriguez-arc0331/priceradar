@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
+import { X, Search } from 'lucide-react'
 import { IconAlert, IconClipboard } from '@/components/ui/Icons'
 import { cn } from '@/lib/utils'
 import { useProductLookup } from '@/hooks'
@@ -80,17 +80,16 @@ export function URLSearchInput({
         data-focused={isFocused ? 'true' : undefined}
         data-error={error ? 'true' : undefined}
       >
-        {/* Inner container — clips to rounded and provides the background that "cuts" the border */}
-        <div className="relative flex items-center rounded-[calc(0.75rem-1px)] bg-background overflow-hidden">
+        {/* Inner container */}
+        <div className="relative flex items-center rounded-[calc(0.75rem-1px)] bg-zinc-900/90 overflow-hidden">
 
-          {/* Left search icon */}
-          <img
-            src="/assets/search.png"
-            alt=""
+          {/* Left search icon — Lucide */}
+          <Search
             aria-hidden="true"
+            strokeWidth={1.5}
             className={cn(
-              'pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 object-contain transition-opacity duration-300',
-              isFocused ? 'opacity-100' : 'opacity-40',
+              'pointer-events-none absolute left-3.5 h-5 w-5 shrink-0 transition-colors duration-200',
+              isFocused ? 'text-zinc-300' : 'text-zinc-600',
             )}
           />
 
@@ -106,7 +105,7 @@ export function URLSearchInput({
             placeholder={placeholder}
             className={cn(
               'w-full h-14 rounded-[calc(0.75rem-1px)] bg-transparent',
-              'pl-11 pr-12 text-base text-foreground placeholder:text-muted-foreground',
+              'pl-11 pr-12 text-base text-zinc-100 placeholder:text-zinc-600',
               'transition-colors duration-200',
               'focus-visible:outline-none',
               'disabled:opacity-50',
@@ -132,7 +131,7 @@ export function URLSearchInput({
                   exit={{ opacity: 0 }}
                   className="flex items-center justify-center h-8 w-8"
                 >
-                  <Spinner className="h-4 w-4 text-muted-foreground" />
+                  <Spinner className="h-4 w-4 text-zinc-400" />
                 </motion.span>
               ) : hasValue ? (
                 <motion.button
@@ -146,11 +145,11 @@ export function URLSearchInput({
                   aria-label="Clear"
                   className={cn(
                     'flex items-center justify-center h-8 w-8 rounded-lg',
-                    'text-muted-foreground hover:text-foreground hover:bg-muted',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06]',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                   )}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4" strokeWidth={1.5} />
                 </motion.button>
               ) : (
                 <motion.button
@@ -164,8 +163,8 @@ export function URLSearchInput({
                   aria-label="Paste from clipboard"
                   className={cn(
                     'flex items-center justify-center h-8 w-8 rounded-lg',
-                    'text-muted-foreground hover:text-foreground hover:bg-muted',
-                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    'text-zinc-500 hover:text-zinc-200 hover:bg-white/[0.06]',
+                    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                   )}
                 >
                   <IconClipboard className="h-4 w-4" />
@@ -187,7 +186,7 @@ export function URLSearchInput({
             animate={{ opacity: 1, height: 'auto', marginTop: 0 }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
             transition={{ duration: 0.18 }}
-            className="flex items-start gap-1.5 text-xs text-destructive overflow-hidden"
+            className="flex items-start gap-1.5 text-xs text-red-400 overflow-hidden"
           >
             <IconAlert className="h-3.5 w-3.5 mt-0.5 shrink-0" aria-hidden="true" />
             {error}
@@ -209,7 +208,7 @@ export function URLSearchInput({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.15 }}
-            className="text-xs text-muted-foreground"
+            className="text-xs text-zinc-500"
           >
             {hint}
           </motion.p>

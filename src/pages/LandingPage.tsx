@@ -10,19 +10,19 @@ import { useDocumentTitle } from '@/hooks'
 
 const STEPS = [
   {
-    icon: <IconArrowRight className="h-4 w-4 text-accent" aria-hidden="true" />,
+    icon: <IconArrowRight className="h-4 w-4 text-blue-400" aria-hidden="true" />,
     step: '01',
     title: 'Paste an Amazon product link',
     body: 'Copy any Amazon product URL and paste it here. No extension needed.',
   },
   {
-    icon: <IconChart className="h-4 w-4 text-accent" aria-hidden="true" />,
+    icon: <IconChart className="h-4 w-4 text-blue-400" aria-hidden="true" />,
     step: '02',
     title: 'Get the verdict instantly',
     body: "We compare the current price to its history and tell you: is this a good deal right now?",
   },
   {
-    icon: <IconBell className="h-4 w-4 text-accent" aria-hidden="true" />,
+    icon: <IconBell className="h-4 w-4 text-blue-400" aria-hidden="true" />,
     step: '03',
     title: 'Set an alert, buy at the right time',
     body: "We'll notify you when the price drops to where you want it. You come back, you buy.",
@@ -52,25 +52,26 @@ export function LandingPage() {
           aria-labelledby="hero-heading"
         >
           <motion.div variants={itemVariants} className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/25 bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.10] bg-white/[0.05] px-3 py-1 text-xs font-medium text-zinc-300">
               <span className="relative flex h-2 w-2" aria-hidden="true">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-400" />
               </span>
-              <Radar className="h-3.5 w-3.5" aria-hidden="true" />
+              <Radar className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
               Amazon price intelligence
             </div>
             <h1
               id="hero-heading"
-              className="font-display text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-[1.1]"
+              className="font-display text-4xl md:text-5xl font-bold tracking-tight text-zinc-50 leading-[1.1]"
+              style={{ letterSpacing: '-0.02em' }}
             >
               Is this price actually
               <br />
-              <span className="text-[#1C1C1C]">
+              <span className="text-white">
                 a good deal?
               </span>
             </h1>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto leading-relaxed">
+            <p className="text-sm text-zinc-500 max-w-xs mx-auto leading-relaxed">
               Paste any Amazon link — we'll show full price history and compare retailers instantly.
             </p>
           </motion.div>
@@ -78,7 +79,7 @@ export function LandingPage() {
           {/* URL input — the primary CTA */}
           <motion.div variants={itemVariants} className="mx-auto max-w-lg">
             <URLSearchInput size="large" autoFocus={false} />
-            <p className="mt-2 text-[11px] text-muted-foreground/60 text-center">
+            <p className="mt-2 text-[11px] text-zinc-600 text-center">
               50K+ prices tracked · Updated hourly · Free forever
             </p>
           </motion.div>
@@ -92,7 +93,7 @@ export function LandingPage() {
           className="space-y-3"
           aria-label="Sample price check"
         >
-          <p className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <p className="text-center text-xs font-medium text-zinc-600 uppercase tracking-wider">
             Example
           </p>
           <SampleProductCard />
@@ -108,7 +109,7 @@ export function LandingPage() {
         >
           <h2
             id="how-it-works-heading"
-            className="text-base font-semibold text-foreground text-center"
+            className="text-base font-semibold text-zinc-100 text-center"
           >
             How it works
           </h2>
@@ -124,14 +125,15 @@ export function LandingPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="glass-card rounded-xl px-5 py-5 space-y-3"
+          className="rounded-xl border border-white/[0.06] bg-zinc-900/80 backdrop-blur-sm px-5 py-5 space-y-3"
         >
           <div className="flex items-center gap-2">
             <IconShield
-              className="h-4 w-4 text-signal-low shrink-0"
+              className="h-4 w-4 text-emerald-400 shrink-0"
+              strokeWidth={1.5}
               aria-hidden="true"
             />
-            <p className="text-sm font-semibold text-foreground">Designed for smart buyers</p>
+            <p className="text-sm font-semibold text-zinc-100">Designed for smart buyers</p>
           </div>
           <ul className="space-y-2" role="list">
             {[
@@ -141,8 +143,8 @@ export function LandingPage() {
               'Free price checks, no account required',
               'Price alert notifications when your target is hit',
             ].map((item, i) => (
-              <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
+              <li key={i} className="flex items-start gap-2 text-xs text-zinc-500">
+                <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-zinc-600" aria-hidden="true" />
                 {item}
               </li>
             ))}
@@ -167,13 +169,13 @@ const DEMO_PRICES = [
 
 function SampleProductCard() {
   return (
-    <div className="glass-card rounded-xl p-4 space-y-3">
+    <div className="rounded-xl border border-white/[0.06] bg-zinc-900/80 backdrop-blur-sm p-4 space-y-3">
       <div className="flex items-start gap-3">
-        <div className="h-14 w-14 shrink-0 rounded-lg border border-border bg-muted/20 flex items-center justify-center">
-          <IconTag className="h-7 w-7 text-muted-foreground/40" aria-hidden="true" />
+        <div className="h-14 w-14 shrink-0 rounded-lg border border-white/[0.08] bg-zinc-800/40 flex items-center justify-center">
+          <IconTag className="h-7 w-7 text-zinc-600" strokeWidth={1.5} aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0 space-y-1">
-          <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">
+          <p className="text-xs font-medium text-zinc-100 line-clamp-2 leading-snug">
             Sony WH-1000XM5 Headphones
           </p>
           <SignalBadge
@@ -186,21 +188,21 @@ function SampleProductCard() {
       </div>
 
       {/* Mini price comparison */}
-      <div className="space-y-1.5 border-t border-border pt-3">
+      <div className="space-y-1.5 border-t border-white/[0.06] pt-3">
         {DEMO_PRICES.map((rp) => (
           <div key={rp.retailer} className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <RetailerDot />
-              <span className="text-xs text-muted-foreground">{rp.retailer}</span>
+              <span className="text-xs text-zinc-500">{rp.retailer}</span>
               {rp.best && (
-                <span className="rounded-full bg-[rgba(28,28,28,0.06)] px-1.5 py-0.5 text-[10px] font-semibold text-[#1C1C1C]">
+                <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-400">
                   Best
                 </span>
               )}
             </div>
             <span className={cn(
               'price text-sm font-bold',
-              rp.best ? 'text-signal-low' : 'text-foreground',
+              rp.best ? 'text-emerald-400' : 'text-zinc-100',
             )}>
               {formatPrice(rp.price)}
             </span>
@@ -208,7 +210,7 @@ function SampleProductCard() {
         ))}
       </div>
 
-      <p className="text-center text-xs text-muted-foreground">
+      <p className="text-center text-xs text-zinc-600">
         ↑ This is what you'll see for any product
       </p>
     </div>
@@ -218,7 +220,7 @@ function SampleProductCard() {
 function RetailerDot() {
   return (
     <div
-      className="h-2 w-2 rounded-full bg-[#1C1C1C]"
+      className="h-2 w-2 rounded-full bg-zinc-600"
       aria-hidden="true"
     />
   )
@@ -245,23 +247,21 @@ function StepCard({
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 28, delay }}
-      className="glass-card flex items-start gap-3 rounded-xl px-4 py-3.5 border-l-2 border-l-accent/30 hover:border-l-accent/70 transition-colors duration-200"
+      className="flex items-start gap-3 rounded-xl px-4 py-3.5 border border-white/[0.06] bg-zinc-900/80 backdrop-blur-sm border-l-2 border-l-blue-500/30 hover:border-l-blue-500/60 transition-colors duration-200"
     >
       <div className={cn(
         'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border',
         active
-          ? 'bg-[#1C1C1C] border-[#1C1C1C]'
-          : 'bg-[rgba(28,28,28,0.06)] border-[rgba(28,28,28,0.15)]',
+          ? 'bg-blue-500/10 border-blue-500/20'
+          : 'bg-white/[0.04] border-white/[0.08]',
       )}>
-        {active
-          ? <span className="[&_svg]:text-[#FFFEFD]">{icon}</span>
-          : icon}
+        <span className={active ? '[&_svg]:text-blue-400' : '[&_svg]:text-zinc-500'}>{icon}</span>
       </div>
       <div className="space-y-0.5">
-        <p className="font-display text-sm font-semibold text-foreground">{title}</p>
-        <p className="text-xs text-muted-foreground leading-relaxed">{body}</p>
+        <p className="font-display text-sm font-semibold text-zinc-100">{title}</p>
+        <p className="text-xs text-zinc-500 leading-relaxed">{body}</p>
       </div>
-      <span className="ml-auto shrink-0 font-display text-xs font-bold text-accent/40">{step}</span>
+      <span className="ml-auto shrink-0 font-display text-xs font-bold text-zinc-700">{step}</span>
     </motion.div>
   )
 }

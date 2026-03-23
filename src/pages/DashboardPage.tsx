@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { IconGrid, IconRefresh, IconList } from '@/components/ui/Icons'
 import { Page } from '@/components/layout'
-import { TrackedProductCard, TrackedProductCardSkeleton } from '@/components/dashboard/TrackedProductCard'
+import { TrackedProductCard, TrackedProductCardSkeleton, skeletonContainer } from '@/components/dashboard/TrackedProductCard'
 import { EmptyState } from '@/components/common'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore, useTrackedStore, useUIStore, useToast } from '@/store'
@@ -43,9 +43,14 @@ export function DashboardPage() {
   const handleRefresh = async () => {
     if (!user) return
     setIsRefreshing(true)
-    await new Promise(r => setTimeout(r, 1200))
-    toast('success', 'Prices updated', 'All products refreshed.')
-    setIsRefreshing(false)
+    try {
+      await fetchTracked(user.id)
+      toast('success', 'Watchlist refreshed', 'Prices reloaded from database.')
+    } catch {
+      toast('error', 'Refresh failed', 'Could not reload prices. Please try again.')
+    } finally {
+      setIsRefreshing(false)
+    }
   }
 
   const filtered = trackedProducts.filter(item => {
@@ -175,7 +180,10 @@ export function DashboardPage() {
 
       {/* Product grid/list */}
       {isLoading ? (
-        <div
+        <motion.div
+          variants={skeletonContainer}
+          initial="hidden"
+          animate="visible"
           className={cn(
             dashboardView === 'grid'
               ? 'grid grid-cols-2 gap-3 sm:grid-cols-3'
@@ -185,7 +193,7 @@ export function DashboardPage() {
           {[...Array(4)].map((_, i) => (
             <TrackedProductCardSkeleton key={i} layout={dashboardView} />
           ))}
-        </div>
+        </motion.div>
       ) : trackedProducts.length === 0 ? (
         <EmptyState variant="dashboard" />
       ) : filtered.length === 0 ? (
@@ -267,7 +275,7 @@ function VerdictFilters({
             'relative shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-colors',
             'border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             active === f.value
-              ? 'bg-[#1C1C1C] text-[#FFFEFD] font-semibold border-[#1C1C1C]'
+              ? 'bg-white text-zinc-950 font-semibold border-white'
               : 'glass-card text-muted-foreground border-transparent hover:border-accent/30 hover:text-foreground',
           )}
           aria-pressed={active === f.value}
@@ -275,7 +283,7 @@ function VerdictFilters({
           {active === f.value && (
             <motion.span
               layoutId="filter-indicator"
-              className="absolute inset-0 rounded-full bg-[#1C1C1C]"
+              className="absolute inset-0 rounded-full bg-zinc-800"
               style={{ zIndex: -1 }}
               transition={{ type: 'spring', stiffness: 400, damping: 35 }}
             />

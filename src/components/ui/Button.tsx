@@ -6,10 +6,10 @@ import { cn } from '@/lib/utils'
 
 const buttonVariants = cva(
   [
-    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg',
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full',
     'font-sans text-sm font-medium',
-    'transition-all duration-200',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'transition-colors duration-150',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950',
     'disabled:pointer-events-none disabled:opacity-40',
     'touch-action-manipulation',
   ],
@@ -17,24 +17,24 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-[#1C1C1C] text-[#FFFEFD] font-semibold hover:bg-[#1C1C1C]/85 active:bg-[#1C1C1C]',
+          'bg-white text-zinc-950 font-semibold shadow-sm hover:bg-white/90 active:bg-white/80',
         secondary:
-          'bg-[#FFFEFD] text-[#1C1C1C] border border-[rgba(28,28,28,0.20)] hover:border-[rgba(28,28,28,0.40)] hover:bg-[rgba(28,28,28,0.04)]',
+          'bg-zinc-900/80 border border-white/[0.08] text-zinc-50 hover:bg-zinc-800 hover:border-white/[0.14]',
         outline:
-          'border border-[rgba(28,28,28,0.28)] bg-transparent text-[#1C1C1C] hover:bg-[rgba(28,28,28,0.05)] hover:border-[rgba(28,28,28,0.50)]',
+          'border border-white/[0.08] bg-transparent text-zinc-300 hover:bg-zinc-900/80 hover:text-zinc-50 hover:border-white/[0.14]',
         ghost:
-          'text-[#1C1C1C] hover:bg-[rgba(28,28,28,0.06)]',
+          'text-zinc-400 hover:bg-zinc-900/80 hover:text-zinc-50',
         destructive:
-          'bg-[#1C1C1C] text-[#FFFEFD] hover:bg-[#1C1C1C]/85',
+          'bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 hover:border-red-500/40',
         link:
-          'text-[#1C1C1C] underline-offset-4 hover:underline p-0 h-auto',
+          'text-zinc-300 underline-offset-4 hover:underline hover:text-zinc-50 p-0 h-auto rounded-none',
       },
       size: {
-        sm:      'h-9 px-3 text-xs rounded-md min-h-[36px]',
-        default: 'h-11 px-4 min-h-[44px]',
-        lg:      'h-12 px-6 text-base rounded-xl min-h-[44px]',
-        xl:      'h-14 px-8 text-base rounded-xl min-h-[44px]',
-        icon:    'h-11 w-11 min-h-[44px] min-w-[44px]',
+        sm:        'h-9 px-3.5 text-xs min-h-[36px]',
+        default:   'h-11 px-5 min-h-[44px]',
+        lg:        'h-12 px-6 text-base min-h-[44px]',
+        xl:        'h-14 px-8 text-base min-h-[44px]',
+        icon:      'h-11 w-11 min-h-[44px] min-w-[44px]',
         'icon-sm': 'h-9 w-9',
       },
       fullWidth: { true: 'w-full' },
@@ -73,9 +73,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     return (
       <motion.div
-        whileHover={disabled || loading ? {} : { y: -1 }}
-        whileTap={disabled || loading ? {} : { scale: 0.95, y: 0 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 25 }}
+        whileHover={disabled || loading ? {} : { scale: 1.03 }}
+        whileTap={disabled || loading ? {} : { scale: 0.97 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
         className={fullWidth ? 'w-full' : 'inline-flex'}
       >
         <Comp

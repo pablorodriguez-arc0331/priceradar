@@ -11,11 +11,11 @@ import { useAuthStore } from '@/store'
 import { ProductImage } from '@/components/product/ProductImage'
 
 const RETAILER_COLORS: Record<string, string> = {
-  Amazon: 'bg-[#1C1C1C]',
-  Walmart: 'bg-[#1C1C1C]',
-  eBay: 'bg-[#1C1C1C]',
-  'Best Buy': 'bg-[#1C1C1C]',
-  Target: 'bg-[#1C1C1C]',
+  Amazon: 'bg-zinc-800',
+  Walmart: 'bg-zinc-800',
+  eBay: 'bg-zinc-800',
+  'Best Buy': 'bg-zinc-800',
+  Target: 'bg-zinc-800',
 }
 
 function getRetailerName(url: string): string {
@@ -56,17 +56,19 @@ function SwipeToDismiss({
   }
 
   return (
-    <div ref={constraintsRef} className="relative overflow-hidden rounded-xl">
-      {/* Delete zone */}
+    <div ref={constraintsRef} className="group relative overflow-hidden rounded-xl">
+      {/* Delete zone — revealed by swipe */}
       <motion.div
-        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-[#1C1C1C] rounded-r-xl"
+        className="absolute right-0 top-0 bottom-0 flex items-center justify-center bg-red-500/10 border-l border-red-500/20 rounded-r-xl"
         style={{ width: DELETE_WIDTH, opacity: deleteOpacity }}
+        aria-hidden="true"
       >
         <button
           onClick={handleDelete}
-          className="flex flex-col items-center gap-1 text-[#FFFEFD]"
+          className="flex flex-col items-center gap-1 text-red-400"
           aria-label="Remove from recently checked"
           type="button"
+          tabIndex={-1}
         >
           <IconTrash className="h-5 w-5" aria-hidden="true" />
           <span className="text-[10px] font-medium">Remove</span>
@@ -86,6 +88,20 @@ function SwipeToDismiss({
       >
         {children}
       </motion.div>
+
+      {/* Keyboard/hover accessible remove — visible on group-hover & focus-within on md+ */}
+      <motion.button
+        onClick={handleDelete}
+        initial={{ opacity: 0, scale: 0.85 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+        className="absolute right-3 top-1/2 z-20 -translate-y-1/2 hidden md:flex h-7 w-7 items-center justify-center rounded-lg text-zinc-600 opacity-0 group-hover:opacity-100 hover:bg-red-500/10 hover:text-red-400 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/40 transition-colors"
+        aria-label="Remove from recently checked"
+        type="button"
+      >
+        <IconTrash className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+      </motion.button>
     </div>
   )
 }
@@ -109,8 +125,8 @@ export function SearchPage() {
   return (
     <Page className="space-y-6">
       <div className="space-y-1">
-        <h1 className="font-display text-3xl font-bold text-foreground">Search a product</h1>
-        <p className="text-xs text-muted-foreground">
+        <h1 className="font-display text-3xl font-bold text-zinc-100">Search a product</h1>
+        <p className="text-xs text-zinc-500">
           Paste an Amazon link to see price history and compare retailers
         </p>
       </div>
@@ -129,15 +145,15 @@ export function SearchPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <img src="/assets/hot.png" alt="" aria-hidden="true" className="h-4 w-4 object-contain" />
-              <h2 id="hot-heading" className="text-sm font-semibold text-foreground">
+              <h2 id="hot-heading" className="text-sm font-semibold text-zinc-100">
                 Hot right now
               </h2>
             </div>
             <div className="flex items-center gap-3">
-              <p className="text-xs text-muted-foreground">Products lots of people are watching.</p>
+              <p className="text-xs text-zinc-500">Products lots of people are watching.</p>
               <button
                 onClick={() => setHotDismissed(true)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="text-xs text-zinc-500 hover:text-zinc-100 transition-colors"
                 aria-label="Dismiss hot products section"
                 type="button"
               >
@@ -148,19 +164,29 @@ export function SearchPage() {
 
           <div className="space-y-2">
             {hotLoading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5"
+              ? (
+                  <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } }}
+                    className="space-y-2"
                   >
-                    <div className="skeleton h-11 w-11 shrink-0 rounded-lg" />
-                    <div className="flex-1 space-y-2">
-                      <div className="skeleton h-3 w-3/4 rounded" />
-                      <div className="skeleton h-2.5 w-1/3 rounded" />
-                    </div>
-                    <div className="skeleton h-4 w-14 rounded" />
-                  </div>
-                ))
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <motion.div
+                        key={i}
+                        variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28 } } }}
+                        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5"
+                      >
+                        <div className="skeleton h-11 w-11 shrink-0 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <div className="skeleton h-3 w-3/4 rounded" />
+                          <div className="skeleton h-2.5 w-1/3 rounded" />
+                        </div>
+                        <div className="skeleton h-4 w-14 rounded" />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )
               : hotProducts.map((product, i) => {
                   const signal = product.price_signals?.[0]
                   const retailer = product.live_retailer ?? getRetailerName(product.source_url ?? '')
@@ -181,13 +207,13 @@ export function SearchPage() {
                             src={product.image_url}
                             alt={product.name}
                             category={product.category}
-                            className="h-full w-full p-1"
+                            className="h-full w-full object-cover"
                             iconClassName="h-4 w-4"
                             loading={i === 0 ? 'eager' : 'lazy'}
                           />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">
+                          <p className="truncate text-sm font-medium text-zinc-100">
                             {product.name}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5">
@@ -197,13 +223,13 @@ export function SearchPage() {
                                   className={`inline-block h-1.5 w-1.5 rounded-full ${retailerColor}`}
                                   aria-hidden="true"
                                 />
-                                <span className="text-xs text-muted-foreground">{retailer}</span>
+                                <span className="text-xs text-zinc-500">{retailer}</span>
                               </span>
                             )}
                             {displayPrice !== null && (
                               <>
-                                <span className="text-muted-foreground/40 text-xs">·</span>
-                                <span className="price text-xs font-medium text-foreground">
+                                <span className="text-zinc-500/40 text-xs">·</span>
+                                <span className="price text-xs font-medium text-zinc-100">
                                   {formatPrice(displayPrice)}
                                 </span>
                               </>
@@ -238,28 +264,39 @@ export function SearchPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <IconClock className="h-4 w-4 text-accent" aria-hidden="true" />
-              <h2 id="recent-heading" className="text-sm font-semibold text-foreground">
+              <h2 id="recent-heading" className="text-sm font-semibold text-zinc-100">
                 {isAuthenticated ? 'Your recently checked' : 'Recently checked on this device'}
               </h2>
             </div>
-            <p className="text-xs text-muted-foreground">Swipe left to remove</p>
+            <p className="text-xs text-zinc-500 md:hidden">Swipe left to remove</p>
+            <p className="text-xs text-zinc-500 hidden md:block">Hover to remove</p>
           </div>
 
           <div className="space-y-2">
             {recentLoading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5"
+              ? (
+                  <motion.div
+                    initial="hidden"
+                    animate="visible"
+                    variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.07, delayChildren: 0.05 } } }}
+                    className="space-y-2"
                   >
-                    <div className="skeleton h-11 w-11 shrink-0 rounded-lg" />
-                    <div className="flex-1 space-y-2">
-                      <div className="skeleton h-3 w-3/4 rounded" />
-                      <div className="skeleton h-2.5 w-1/3 rounded" />
-                    </div>
-                    <div className="skeleton h-4 w-14 rounded" />
-                  </div>
-                ))
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <motion.div
+                        key={i}
+                        variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 28 } } }}
+                        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3.5"
+                      >
+                        <div className="skeleton h-11 w-11 shrink-0 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <div className="skeleton h-3 w-3/4 rounded" />
+                          <div className="skeleton h-2.5 w-1/3 rounded" />
+                        </div>
+                        <div className="skeleton h-4 w-14 rounded" />
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )
               : recentProducts.map((product, i) => {
                   const signal = product.price_signals?.[0]
                   const retailer = product.live_retailer ?? getRetailerName(product.source_url ?? '')
@@ -283,13 +320,13 @@ export function SearchPage() {
                               src={product.image_url}
                               alt={product.name}
                               category={product.category}
-                              className="h-full w-full p-1"
+                              className="h-full w-full object-cover"
                               iconClassName="h-4 w-4"
                               loading={i === 0 ? 'eager' : 'lazy'}
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="truncate text-sm font-medium text-foreground">
+                            <p className="truncate text-sm font-medium text-zinc-100">
                               {product.name}
                             </p>
                             <div className="flex items-center gap-2 mt-0.5">
@@ -301,20 +338,20 @@ export function SearchPage() {
                                     aria-hidden="true"
                                   />
                                 )}
-                                <span className="text-xs text-muted-foreground">{retailer}</span>
+                                <span className="text-xs text-zinc-500">{retailer}</span>
                               </span>
                               {displayPrice !== null && (
                                 <>
-                                  <span className="text-muted-foreground/40 text-xs">·</span>
-                                  <span className="price text-xs font-medium text-foreground">
+                                  <span className="text-zinc-500/40 text-xs">·</span>
+                                  <span className="price text-xs font-medium text-zinc-100">
                                     {formatPrice(displayPrice)}
                                   </span>
                                 </>
                               )}
                               {displayPrice === null && (
                                 <>
-                                  <span className="text-muted-foreground/40 text-xs">·</span>
-                                  <span className="text-xs text-muted-foreground">Price unavailable</span>
+                                  <span className="text-zinc-500/40 text-xs">·</span>
+                                  <span className="text-xs text-zinc-500">Price unavailable</span>
                                 </>
                               )}
                             </div>
@@ -340,7 +377,7 @@ export function SearchPage() {
       <div className="glass-card rounded-xl px-4 py-4 space-y-3">
         <div className="flex items-center gap-2">
           <Radar className="h-4 w-4 text-accent" aria-hidden="true" />
-          <p className="text-sm font-semibold text-foreground">
+          <p className="text-sm font-semibold text-zinc-100">
             How to check a price
           </p>
         </div>
@@ -351,10 +388,10 @@ export function SearchPage() {
             'Paste it above — we\'ll show price history and compare retailers',
           ].map((step, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#1C1C1C] font-display text-[10px] font-bold text-[#FFFEFD] mt-0.5">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-red-500/10 border border-red-500/20 font-display text-[10px] font-bold text-red-400 mt-0.5">
                 {i + 1}
               </span>
-              <span className="text-xs text-muted-foreground">{step}</span>
+              <span className="text-xs text-zinc-500">{step}</span>
             </li>
           ))}
         </ol>

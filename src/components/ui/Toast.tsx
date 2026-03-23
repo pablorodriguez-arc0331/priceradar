@@ -1,6 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle, Info, X } from 'lucide-react'
-import { IconAlert } from '@/components/ui/Icons'
+import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useToastStore } from '@/store'
 import type { Toast, ToastVariant } from '@/types'
@@ -10,20 +9,20 @@ const TOAST_CONFIG: Record<ToastVariant, {
   bg: string; border: string; iconColor: string; titleColor: string; descColor: string
 }> = {
   success: {
-    icon: CheckCircle,
-    bg: 'bg-[#1C1C1C]', border: 'border-[rgba(255,254,253,0.15)]', iconColor: 'text-[#FFFEFD]', titleColor: 'text-[#FFFEFD]', descColor: 'text-[rgba(255,254,253,0.65)]',
+    icon: CheckCircle2,
+    bg: 'bg-zinc-900/95', border: 'border-emerald-500/25', iconColor: 'text-emerald-400', titleColor: 'text-zinc-50', descColor: 'text-zinc-400',
   },
   error: {
-    icon: IconAlert,
-    bg: 'bg-[#1C1C1C]', border: 'border-[rgba(255,254,253,0.15)]', iconColor: 'text-[#FFFEFD]', titleColor: 'text-[#FFFEFD]', descColor: 'text-[rgba(255,254,253,0.65)]',
+    icon: AlertCircle,
+    bg: 'bg-zinc-900/95', border: 'border-red-500/25', iconColor: 'text-red-400', titleColor: 'text-zinc-50', descColor: 'text-zinc-400',
   },
   info: {
     icon: Info,
-    bg: 'bg-[#FFFEFD]', border: 'border-[rgba(28,28,28,0.15)]', iconColor: 'text-[#1C1C1C]', titleColor: 'text-[#1C1C1C]', descColor: 'text-[rgba(28,28,28,0.55)]',
+    bg: 'bg-zinc-900/95', border: 'border-white/[0.08]', iconColor: 'text-blue-400', titleColor: 'text-zinc-50', descColor: 'text-zinc-400',
   },
   warning: {
-    icon: IconAlert,
-    bg: 'bg-[#FFFEFD]', border: 'border-[rgba(28,28,28,0.25)]', iconColor: 'text-[#1C1C1C]', titleColor: 'text-[#1C1C1C]', descColor: 'text-[rgba(28,28,28,0.55)]',
+    icon: AlertTriangle,
+    bg: 'bg-zinc-900/95', border: 'border-amber-500/25', iconColor: 'text-amber-400', titleColor: 'text-zinc-50', descColor: 'text-zinc-400',
   },
 }
 
@@ -39,8 +38,8 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
       exit={{ opacity: 0, x: 64, scale: 0.95 }}
       transition={{ type: 'spring', stiffness: 350, damping: 28 }}
       className={cn(
-        'flex items-start gap-3 rounded-lg border p-4',
-        'shadow-[0_8px_32px_rgba(0,0,0,0.18)]',
+        'flex items-start gap-3 rounded-xl border p-4',
+        'shadow-[0_8px_32px_rgba(0,0,0,0.60)] backdrop-blur-xl',
         'w-full max-w-sm',
         t.bg,
         t.border,
@@ -53,12 +52,23 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: () => void }) 
         {toast.description && (
           <p className={cn('mt-0.5 text-xs', t.descColor)}>{toast.description}</p>
         )}
+        {toast.action && (
+          <button
+            onClick={() => { toast.action!.onClick(); onRemove() }}
+            className={cn(
+              'mt-1.5 text-xs font-semibold text-blue-400 underline-offset-2 hover:underline',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded',
+            )}
+          >
+            {toast.action.label}
+          </button>
+        )}
       </div>
       <button
         onClick={onRemove}
         className={cn(
           'shrink-0 rounded p-0.5 transition-colors',
-          'hover:bg-[rgba(28,28,28,0.08)]',
+          'hover:bg-white/[0.08]',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         )}
         aria-label="Dismiss notification"

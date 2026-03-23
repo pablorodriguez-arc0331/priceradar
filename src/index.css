@@ -1,53 +1,49 @@
 /* ─── Google Fonts ─── */
-@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&family=Work+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ─── Design Tokens — #FFFEFD / #1C1C1C ─── */
+/* ─── Design Tokens — ElevenLabs Dark System ─── */
 @layer base {
   :root {
-    /* Two-color system */
-    --light: 30 100% 99.6%;   /* #FFFEFD */
-    --dark:  0 0% 11%;        /* #1C1C1C */
+    /* HSL values (no hsl() wrapper — consumed by tailwind as hsl(var(--X))) */
+    --background:          240 10% 4%;      /* #09090B */
+    --surface:             240 4% 10%;      /* #18181B */
+    --surface-elevated:    240 4% 16%;      /* #27272A */
 
-    --background:          var(--light);
-    --surface:             var(--light);
-    --surface-raised:      var(--light);
+    --foreground:          0 0% 98%;        /* #FAFAFA */
+    --card:                240 4% 10%;      /* #18181B */
+    --card-foreground:     0 0% 98%;
+    --popover:             240 4% 10%;
+    --popover-foreground:  0 0% 98%;
 
-    --foreground:          var(--dark);
-    --card:                var(--light);
-    --card-foreground:     var(--dark);
-    --popover:             var(--light);
-    --popover-foreground:  var(--dark);
+    --primary:             0 0% 100%;       /* white CTA */
+    --primary-foreground:  240 6% 7%;       /* near-black text on white */
+    --accent:              240 4% 16%;      /* zinc-800 */
+    --accent-foreground:   0 0% 98%;
+    --accent-hover:        240 4% 20%;
 
-    --primary:             var(--dark);
-    --primary-foreground:  var(--light);
-    --accent:              var(--dark);
-    --accent-foreground:   var(--light);
-    --accent-hover:        var(--dark);
+    --secondary:           240 4% 16%;      /* zinc-800 */
+    --secondary-foreground: 0 0% 98%;
 
-    --secondary:           var(--light);
-    --secondary-foreground: var(--dark);
+    --muted:               240 4% 16%;      /* zinc-800 */
+    --muted-foreground:    240 5% 64%;      /* zinc-400 #A1A1AA */
 
-    --muted:               var(--light);
-    --muted-foreground:    var(--dark);
+    --destructive:         0 84% 60%;       /* #EF4444 */
+    --destructive-foreground: 0 0% 98%;
 
-    --destructive:         var(--dark);
-    --destructive-foreground: var(--light);
-
-    --border:              var(--dark);
-    --border-strong:       var(--dark);
-    --input:               var(--dark);
-    --ring:                var(--dark);
+    --border:              240 4% 16%;      /* zinc-800 for tailwind border-border */
+    --input:               240 4% 16%;
+    --ring:                0 0% 100%;       /* white focus ring */
 
     --radius: 0.75rem;
 
-    /* Signal — use foreground/background only */
-    --signal-low:            var(--dark);
-    --signal-high:           var(--dark);
-    --signal-neutral:        var(--dark);
+    /* Signal semantic */
+    --signal-low:            #10B981;       /* emerald */
+    --signal-high:           #EF4444;       /* red */
+    --signal-neutral:        #A1A1AA;       /* zinc-400 */
 
     /* PWA layout */
     --nav-height: 4rem;
@@ -55,14 +51,14 @@
     --page-bottom-pad: calc(120px + env(safe-area-inset-bottom, 0px));
 
     /* Card tokens */
-    --card-bg:     #FFFEFD;
-    --card-border: rgba(28, 28, 28, 0.12);
-    --card-shadow: 0 1px 3px rgba(28, 28, 28, 0.06), 0 2px 10px rgba(28, 28, 28, 0.04);
+    --card-bg:     rgba(24, 24, 27, 0.80);
+    --card-border: rgba(255, 255, 255, 0.06);
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.40), 0 2px 10px rgba(0,0,0,0.25);
 
     /* Glass tokens */
-    --glass-bg:     rgba(255, 254, 253, 0.94);
-    --glass-border: rgba(28, 28, 28, 0.10);
-    --glass-shadow: 0 8px 32px rgba(28, 28, 28, 0.08);
+    --glass-bg:     rgba(9, 9, 11, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.06);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.40);
   }
 
   * { @apply border-border; }
@@ -73,24 +69,21 @@
 
   body {
     @apply antialiased;
-    font-family: 'Work Sans', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #FFFEFD;
-    color: #1C1C1C;
+    background-color: #09090B;
+    color: #FAFAFA;
   }
 
-  /* ─── Paper texture ──────────────────────────────────────────────────── */
-  /* Fixed overlay above everything else, pointer-events off so it never   */
-  /* blocks interaction. SVG feTurbulence renders tiling grain in-browser  */
-  /* with no external asset required.                                       */
+  /* ─── Grain overlay — dark version ──────────────────────────────────────── */
   body::after {
     content: '';
     position: fixed;
     inset: 0;
     z-index: 9999;
     pointer-events: none;
-    opacity: 0.038;
+    opacity: 0.035;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23grain)'/%3E%3C/svg%3E");
     background-repeat: repeat;
     background-size: 250px 250px;
@@ -101,23 +94,23 @@
   .price {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
-    font-family: 'Josefin Sans', system-ui, sans-serif;
+    font-family: 'JetBrains Mono', monospace;
   }
 
   .font-display {
-    font-family: 'Josefin Sans', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
   }
 
   .skip-to-content {
     @apply absolute left-4 top-4 z-50 rounded-md px-4 py-2 text-sm font-medium opacity-0 focus:opacity-100 focus:outline-none;
-    background: #1C1C1C;
-    color: #FFFEFD;
+    background: #FAFAFA;
+    color: #09090B;
     transform: translateY(-100%);
   }
   .skip-to-content:focus { transform: translateY(0); }
 
   :focus-visible {
-    outline: 2px solid #1C1C1C;
+    outline: 2px solid rgba(255,255,255,0.80);
     outline-offset: 2px;
   }
 }
@@ -138,22 +131,29 @@
 
 /* ─── Search border ─── */
 .search-border-wrap {
-  background: rgba(28, 28, 28, 0.15);
+  background: rgba(255, 255, 255, 0.06);
   transition: background 0.18s ease;
 }
 .search-border-wrap[data-focused="true"] {
-  background: #1C1C1C;
+  background: rgba(255, 255, 255, 0.18);
 }
 .search-border-wrap[data-error="true"] {
-  background: #1C1C1C;
+  background: rgba(239, 68, 68, 0.40);
 }
 
 /* ─── Components ─── */
 @layer components {
   .skeleton {
-    @apply animate-skeleton-pulse rounded-md;
-    background: rgba(28, 28, 28, 0.07);
-    border: 1px solid rgba(28, 28, 28, 0.05);
+    @apply rounded-md;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.10) 40%,
+      rgba(255, 255, 255, 0.05) 80%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
+    border: 1px solid rgba(255, 255, 255, 0.04);
   }
 
   /* Header / modals / sheets */
@@ -161,7 +161,7 @@
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
   }
 
@@ -181,22 +181,26 @@
   }
   .glass-card-interactive:hover {
     transform: translateY(-2px);
-    border-color: rgba(28, 28, 28, 0.28);
-    box-shadow: 0 4px 20px rgba(28, 28, 28, 0.10), 0 1px 4px rgba(28, 28, 28, 0.06);
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: 0 0 30px -5px rgba(255,255,255,0.08), 0 4px 20px rgba(0,0,0,0.40);
   }
 
-  .glow-cyan { box-shadow: none; }
+  .glow-cyan {
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.20);
+  }
 
   /* Bottom nav */
   .liquid-glass-nav {
     border-radius: 32px;
-    background: rgba(255, 254, 253, 0.96);
-    border: 1px solid rgba(28, 28, 28, 0.10);
-    box-shadow: 0 4px 20px rgba(28, 28, 28, 0.08), 0 1px 4px rgba(28, 28, 28, 0.04);
+    background: rgba(24, 24, 27, 0.90);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.50), 0 1px 4px rgba(0,0,0,0.30);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
 }
 
 /* ─── Reduced motion ─── */
 @media (prefers-reduced-motion: reduce) {
-  .animate-skeleton-pulse { animation: none !important; }
+  .skeleton { animation: none !important; background: rgba(255, 255, 255, 0.07) !important; }
 }

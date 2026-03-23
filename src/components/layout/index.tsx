@@ -1,21 +1,21 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Radar } from 'lucide-react'
-import { IconSearch, IconUser } from '@/components/ui/Icons'
+import { Radar, Home, Search, LayoutDashboard, User, WifiOff } from 'lucide-react'
+import { IconUser } from '@/components/ui/Icons'
 import { useAuthStore } from '@/store'
 import { cn } from '@/lib/utils'
 import { useOnlineStatus } from '@/hooks'
 import { Button } from '@/components/ui/Button'
 
-// ─── Nav config (shared) ──────────────────────────────────────────────────────
+// ─── Nav config ───────────────────────────────────────────────────────────────
 const NAV_TABS = [
-  { path: '/', label: 'Home', img: '/assets/home.png', exactMatch: true },
-  { path: '/search', label: 'Search', img: '/assets/search.png' },
-  { path: '/dashboard', label: 'Watchlist', img: '/assets/dashboard.png', requiresAuth: true },
-  { path: '/settings', label: 'Account', img: '/assets/user.png' },
+  { path: '/', label: 'Home', icon: Home, exactMatch: true },
+  { path: '/search', label: 'Search', icon: Search },
+  { path: '/dashboard', label: 'Watchlist', icon: LayoutDashboard, requiresAuth: true },
+  { path: '/settings', label: 'Account', icon: User },
 ]
 
-// ─── Desktop Nav (shown inside Header on md+) ─────────────────────────────────
+// ─── Desktop Nav ──────────────────────────────────────────────────────────────
 function DesktopNav() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -38,6 +38,7 @@ function DesktopNav() {
     <nav className="hidden md:flex items-center gap-1" aria-label="Desktop navigation">
       {NAV_TABS.map(tab => {
         const active = isActive(tab)
+        const Icon = tab.icon
         return (
           <button
             key={tab.path}
@@ -45,18 +46,13 @@ function DesktopNav() {
             aria-current={active ? 'page' : undefined}
             className={cn(
               'flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
               active
-                ? 'bg-accent/10 text-accent'
-                : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5',
+                ? 'bg-white/[0.08] text-zinc-50'
+                : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.05]',
             )}
           >
-            <img
-              src={tab.img}
-              alt=""
-              aria-hidden="true"
-              className={cn('h-3.5 w-3.5 object-contain', active ? 'opacity-100' : 'opacity-40')}
-            />
+            <Icon className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
             {tab.label}
           </button>
         )
@@ -85,14 +81,14 @@ export function Header() {
 
       <Link
         to="/"
-        className="flex shrink-0 items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md"
+        className="flex shrink-0 items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-md"
         aria-label="PriceRadar — Home"
       >
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 border border-accent/20 glow-cyan">
-          <Radar className="h-4 w-4 text-accent" aria-hidden="true" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/20 glow-cyan">
+          <Radar className="h-4 w-4 text-blue-400" strokeWidth={1.5} aria-hidden="true" />
         </div>
-        <span className="font-display text-base font-bold tracking-tight text-foreground">
-          Price<span className="text-accent">Radar</span>
+        <span className="font-display text-base font-bold tracking-tight text-zinc-50">
+          Price<span className="text-blue-400">Radar</span>
         </span>
       </Link>
 
@@ -105,12 +101,13 @@ export function Header() {
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              className="flex items-center gap-1 rounded-full bg-[rgba(28,28,28,0.06)] border border-[rgba(28,28,28,0.20)] px-2 py-1"
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              className="flex items-center gap-1 rounded-full bg-white/[0.06] border border-white/[0.08] px-2 py-1"
               role="status"
               aria-label="You are offline"
             >
-              <IconSearch className="h-3 w-3 text-[#1C1C1C] opacity-60" aria-hidden="true" />
-              <span className="text-xs font-medium text-[#1C1C1C]">Offline</span>
+              <WifiOff className="h-3 w-3 text-zinc-400" strokeWidth={1.5} aria-hidden="true" />
+              <span className="text-xs font-medium text-zinc-400">Offline</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -130,7 +127,7 @@ function UserMenuButton() {
         variant="outline"
         size="sm"
         onClick={() => navigate('/auth')}
-        className="border-accent/30 text-accent hover:bg-accent/10 hover:border-accent min-h-[36px]"
+        className="min-h-[36px]"
       >
         Sign in
       </Button>
@@ -142,16 +139,16 @@ function UserMenuButton() {
       to="/settings"
       className={cn(
         'flex h-8 w-8 items-center justify-center rounded-full overflow-hidden',
-        'border border-accent/30 hover:border-accent transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'border border-white/[0.08] hover:border-white/[0.18] transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
       )}
       aria-label="Account settings"
     >
       {user?.avatar_url ? (
         <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" />
       ) : (
-        <div className="flex h-full w-full items-center justify-center bg-accent/10">
-          <IconUser className="h-4 w-4 text-accent" aria-hidden="true" />
+        <div className="flex h-full w-full items-center justify-center bg-zinc-800">
+          <IconUser className="h-4 w-4 text-zinc-400" aria-hidden="true" />
         </div>
       )}
     </Link>
@@ -184,43 +181,51 @@ export function BottomNav() {
       style={{
         bottom: 0,
         marginBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))',
-        height: '80px',
+        height: '72px',
       }}
     >
       {NAV_TABS.map(tab => {
         const active = isActive(tab)
+        const Icon = tab.icon
 
         return (
-          <button
+          <motion.button
             key={tab.path}
             onClick={() => handleTabClick(tab)}
+            whileTap={{ scale: 0.92 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 20 }}
             className={cn(
               'relative flex flex-1 flex-col items-center justify-center gap-1',
               'min-h-[44px] min-w-[44px]',
-              'transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-inset',
             )}
             aria-current={active ? 'page' : undefined}
             aria-label={tab.label}
           >
-            <img
-              src={tab.img}
-              alt=""
-              aria-hidden="true"
+            {active && (
+              <motion.div
+                layoutId="nav-indicator"
+                className="absolute top-2 h-0.5 w-5 rounded-full bg-blue-400"
+                transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+              />
+            )}
+            <Icon
               className={cn(
-                'h-6 w-6 object-contain transition-all',
-                active ? 'opacity-100 scale-110' : 'opacity-35',
+                'h-5 w-5 transition-all',
+                active ? 'text-zinc-50' : 'text-zinc-500',
               )}
+              strokeWidth={active ? 2 : 1.5}
+              aria-hidden="true"
             />
             <span
               className={cn(
-                'text-[11px] font-medium',
-                active ? 'text-[#1C1C1C]' : 'text-muted-foreground',
+                'text-[10px] font-medium transition-colors',
+                active ? 'text-zinc-50' : 'text-zinc-500',
               )}
             >
               {tab.label}
             </span>
-          </button>
+          </motion.button>
         )
       })}
     </nav>
@@ -239,10 +244,10 @@ export function Page({ children, className, id = 'main-content' }: PageProps) {
     <motion.main
       id={id}
       className={cn('px-4 pb-nav pt-4 md:mx-auto md:w-full md:max-w-5xl md:px-8', className)}
-      initial={{ opacity: 0, y: 6 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -6 }}
-      transition={{ type: 'tween', ease: 'easeInOut', duration: 0.25 }}
+      exit={{ opacity: 0, y: -4 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 28 }}
     >
       {children}
     </motion.main>
